@@ -4,7 +4,7 @@
     <div class="container">
       <div v-for="order in response.results" class="order">
         <div class="created-info">
-          <div>Id: {{order.id}}.</div>
+<!--          <div>Id: {{order.id}}.</div>-->
           <div>Created at {{createdAt(order.created_at)}}</div>
         </div>
         <div  v-for="ticket in order.tickets" class="ticket">
@@ -57,7 +57,7 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
