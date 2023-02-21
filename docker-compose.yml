@@ -25,4 +25,3 @@ services:
       - "5433:5432"
     env_file:
       - ./backend/.env
-      -
