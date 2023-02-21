@@ -28,7 +28,7 @@ export default {
         this.active = false;
         this.movie = {};
         return;
-      };
+      }
 
       const [, id] = match;
       if (!id) {
@@ -42,7 +42,7 @@ export default {
 
     async fetchMovie (id) {
       try {
-        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies-${id}`, {
+        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${id}`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
