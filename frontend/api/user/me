@@ -1,5 +1,5 @@
 {
     "id": 2,
     "email": "user@user.com",
-    "is_staff": false
+    "is_staff": true
 }
