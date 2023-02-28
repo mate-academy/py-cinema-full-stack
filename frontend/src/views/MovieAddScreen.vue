@@ -78,7 +78,7 @@ export default {
 
     async fetchGenres () {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
@@ -121,9 +121,9 @@ export default {
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
-          await axios.post(`/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
+          await axios.post(
+              `${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
         }
-
         location.hash = '#/movies';
       } catch (err) {
         console.error(err);
