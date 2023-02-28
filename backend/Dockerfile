@@ -1,5 +1,5 @@
 FROM --platform=linux/amd64 python:3.10.9-slim-buster
-LABEL maintainer="danylo.t@mate.academy"
+LABEL maintainer="danylo.t@mate.academuasd"
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /vol/web/media
+RUN mkdir -p /vol/web/media/uploads
 
 RUN adduser \
     --disabled-password \
@@ -23,6 +23,7 @@ RUN adduser \
     django-user
 
 RUN chown -R django-user:django-user /vol/
-RUN chmod -R 755 /vol/web/
+RUN chmod -R 777 /vol/web/
+RUN chown -R django-user:django-user /vol/web/media/uploads
 
 USER django-user
