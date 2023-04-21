@@ -1,10 +1,14 @@
 .idea/
 .vscode/
 *.iml
-.env
+frontend/.env
+/.env
 .DS_Store
 venv/
 .pytest_cache/
 **__pycache__/
 **db.sqlite3
 media
+
+/package.json
+/package-lock.json
