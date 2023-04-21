@@ -9,3 +9,4 @@ venv/
 **db.sqlite3
 media
 .env.docker
+**/migrations/*
