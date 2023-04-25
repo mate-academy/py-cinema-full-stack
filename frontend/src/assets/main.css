@@ -1,0 +1,89 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  position: relative;
+  font-weight: normal;
+}
+
+body {
+  --main-bg: #111;
+  --secondary-bg: #222;
+  --main-font: #fff;
+  --red: #FF2B2B;
+
+  --border: #666;
+  --input-placeholder: #D2D2D2;
+
+  min-height: 100vh;
+  color: var(--main-font);
+  background: var(--main-bg);
+  transition: color 0.5s, background-color 0.5s;
+  line-height: 1.6;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+}
+
+input, textarea {
+  font-family: 'Montserrat', sans-serif;
+}
+
+#app {
+  display: grid;
+  grid-template-rows: 80px 1fr 60px;
+  margin: 0 auto;
+  height: 100vh;
+}
+
+.vc-container.vc-is-dark {
+  background-color: var(--secondary-bg);
+  border-color: var(--border);
+  color: var(--main-font);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.vc-is-dark .vc-weekday {
+  color: var(--red) !important;
+  font-weight: 400;
+}
+
+.vc-highlight {
+  background-color: var(--red) !important;
+}
+
+.vc-is-dark .vc-nav-title {
+  color: var(--main-font);
+  pointer-events: none;
+}
+
+.vc-is-dark .vc-nav-popover-container {
+  color: var(--main-font);
+  background-color: var(--secondary-bg);
+  border-color: var(--border);
+}
+
+.vc-is-dark .vc-nav-item.is-active {
+  background-color: var(--red);
+}
+
+.vc-is-dark .vc-nav-item:focus {
+  border-color: transparent;
+}
+
+.vc-is-dark .vc-day-content.is-disabled {
+  color: var(--border) !important;
+}
+
+.vc-date {
+  display: none !important;
+}
+
+.vc-is-dark select {
+  background-color: var(--secondary-bg) !important;
+  border-color: transparent !important;
+}
