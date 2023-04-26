@@ -87,7 +87,7 @@ export default {
 
     async refreshToken () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}//refresh/`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/refresh/`, {
           refresh: localStorage.getItem('refresh')
         });
 
