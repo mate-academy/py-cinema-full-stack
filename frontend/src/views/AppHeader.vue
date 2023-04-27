@@ -6,7 +6,7 @@
       <a href='#/cinema-halls' v-if="user.is_staff" :class="activeTab === 'cinema-halls' && 'active'">Cinema Halls</a>
       <a href='#/movies' :class="activeTab.match(/(movies|^$)/) && 'active'">Movies</a>
       <a href='#/genres' v-if="user.is_staff" :class="activeTab === 'genres' && 'active'">Genres</a>
-      <a href='#/actors/' v-if="user.is_staff" :class="activeTab === 'actors' && 'active'">Actors</a>
+      <a href='#/actors' v-if="user.is_staff" :class="activeTab === 'actors' && 'active'">Actors</a>
     </div>
     <div class="action-section">
       <div class="profile-section">
