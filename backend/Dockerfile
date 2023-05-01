@@ -1,11 +1,13 @@
 FROM --platform=linux/amd64 python:3.10.9-slim-buster
-LABEL maintainer="danylo.t@mate.academy"
+LABEL maintainer="hapyto371@gmail.com"
 
 WORKDIR /app
 
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV PIP_DISABLE_PIP_VERSION_CHECK 1
+ENV PIP_ROOT_USER_ACTION=ignore
 
 
 RUN pip install --upgrade pip
