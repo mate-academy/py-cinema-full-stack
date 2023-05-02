@@ -12,16 +12,16 @@ services:
       - ./backend/media:/vol/web/media
     command: >
       sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8080"
     env_file:
-      - .env
+      - backend/cinema_service/.env
     depends_on:
       - db
 
   db:
     image: postgres:14-alpine
     ports:
-      - "5432:5432"
+      - "5434:5432"
     env_file:
-      - .env
+      - backend/cinema_service/.env
