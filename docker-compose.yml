@@ -9,7 +9,6 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
-      - ./backend/media:/vol/web/media
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
@@ -24,4 +23,4 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env
+      - frontend/.env
