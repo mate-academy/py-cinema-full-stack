@@ -15,7 +15,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv("../.env")
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -183,5 +182,4 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8080",
     "http://localhost:5173",
-    # "http://127.0.0.1:5173",
 ]
