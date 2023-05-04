@@ -1,5 +1,5 @@
 FROM --platform=linux/amd64 python:3.10.9-slim-buster
-LABEL maintainer="danylo.t@mate.academy"
+LABEL maintainer="daria.blessed18@gmail.com"
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED 1
 
 
 RUN pip install --upgrade pip
-COPY requirements.txt requirements.txt
+COPY ../requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 
