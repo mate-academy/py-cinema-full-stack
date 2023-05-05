@@ -95,14 +95,14 @@ export default {
         const movieConfig = {
           headers: {
             ...headers,
-            'Content-Type': 'application/json/'
+            'Content-Type': 'application/json'
           }
         };
 
         const imageConfig = {
           headers: {
             ...headers,
-            'Content-Type': 'multipart/form-data/'
+            'Content-Type': 'multipart/form-data'
           }
         };
 
@@ -121,7 +121,7 @@ export default {
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          await axios.post(`/api/cinema/movies-${movie.id}-upload-image/`, data, imageConfig);
         }
 
         location.hash = '#/movies';
