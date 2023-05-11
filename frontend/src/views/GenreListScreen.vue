@@ -45,7 +45,7 @@ export default {
   methods: {
     async fetchGenres () {
       try {
-        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
@@ -59,12 +59,12 @@ export default {
         const config = {
           headers: {
             Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json/'
           }
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres`,
+          `${import.meta.env.VITE_API_URL}/api/cinema/genre/`,
           {
             name: this.name
           },
