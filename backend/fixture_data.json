@@ -1,0 +1,1143 @@
+[
+  {
+    "model": "auth.permission",
+    "pk": 1,
+    "fields": {
+      "name": "Can add log entry",
+      "content_type": 1,
+      "codename": "add_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 2,
+    "fields": {
+      "name": "Can change log entry",
+      "content_type": 1,
+      "codename": "change_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 3,
+    "fields": {
+      "name": "Can delete log entry",
+      "content_type": 1,
+      "codename": "delete_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 4,
+    "fields": {
+      "name": "Can view log entry",
+      "content_type": 1,
+      "codename": "view_logentry"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 5,
+    "fields": {
+      "name": "Can add permission",
+      "content_type": 2,
+      "codename": "add_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 6,
+    "fields": {
+      "name": "Can change permission",
+      "content_type": 2,
+      "codename": "change_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 7,
+    "fields": {
+      "name": "Can delete permission",
+      "content_type": 2,
+      "codename": "delete_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 8,
+    "fields": {
+      "name": "Can view permission",
+      "content_type": 2,
+      "codename": "view_permission"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 9,
+    "fields": {
+      "name": "Can add group",
+      "content_type": 3,
+      "codename": "add_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 10,
+    "fields": {
+      "name": "Can change group",
+      "content_type": 3,
+      "codename": "change_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 11,
+    "fields": {
+      "name": "Can delete group",
+      "content_type": 3,
+      "codename": "delete_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 12,
+    "fields": {
+      "name": "Can view group",
+      "content_type": 3,
+      "codename": "view_group"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 13,
+    "fields": {
+      "name": "Can add content type",
+      "content_type": 4,
+      "codename": "add_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 14,
+    "fields": {
+      "name": "Can change content type",
+      "content_type": 4,
+      "codename": "change_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 15,
+    "fields": {
+      "name": "Can delete content type",
+      "content_type": 4,
+      "codename": "delete_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 16,
+    "fields": {
+      "name": "Can view content type",
+      "content_type": 4,
+      "codename": "view_contenttype"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 17,
+    "fields": {
+      "name": "Can add session",
+      "content_type": 5,
+      "codename": "add_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 18,
+    "fields": {
+      "name": "Can change session",
+      "content_type": 5,
+      "codename": "change_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 19,
+    "fields": {
+      "name": "Can delete session",
+      "content_type": 5,
+      "codename": "delete_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 20,
+    "fields": {
+      "name": "Can view session",
+      "content_type": 5,
+      "codename": "view_session"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 21,
+    "fields": {
+      "name": "Can add actor",
+      "content_type": 6,
+      "codename": "add_actor"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 22,
+    "fields": {
+      "name": "Can change actor",
+      "content_type": 6,
+      "codename": "change_actor"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 23,
+    "fields": {
+      "name": "Can delete actor",
+      "content_type": 6,
+      "codename": "delete_actor"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 24,
+    "fields": {
+      "name": "Can view actor",
+      "content_type": 6,
+      "codename": "view_actor"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 25,
+    "fields": {
+      "name": "Can add cinema hall",
+      "content_type": 7,
+      "codename": "add_cinemahall"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 26,
+    "fields": {
+      "name": "Can change cinema hall",
+      "content_type": 7,
+      "codename": "change_cinemahall"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 27,
+    "fields": {
+      "name": "Can delete cinema hall",
+      "content_type": 7,
+      "codename": "delete_cinemahall"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 28,
+    "fields": {
+      "name": "Can view cinema hall",
+      "content_type": 7,
+      "codename": "view_cinemahall"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 29,
+    "fields": {
+      "name": "Can add genre",
+      "content_type": 8,
+      "codename": "add_genre"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 30,
+    "fields": {
+      "name": "Can change genre",
+      "content_type": 8,
+      "codename": "change_genre"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 31,
+    "fields": {
+      "name": "Can delete genre",
+      "content_type": 8,
+      "codename": "delete_genre"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 32,
+    "fields": {
+      "name": "Can view genre",
+      "content_type": 8,
+      "codename": "view_genre"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 33,
+    "fields": {
+      "name": "Can add movie",
+      "content_type": 9,
+      "codename": "add_movie"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 34,
+    "fields": {
+      "name": "Can change movie",
+      "content_type": 9,
+      "codename": "change_movie"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 35,
+    "fields": {
+      "name": "Can delete movie",
+      "content_type": 9,
+      "codename": "delete_movie"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 36,
+    "fields": {
+      "name": "Can view movie",
+      "content_type": 9,
+      "codename": "view_movie"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 37,
+    "fields": {
+      "name": "Can add movie session",
+      "content_type": 10,
+      "codename": "add_moviesession"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 38,
+    "fields": {
+      "name": "Can change movie session",
+      "content_type": 10,
+      "codename": "change_moviesession"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 39,
+    "fields": {
+      "name": "Can delete movie session",
+      "content_type": 10,
+      "codename": "delete_moviesession"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 40,
+    "fields": {
+      "name": "Can view movie session",
+      "content_type": 10,
+      "codename": "view_moviesession"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 41,
+    "fields": {
+      "name": "Can add order",
+      "content_type": 11,
+      "codename": "add_order"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 42,
+    "fields": {
+      "name": "Can change order",
+      "content_type": 11,
+      "codename": "change_order"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 43,
+    "fields": {
+      "name": "Can delete order",
+      "content_type": 11,
+      "codename": "delete_order"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 44,
+    "fields": {
+      "name": "Can view order",
+      "content_type": 11,
+      "codename": "view_order"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 45,
+    "fields": {
+      "name": "Can add ticket",
+      "content_type": 12,
+      "codename": "add_ticket"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 46,
+    "fields": {
+      "name": "Can change ticket",
+      "content_type": 12,
+      "codename": "change_ticket"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 47,
+    "fields": {
+      "name": "Can delete ticket",
+      "content_type": 12,
+      "codename": "delete_ticket"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 48,
+    "fields": {
+      "name": "Can view ticket",
+      "content_type": 12,
+      "codename": "view_ticket"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 49,
+    "fields": {
+      "name": "Can add user",
+      "content_type": 13,
+      "codename": "add_user"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 50,
+    "fields": {
+      "name": "Can change user",
+      "content_type": 13,
+      "codename": "change_user"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 51,
+    "fields": {
+      "name": "Can delete user",
+      "content_type": 13,
+      "codename": "delete_user"
+    }
+  },
+  {
+    "model": "auth.permission",
+    "pk": 52,
+    "fields": {
+      "name": "Can view user",
+      "content_type": 13,
+      "codename": "view_user"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 1,
+    "fields": {
+      "app_label": "admin",
+      "model": "logentry"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 2,
+    "fields": {
+      "app_label": "auth",
+      "model": "permission"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 3,
+    "fields": {
+      "app_label": "auth",
+      "model": "group"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 4,
+    "fields": {
+      "app_label": "contenttypes",
+      "model": "contenttype"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 5,
+    "fields": {
+      "app_label": "sessions",
+      "model": "session"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 6,
+    "fields": {
+      "app_label": "cinema",
+      "model": "actor"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 7,
+    "fields": {
+      "app_label": "cinema",
+      "model": "cinemahall"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 8,
+    "fields": {
+      "app_label": "cinema",
+      "model": "genre"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 9,
+    "fields": {
+      "app_label": "cinema",
+      "model": "movie"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 10,
+    "fields": {
+      "app_label": "cinema",
+      "model": "moviesession"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 11,
+    "fields": {
+      "app_label": "cinema",
+      "model": "order"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 12,
+    "fields": {
+      "app_label": "cinema",
+      "model": "ticket"
+    }
+  },
+  {
+    "model": "contenttypes.contenttype",
+    "pk": 13,
+    "fields": {
+      "app_label": "user",
+      "model": "user"
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 1,
+    "fields": {
+      "name": "Ricciotto Canudo",
+      "rows": 25,
+      "seats_in_row": 30
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 2,
+    "fields": {
+      "name": "Robin Wood",
+      "rows": 24,
+      "seats_in_row": 18
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 3,
+    "fields": {
+      "name": "Peter Wollen",
+      "rows": 30,
+      "seats_in_row": 20
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 4,
+    "fields": {
+      "name": "Jean Mitry",
+      "rows": 14,
+      "seats_in_row": 8
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 1,
+    "fields": {
+      "name": "Crime"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 2,
+    "fields": {
+      "name": "Drama"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 3,
+    "fields": {
+      "name": "Thriller"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 4,
+    "fields": {
+      "name": "Action"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 5,
+    "fields": {
+      "name": "Adventure"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 6,
+    "fields": {
+      "name": "Sci-Fi"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 7,
+    "fields": {
+      "name": "Mystery"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 1,
+    "fields": {
+      "first_name": "Jack",
+      "last_name": "Nicholson"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 2,
+    "fields": {
+      "first_name": "Leonardo",
+      "last_name": "DiCaprio"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 3,
+    "fields": {
+      "first_name": "Matt",
+      "last_name": "Damon"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 4,
+    "fields": {
+      "first_name": "Joseph",
+      "last_name": "Gordon-Levitt"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 5,
+    "fields": {
+      "first_name": "Elliot",
+      "last_name": "Page"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 6,
+    "fields": {
+      "first_name": "Bruce",
+      "last_name": "Willis"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 7,
+    "fields": {
+      "first_name": "Emily",
+      "last_name": "Blunt"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 8,
+    "fields": {
+      "first_name": "Samuel",
+      "last_name": "Jackson"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 9,
+    "fields": {
+      "first_name": "Robin",
+      "last_name": "Wright"
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "The Departed",
+      "description": "An undercover cop and a mole in the police attempt to identify each other while infiltrating an Irishgang in South Boston.",
+      "duration": 151,
+      "image": "",
+      "genres": [
+        1,
+        2,
+        3
+      ],
+      "actors": [
+        1,
+        2,
+        3
+      ]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 2,
+    "fields": {
+      "title": "Inception",
+      "description": "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+      "duration": 148,
+      "image": "",
+      "genres": [
+        4,
+        5,
+        6
+      ],
+      "actors": [
+        2,
+        4,
+        5
+      ]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 3,
+    "fields": {
+      "title": "Looper",
+      "description": "In 2074, when the mob wants to get rid of someone, the target is sent into the past, where a hired gun awaits - someone like Joe - who one day learns the mob wants to 'close the loop' by sending back Joe's future self for assassination.",
+      "duration": 119,
+      "image": "",
+      "genres": [
+        2,
+        4,
+        6
+      ],
+      "actors": [
+        4,
+        6,
+        7
+      ]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 4,
+    "fields": {
+      "title": "Unbreakable",
+      "description": "A man learns something extraordinary about himself after a devastating accident.",
+      "duration": 106,
+      "image": "",
+      "genres": [
+        2,
+        6,
+        7
+      ],
+      "actors": [
+        8,
+        9,
+        6
+      ]
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "show_time": "2024-10-08T13:00:00Z",
+      "movie": 1,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 2,
+    "fields": {
+      "show_time": "2024-10-09T13:00:00Z",
+      "movie": 2,
+      "cinema_hall": 2
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 3,
+    "fields": {
+      "show_time": "2024-10-10T13:00:00Z",
+      "movie": 3,
+      "cinema_hall": 3
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 4,
+    "fields": {
+      "show_time": "2024-10-11T13:00:00Z",
+      "movie": 4,
+      "cinema_hall": 4
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 5,
+    "fields": {
+      "show_time": "2024-10-12T13:00:00Z",
+      "movie": 4,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 6,
+    "fields": {
+      "show_time": "2024-10-13T13:00:00Z",
+      "movie": 3,
+      "cinema_hall": 2
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 7,
+    "fields": {
+      "show_time": "2024-10-14T13:00:00Z",
+      "movie": 1,
+      "cinema_hall": 3
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 8,
+    "fields": {
+      "show_time": "2024-10-15T13:00:00Z",
+      "movie": 2,
+      "cinema_hall": 4
+    }
+  },
+  {
+    "model": "cinema.order",
+    "pk": 1,
+    "fields": {
+      "created_at": "2022-08-09T09:06:18.876Z",
+      "user": 1
+    }
+  },
+  {
+    "model": "cinema.order",
+    "pk": 2,
+    "fields": {
+      "created_at": "2022-08-09T09:06:18.876Z",
+      "user": 2
+    }
+  },
+  {
+    "model": "cinema.order",
+    "pk": 3,
+    "fields": {
+      "created_at": "2022-08-09T09:06:18.876Z",
+      "user": 1
+    }
+  },
+  {
+    "model": "cinema.order",
+    "pk": 4,
+    "fields": {
+      "created_at": "2022-08-09T09:06:18.876Z",
+      "user": 3
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 1,
+    "fields": {
+      "movie_session": 1,
+      "order": 1,
+      "row": 1,
+      "seat": 1
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 2,
+    "fields": {
+      "movie_session": 1,
+      "order": 1,
+      "row": 2,
+      "seat": 4
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 3,
+    "fields": {
+      "movie_session": 2,
+      "order": 1,
+      "row": 3,
+      "seat": 3
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 4,
+    "fields": {
+      "movie_session": 2,
+      "order": 1,
+      "row": 4,
+      "seat": 3
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 5,
+    "fields": {
+      "movie_session": 3,
+      "order": 1,
+      "row": 5,
+      "seat": 1
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 6,
+    "fields": {
+      "movie_session": 4,
+      "order": 1,
+      "row": 6,
+      "seat": 2
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 7,
+    "fields": {
+      "movie_session": 5,
+      "order": 1,
+      "row": 7,
+      "seat": 3
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 8,
+    "fields": {
+      "movie_session": 5,
+      "order": 2,
+      "row": 8,
+      "seat": 4
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 9,
+    "fields": {
+      "movie_session": 5,
+      "order": 2,
+      "row": 1,
+      "seat": 5
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 10,
+    "fields": {
+      "movie_session": 6,
+      "order": 2,
+      "row": 1,
+      "seat": 6
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 11,
+    "fields": {
+      "movie_session": 7,
+      "order": 3,
+      "row": 4,
+      "seat": 7
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 12,
+    "fields": {
+      "movie_session": 8,
+      "order": 3,
+      "row": 3,
+      "seat": 7
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 13,
+    "fields": {
+      "movie_session": 8,
+      "order": 3,
+      "row": 5,
+      "seat": 4
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 14,
+    "fields": {
+      "movie_session": 8,
+      "order": 4,
+      "row": 4,
+      "seat": 4
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 15,
+    "fields": {
+      "movie_session": 1,
+      "order": 4,
+      "row": 2,
+      "seat": 3
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 16,
+    "fields": {
+      "movie_session": 2,
+      "order": 4,
+      "row": 5,
+      "seat": 3
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$oZqdjfUqKC500V7kk3kMmb$TBVlOMhfJxWrxbUnNpWZK0+rYM242g7do/YM5tkhn+M=",
+      "last_login": null,
+      "is_superuser": true,
+      "first_name": "Admin",
+      "last_name": "User",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2022-08-09T09:06:18.876Z",
+      "email": "admin.user@cinema.com",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$73Z1Y57bcoscZ37s9rE9v0$4SEQ0TtXwJKzO5/CRdFSrTifatiPjkZ38gM2H8Kqsdg=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "Ivan",
+      "last_name": "Khripko",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-08-09T09:06:18.876Z",
+      "email": "ivan.khripko@cinema.com",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$QtPol3T7x9quBj4BnbnVwW$UwT4kihkRfSvQEWEeuqVKwMgis2ikKVZfJDBcQMvOKY=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "Mykola",
+      "last_name": "Hmara",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-08-09T09:06:18.876Z",
+      "email": "mykola.hmara@cinema.com",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 4,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$JPBOIDh7M9A8FcToNtW9Ik$kT51HoA2AJxbiyGzoWK8GP0AbwOqdNfx3XzVsxKUq6k=",
+      "last_login": "2023-05-17T13:17:27.648Z",
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2023-05-17T13:17:15.358Z",
+      "email": "admin_user@mail.com",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]
