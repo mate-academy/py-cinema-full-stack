@@ -25,4 +25,4 @@ RUN adduser \
 RUN chown -R django-user:django-user /vol/
 RUN chmod -R 777 /vol/web/
 
-USER django-user
+USER root
