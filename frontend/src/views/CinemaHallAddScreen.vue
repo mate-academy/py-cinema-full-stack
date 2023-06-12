@@ -52,7 +52,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`,
+          `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`,
           {
             name: this.name,
             rows: Number(this.countRows),
@@ -61,7 +61,7 @@ export default {
           config
         );
 
-        location.hash = '#/cinema-halls';
+        location.hash = '#/cinema-halls/';
       } catch (err) {
         console.error(err);
       }
