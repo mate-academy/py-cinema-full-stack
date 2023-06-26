@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED 1
 
 
 RUN pip install --upgrade pip
-COPY requirements.txt requirements.txt
+COPY ../requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 
@@ -23,6 +23,6 @@ RUN adduser \
     django-user
 
 RUN chown -R django-user:django-user /vol/
-RUN chmod -R 755 /vol/web/
+RUN chmod -R 777 /vol/web/
 
 USER django-user
