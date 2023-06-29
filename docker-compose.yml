@@ -11,9 +11,9 @@ services:
       - ./backend:/app
       - ./backend/media:/vol/web/media
     command: >
-      sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
+      sh -c "python manage.py runserver 0.0.0.0:8080 &&
+             python manage.py wait_for_db &&
+             python manage.py migrate"
     env_file:
       - .env
     depends_on:
