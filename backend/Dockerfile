@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.10.9-slim-buster
+FROM python:3.11.3-alpine
 LABEL maintainer="danylo.t@mate.academy"
 
 WORKDIR /app
