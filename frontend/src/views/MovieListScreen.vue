@@ -91,7 +91,7 @@ export default {
       if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join();
 
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params
         });
