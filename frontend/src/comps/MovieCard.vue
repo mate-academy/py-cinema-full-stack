@@ -19,7 +19,7 @@
       </div>
       <div class="container" v-if="times.length">
         <span class="label">Time: </span>
-        <span v-for="(time, index) in formattedTime" :key="index" class="item time" @click="$emit('open-details', id)">{{time}}</span>
+        <span v-for="(duration, index) in formattedTime" :key="index" class="item time" @click="$emit('open-details', id)">{{duration}}</span>
       </div>
     </div>
   </div>
