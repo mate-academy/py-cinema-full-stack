@@ -1,0 +1,266 @@
+[
+  {
+    "model": "admin.logentry",
+    "pk": 1,
+    "fields": {
+      "action_time": "2023-01-24T09:52:42.129",
+      "user": 1,
+      "content_type": 9,
+      "object_id": "3",
+      "object_repr": "Ace Ventura",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Title\", \"Image\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 2,
+    "fields": {
+      "action_time": "2023-01-24T09:53:29.034",
+      "user": 1,
+      "content_type": 9,
+      "object_id": "4",
+      "object_repr": "Liar Liar",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Image\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 3,
+    "fields": {
+      "action_time": "2023-01-24T09:53:34.618",
+      "user": 1,
+      "content_type": 9,
+      "object_id": "1",
+      "object_repr": "Spider Man: No Way Home",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Image\"]}}]"
+    }
+  },
+  {
+    "model": "admin.logentry",
+    "pk": 4,
+    "fields": {
+      "action_time": "2023-01-24T09:53:42.039",
+      "user": 1,
+      "content_type": 9,
+      "object_id": "2",
+      "object_repr": "Titanic",
+      "action_flag": 2,
+      "change_message": "[{\"changed\": {\"fields\": [\"Image\"]}}]"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "gwcu38uhf30s8y1tw4mtie7bo4mca5ci",
+    "fields": {
+      "session_data": ".eJxVjDEOwjAMRe-SGUWxC5HLyM4ZIjuxSQG1UtNOiLtDpQ6w_vfef7nE61LT2nROQ3FnB-7wuwnnh44bKHceb5PP07jMg_hN8Ttt_joVfV529--gcqvfuu-AQDmSZRA-qTBaIDsaEkQ1FIxcDJDIwEQx9lRy1hhQuhxDce8P_Xs4vQ:1pKFyU:2IHrtRhfyWK5yiHfsMGm98Pk-03sg-T_Ea0mkPVZulg",
+      "expire_date": "2023-02-07T09:52:18.894"
+    }
+  },
+  {
+    "model": "sessions.session",
+    "pk": "tpe5st1krw0y4z3z36wrqanew9ungr70",
+    "fields": {
+      "session_data": ".eJxVjDEOwjAMRe-SGUWxC5HLyM4ZIjuxSQG1UtNOiLtDpQ6w_vfef7nE61LT2nROQ3FnB-7wuwnnh44bKHceb5PP07jMg_hN8Ttt_joVfV529--gcqvfuu-AQDmSZRA-qTBaIDsaEkQ1FIxcDJDIwEQx9lRy1hhQuhxDce8P_Xs4vQ:1pKFyT:TN8XYpG2jmwOjjY66p-hEJv6ypladTSUN2ZLyAOiuv0",
+      "expire_date": "2023-02-07T09:52:17.410"
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 1,
+    "fields": {
+      "name": "Red",
+      "rows": 6,
+      "seats_in_row": 8
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 2,
+    "fields": {
+      "name": "Green",
+      "rows": 8,
+      "seats_in_row": 9
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 3,
+    "fields": {
+      "name": "VIP",
+      "rows": 5,
+      "seats_in_row": 6
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 1,
+    "fields": {
+      "name": "drama"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 2,
+    "fields": {
+      "name": "comedy"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 3,
+    "fields": {
+      "name": "fantasy"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 4,
+    "fields": {
+      "name": "romance"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 1,
+    "fields": {
+      "first_name": "Jim",
+      "last_name": "Carrey"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 2,
+    "fields": {
+      "first_name": "Tom",
+      "last_name": "Holland"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 3,
+    "fields": {
+      "first_name": "Leonardo",
+      "last_name": "DiCaprio"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 4,
+    "fields": {
+      "first_name": "Kate",
+      "last_name": "Winslet"
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "Spider Man: No Way Home",
+      "description": "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear, forcing Peter to discover what it truly means to be Spider-Man.",
+      "duration": 148,
+      "image": "uploads/movies/spider-man-no-way-home-a3bc44fc-5f63-44c4-ba89-36b60f4922dc.jpeg",
+      "genres": [
+        3
+      ],
+      "actors": [
+        2
+      ]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 2,
+    "fields": {
+      "title": "Titanic",
+      "description": "A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the luxurious, ill-fated R.M.S. Titanic.",
+      "duration": 194,
+      "image": "uploads/movies/titanic-3b1abe14-b77a-4a44-837c-1b3ae7a2d695.jpeg",
+      "genres": [
+        1,
+        4
+      ],
+      "actors": [
+        3,
+        4
+      ]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 3,
+    "fields": {
+      "title": "Ace Ventura",
+      "description": "A goofy detective specializing in animals goes in search of the missing mascot of the Miami Dolphins.",
+      "duration": 86,
+      "image": "uploads/movies/ace-ventura-37b4168c-9ad0-4a45-b06a-cb0a985f6b5d.jpg",
+      "genres": [
+        2
+      ],
+      "actors": [
+        1
+      ]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 4,
+    "fields": {
+      "title": "Liar Liar",
+      "description": "A pathological liar-lawyer finds his career turned upside down when he inexplicably cannot physically lie for 24 whole hours.",
+      "duration": 86,
+      "image": "uploads/movies/liar-liar-e71fb71d-eca9-4ec2-a3e2-cc8a1e797a4b.jpeg",
+      "genres": [
+        2
+      ],
+      "actors": [
+        1
+      ]
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "show_time": "2023-01-24T18:00:00",
+      "movie": 3,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$tn2DBjAo8FhGtvVfpB1FXf$Lu0+qoZtp4clRlxrvw+UeB3yk0A8BQY9Xxam5e0sJj8=",
+      "last_login": "2023-01-24T09:52:18.890",
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2023-01-24T09:39:39.042",
+      "email": "admin@admin.com",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "user.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$320000$W7wSuwanjtsaOMvhLx8kGm$+Qd2x7iLo3TkOqnHbhKQGq40jal0blRaYpTgIpHdaDo=",
+      "last_login": null,
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2023-08-11T16:46:56.316",
+      "email": "admin@admin.admin",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]
