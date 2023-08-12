@@ -1,0 +1,22 @@
+{
+  "name": "py-cinema-full-stack",
+  "version": "1.0.0",
+  "description": "Cinema API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/volodymyr-komarnyckyi/py-cinema-full-stack.git"
+  },
+  "author": "volodimirkomarnickij28@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/volodymyr-komarnyckyi/py-cinema-full-stack/issues"
+  },
+  "homepage": "https://github.com/volodymyr-komarnyckyi/py-cinema-full-stack#readme"
+}
