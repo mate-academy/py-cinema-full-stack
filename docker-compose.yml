@@ -20,8 +20,14 @@ services:
       - db
 
   db:
+    container_name: db-cinema
     image: postgres:14-alpine
     ports:
       - "5432:5432"
     env_file:
       - .env
+    volumes:
+      - service_data_new:/var/lib/postgresql/data/
+volumes:
+  service_data_new:
+    driver: local
