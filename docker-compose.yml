@@ -20,8 +20,19 @@ services:
       - db
 
   db:
+    container_name: db-movie
     image: postgres:14-alpine
     ports:
       - "5432:5432"
     env_file:
       - .env
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: postgres
+#      POSTGRES_DB: db
+    volumes:
+      - db-movie-volume:/var/lib/postgresql/data/
+
+volumes:
+  db-movie-volume:
+    driver: local
