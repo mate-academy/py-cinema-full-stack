@@ -1,5 +1,6 @@
 {
     "id": 2,
     "email": "user@user.com",
+    "password": "asD&&asd123",
     "is_staff": false
 }
