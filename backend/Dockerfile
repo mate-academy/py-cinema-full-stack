@@ -1,5 +1,5 @@
 FROM --platform=linux/amd64 python:3.10.9-slim-buster
-LABEL maintainer="danylo.t@mate.academy"
+LABEL maintainer="taras.diakiv.dev@gmial.com"
 
 WORKDIR /app
 
@@ -9,6 +9,7 @@ ENV PYTHONUNBUFFERED 1
 
 
 RUN pip install --upgrade pip
+RUN apt-get update && apt-get -y install libpq-dev gcc
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
