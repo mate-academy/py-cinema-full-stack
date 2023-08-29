@@ -21,7 +21,7 @@ import PasswordInput from '../comps/PasswordInput.vue';
 
 export default {
   data: () => ({
-    active: false,
+    active: true,
     email: '',
     password: ''
   }),
@@ -32,12 +32,12 @@ export default {
 
     async signUp () {
       try {
-        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
+        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register/`, {
           email: this.email,
           password: this.password
         });
 
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
