@@ -136,7 +136,7 @@ export default {
     },
 
     handleMovieDetailsClick (id) {
-      location.hash = `#/movies/${id}`;
+      location.hash = `#/movies/${id}/`;
     },
 
     handleMovieCreate () {
