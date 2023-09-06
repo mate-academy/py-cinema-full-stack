@@ -94,6 +94,7 @@ DATABASES = {
         "NAME": os.environ["POSTGRES_DB"],
         "USER": os.environ["POSTGRES_USER"],
         "PASSWORD": os.environ["POSTGRES_PASSWORD"],
+        "PORT": "",
     }
 }
 
@@ -177,6 +178,7 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:8000",
 ]
