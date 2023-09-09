@@ -9,7 +9,7 @@ ENV PYTHONUNBUFFERED 1
 
 
 RUN pip install --upgrade pip
-COPY requirements.txt requirements.txt
+COPY py-cinema-full-stack/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 
