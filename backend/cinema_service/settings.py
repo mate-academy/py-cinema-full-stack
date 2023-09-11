@@ -14,13 +14,17 @@ from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
 
+
 dotenv_path = Path(".env")
 load_dotenv(dotenv_path=dotenv_path)
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+dotenv_path = Path(".env")
+load_dotenv(dotenv_path=dotenv_path)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -95,10 +99,12 @@ WSGI_APPLICATION = "cinema_service.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB"),
-        "USER": os.getenv("postgres_user"),
-        "PASSWORD": os.getenv("postgres_password"),
-        "HOST": os.getenv("postgres_host"),
+
+        "HOST": os.environ.get("POSTGRES_HOST"),
+        "NAME": os.environ.get("POSTGRES_DB"),
+        "USER": os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+
     }
 }
 
@@ -182,6 +188,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
 }
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-]
+
