@@ -15,6 +15,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 
+dotenv_path = Path(".env")
+load_dotenv(dotenv_path=dotenv_path)
+
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -94,10 +99,12 @@ WSGI_APPLICATION = "cinema_service.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
+
         "HOST": os.environ.get("POSTGRES_HOST"),
         "NAME": os.environ.get("POSTGRES_DB"),
         "USER": os.environ.get("POSTGRES_USER"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+
     }
 }
 
@@ -185,4 +192,3 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 
-]
