@@ -22,22 +22,22 @@
 <script>
 import jwtDecode from 'jwt-decode';
 
-import SignIn from './views/SignIn.vue';
-import MovieListScreen from './views/MovieListScreen.vue';
-import AppHeader from './views/AppHeader.vue';
-import AppFooter from './views/AppFooter.vue';
-import MovieDetailsScreen from './views/MovieDetailsScreen.vue';
-import MovieAddScreen from './views/MovieAddScreen.vue';
-import MovieSessionListScreen from './views/MovieSessionListScreen.vue';
-import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue';
-import CinemaHallListScreen from './views/CinemaHallListScreen.vue';
-import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue';
-import GenreListScreen from './views/GenreListScreen.vue';
-import ActorListScreen from './views/ActorListScreen.vue';
-import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
-import OrderListScreen from './views/OrderListScreen.vue';
-import ProfileScreen from './views/ProfileScreen.vue';
-import SignUp from './views/SignUp.vue';
+import SignIn from './views/SignIn.vue/';
+import MovieListScreen from './views/MovieListScreen.vue/';
+import AppHeader from './views/AppHeader.vue/';
+import AppFooter from './views/AppFooter.vue/';
+import MovieDetailsScreen from './views/MovieDetailsScreen.vue/';
+import MovieAddScreen from './views/MovieAddScreen.vue/';
+import MovieSessionListScreen from './views/MovieSessionListScreen.vue/';
+import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue/';
+import CinemaHallListScreen from './views/CinemaHallListScreen.vue/';
+import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue/';
+import GenreListScreen from './views/GenreListScreen.vue/';
+import ActorListScreen from './views/ActorListScreen.vue/';
+import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue/';
+import OrderListScreen from './views/OrderListScreen.vue/';
+import ProfileScreen from './views/ProfileScreen.vue/';
+import SignUp from './views/SignUp.vue/';
 
 export default {
   data: () => ({

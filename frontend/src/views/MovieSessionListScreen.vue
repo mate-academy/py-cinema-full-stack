@@ -20,9 +20,9 @@
 </template>
 
 <script>
-import MovieCard from '../comps/MovieCard.vue';
+import MovieCard from '../comps/MovieCard.vue/';
 import AddBtn from '../comps/AddBtn.vue';
-import DatePicker from '../comps/DatePicker.vue';
+import DatePicker from '../comps/DatePicker.vue/';
 
 import moment from 'moment';
 
@@ -71,11 +71,11 @@ export default {
     },
 
     handleMovieSessionDetails (sessionId) {
-      location.hash = `#/movie-sessions/${sessionId}`;
+      location.hash = `#/movie-sessions/${sessionId}/`;
     },
 
     handleMovieCreate () {
-      location.hash = '#/movie-sessions?add=true';
+      location.hash = '#/movie-sessions?add=true/';
     },
 
     handleDateSelection (date) {

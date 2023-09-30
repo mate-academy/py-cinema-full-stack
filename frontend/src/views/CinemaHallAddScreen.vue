@@ -16,8 +16,8 @@
 <script>
 import axios from 'axios';
 
-import ActionButton from '../comps/ActionButton.vue';
-import InputItem from '../comps/InputItem.vue';
+import ActionButton from '../comps/ActionButton.vue/';
+import InputItem from '../comps/InputItem.vue/';
 
 export default {
   props: {

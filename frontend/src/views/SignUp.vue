@@ -15,9 +15,9 @@
 </template>
 
 <script>
-import ActionButton from '../comps/ActionButton.vue';
-import InputItem from '../comps/InputItem.vue';
-import PasswordInput from '../comps/PasswordInput.vue';
+import ActionButton from '../comps/ActionButton.vue/';
+import InputItem from '../comps/InputItem.vue/';
+import PasswordInput from '../comps/PasswordInput.vue/';
 
 export default {
   data: () => ({

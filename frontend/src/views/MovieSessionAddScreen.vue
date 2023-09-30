@@ -17,10 +17,10 @@
 <script>
 import axios from 'axios';
 
-import DatePicker from '../comps/DatePicker.vue';
-import ActionButton from '../comps/ActionButton.vue';
-import TimePicker from '../comps/TimePicker.vue';
-import CustomSelect from '../comps/CustomSelect.vue';
+import DatePicker from '../comps/DatePicker.vue/';
+import ActionButton from '../comps/ActionButton.vue/';
+import TimePicker from '../comps/TimePicker.vue/';
+import CustomSelect from '../comps/CustomSelect.vue/';
 
 export default {
   props: {
@@ -70,7 +70,7 @@ export default {
 
     async fetchCinemaHalls () {
       try {
-        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
+        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
