@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import AddBtn from '../comps/AddBtn.vue';
+import AddBtn from '../comps/AddBtn.vue/';
 
 import axios from 'axios';
 export default {

@@ -21,7 +21,7 @@
 
 <script>
 import MovieCard from '../comps/MovieCard.vue/';
-import AddBtn from '../comps/AddBtn.vue';
+import AddBtn from '../comps/AddBtn.vue/';
 import DatePicker from '../comps/DatePicker.vue/';
 
 import moment from 'moment';

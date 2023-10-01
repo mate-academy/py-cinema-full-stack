@@ -32,9 +32,9 @@
 <script>
 import debounce from 'lodash.debounce';
 
-import CustomMultiselect from '../comps/CustomMultiselect.vue';
-import MovieCard from '../comps/MovieCard.vue';
-import AddBtn from '../comps/AddBtn.vue';
+import CustomMultiselect from '../comps/CustomMultiselect.vue/';
+import MovieCard from '../comps/MovieCard.vue/';
+import AddBtn from '../comps/AddBtn.vue/';
 
 export default {
   props: {
