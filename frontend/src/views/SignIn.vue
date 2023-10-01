@@ -15,9 +15,9 @@
 </template>
 
 <script>
-import ActionButton from '../comps/ActionButton.vue';
-import InputItem from '../comps/InputItem.vue';
-import PasswordInput from '../comps/PasswordInput.vue';
+import ActionButton from '../comps/ActionButton.vue/';
+import InputItem from '../comps/InputItem.vue/';
+import PasswordInput from '../comps/PasswordInput.vue/';
 
 export default {
   data: () => ({
@@ -32,7 +32,7 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });

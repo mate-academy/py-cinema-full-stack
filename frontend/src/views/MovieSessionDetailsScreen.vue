@@ -20,8 +20,8 @@
 <script>
 import moment from 'moment';
 
-import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
-import ActionButton from '../comps/ActionButton.vue';
+import CinemaHallSchema from '../comps/CinemaHallSchema.vue/';
+import ActionButton from '../comps/ActionButton.vue/';
 export default {
   props: {
     user: {
@@ -68,7 +68,7 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 

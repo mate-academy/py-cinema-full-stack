@@ -22,22 +22,22 @@
 <script>
 import jwtDecode from 'jwt-decode';
 
-import SignIn from './views/SignIn.vue';
-import MovieListScreen from './views/MovieListScreen.vue';
-import AppHeader from './views/AppHeader.vue';
-import AppFooter from './views/AppFooter.vue';
-import MovieDetailsScreen from './views/MovieDetailsScreen.vue';
-import MovieAddScreen from './views/MovieAddScreen.vue';
-import MovieSessionListScreen from './views/MovieSessionListScreen.vue';
-import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue';
-import CinemaHallListScreen from './views/CinemaHallListScreen.vue';
-import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue';
-import GenreListScreen from './views/GenreListScreen.vue';
-import ActorListScreen from './views/ActorListScreen.vue';
-import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
-import OrderListScreen from './views/OrderListScreen.vue';
-import ProfileScreen from './views/ProfileScreen.vue';
-import SignUp from './views/SignUp.vue';
+import SignIn from './views/SignIn.vue/';
+import MovieListScreen from './views/MovieListScreen.vue/';
+import AppHeader from './views/AppHeader.vue/';
+import AppFooter from './views/AppFooter.vue/';
+import MovieDetailsScreen from './views/MovieDetailsScreen.vue/';
+import MovieAddScreen from './views/MovieAddScreen.vue/';
+import MovieSessionListScreen from './views/MovieSessionListScreen.vue/';
+import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue/';
+import CinemaHallListScreen from './views/CinemaHallListScreen.vue/';
+import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue/';
+import GenreListScreen from './views/GenreListScreen.vue/';
+import ActorListScreen from './views/ActorListScreen.vue/';
+import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue/';
+import OrderListScreen from './views/OrderListScreen.vue/';
+import ProfileScreen from './views/ProfileScreen.vue/';
+import SignUp from './views/SignUp.vue/';
 
 export default {
   data: () => ({
@@ -76,7 +76,7 @@ export default {
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
+        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/`,
           { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
@@ -87,7 +87,7 @@ export default {
 
     async refreshToken () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh/`, {
           refresh: localStorage.getItem('refresh')
         });
 

@@ -28,8 +28,8 @@
 </template>
 
 <script>
-import ActionButton from '../comps/ActionButton.vue';
-import HeaderPopup from '../comps/HeaderPopup.vue';
+import ActionButton from '../comps/ActionButton.vue/';
+import HeaderPopup from '../comps/HeaderPopup.vue/';
 export default {
   data: () => ({
     activeTab: 'movies',

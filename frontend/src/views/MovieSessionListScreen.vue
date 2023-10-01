@@ -20,9 +20,9 @@
 </template>
 
 <script>
-import MovieCard from '../comps/MovieCard.vue';
-import AddBtn from '../comps/AddBtn.vue';
-import DatePicker from '../comps/DatePicker.vue';
+import MovieCard from '../comps/MovieCard.vue/';
+import AddBtn from '../comps/AddBtn.vue/';
+import DatePicker from '../comps/DatePicker.vue/';
 
 import moment from 'moment';
 
@@ -71,11 +71,11 @@ export default {
     },
 
     handleMovieSessionDetails (sessionId) {
-      location.hash = `#/movie-sessions/${sessionId}`;
+      location.hash = `#/movie-sessions/${sessionId}/`;
     },
 
     handleMovieCreate () {
-      location.hash = '#/movie-sessions?add=true';
+      location.hash = '#/movie-sessions?add=true/';
     },
 
     handleDateSelection (date) {
@@ -85,7 +85,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date
