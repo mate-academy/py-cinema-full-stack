@@ -28,7 +28,7 @@ SECRET_KEY = (
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1:5174"]
 
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -89,6 +89,7 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "HOST": os.environ["POSTGRES_HOST"],
+        "PORT": os.environ["POSTGRES_PORT"],
         "NAME": os.environ["POSTGRES_DB"],
         "USER": os.environ["POSTGRES_USER"],
         "PASSWORD": os.environ["POSTGRES_PASSWORD"],
