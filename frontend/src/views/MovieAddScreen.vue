@@ -7,7 +7,7 @@
       <input-item label="Duration" width="wide" v-model="duration"></input-item>
       <custom-multiselect label="Actors" :options="actors" @option-selected="handleActorSelection"></custom-multiselect>
       <custom-multiselect label="Genres" :options="genres" @option-selected="handleGenreSelection"></custom-multiselect>
-      <image-uploader @upload="handleImageUpload"></image-uploader>
+      <image-uploader @upload="handleImageUpload"></image-uploader/>
       <div class="description">
         <div class="label">Description</div>
         <div class="textarea-field">
@@ -121,7 +121,7 @@ export default {
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          await axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
         }
 
         location.hash = '#/movies';
