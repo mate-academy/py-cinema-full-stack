@@ -16,6 +16,8 @@ RUN pip install -r requirements.txt
 COPY . .
 
 RUN mkdir -p /vol/web/media
+RUN chmod -R 755 /vol/web/media
+
 
 RUN adduser \
     --disabled-password \
