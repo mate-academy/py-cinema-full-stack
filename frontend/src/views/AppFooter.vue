@@ -1,12 +1,10 @@
 <template>
-  <div class="footer">Cinema Shop © 2023 Created by Mate Academy</div>
+  <div className="footer">Cinema Shop © 2023 Created by Mate Academy</div>
 
 </template>
 
 <script>
-export default {
-
-};
+export default {};
 </script>
 
 <style scoped>
