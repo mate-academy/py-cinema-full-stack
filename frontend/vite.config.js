@@ -6,6 +6,9 @@ import vue2 from '@vitejs/plugin-vue2';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    host: '127.0.0.1'
+  },
   plugins: [
     vue2(),
     legacy({
