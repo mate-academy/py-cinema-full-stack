@@ -1,0 +1,55 @@
+[
+
+  {"model": "cinema.genre", "pk": 1, "fields": {"name": "Drama"}},
+  {"model": "cinema.genre", "pk": 2, "fields": {"name": "Crime"}},
+
+  {"model": "cinema.cinemahall", "pk": 1, "fields": {"name": "Grand Hall", "rows": 20, "seats_in_row": 25}},
+
+  {"model": "cinema.actor", "pk": 1, "fields": {"first_name": "Tim", "last_name": "Robbins"}},
+  {"model": "cinema.actor", "pk": 2, "fields": {"first_name": "Marlon", "last_name": "Brando"}},
+  {"model": "cinema.actor", "pk": 3, "fields": {"first_name": "Henry", "last_name": "Fonda"}},
+
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "The Shawshank Redemption",
+      "description": "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+      "duration": 142,
+      "genres": [1],
+      "actors": [1],
+      "image": "uploads/movies/shawshank-redemption.jpg"
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 2,
+    "fields": {
+      "title": "The Godfather",
+      "description": "The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.",
+      "duration": 175,
+      "genres": [2],
+      "actors": [2],
+      "image": "uploads/movies/the-godfather.jpg"
+    }
+  },
+
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "show_time": "2023-11-10T19:30:00Z",
+      "movie": 1,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 2,
+    "fields": {
+      "show_time": "2023-11-11T19:30:00Z",
+      "movie": 2,
+      "cinema_hall": 1
+    }
+  }
+]
