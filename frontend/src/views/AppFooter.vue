@@ -1,5 +1,5 @@
 <template>
-  <div class="footer">Cinema Shop © 2023 Created by Mate Academy</div>
+  <div class="footer">Cinema Shop © 2023</div>
 
 </template>
 
