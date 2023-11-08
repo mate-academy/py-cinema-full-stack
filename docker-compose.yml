@@ -13,9 +13,10 @@ services:
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
+             python manage.py loaddata sample_cinema.json &&
              python manage.py runserver 0.0.0.0:8080"
     env_file:
-      - .env
+      - backend/.env
     depends_on:
       - db
 
@@ -24,4 +25,4 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env
+      - backend/.env
