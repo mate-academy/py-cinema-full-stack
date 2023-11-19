@@ -53,7 +53,7 @@ export default {
     },
 
     handleMovieDetailsClose () {
-      location.hash = '#/movies';
+      location.hash = '#/movies/';
     }
   },
   mounted () {
