@@ -7,7 +7,7 @@
       @input="$emit('input', value)"
       :placeholder="placeholder"
       type="text"
-      :pattern="pattern"
+
       ref="inputEl"/>
     </div>
   </div>
