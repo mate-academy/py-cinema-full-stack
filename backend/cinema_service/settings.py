@@ -20,7 +20,7 @@ SECRET_KEY = (
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0", '127.0.0.1', 'localhost', '127.0.0.1:5173']
+ALLOWED_HOSTS = ["0.0.0.0", "127.0.0.1", "localhost", "127.0.0.1:5173"]
 
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -170,16 +170,15 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
+    "http://localhost:5173",
 ]
 
 CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+    "DELETE",
+    "GET",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
