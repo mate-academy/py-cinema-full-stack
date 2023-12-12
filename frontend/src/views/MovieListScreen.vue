@@ -136,11 +136,11 @@ export default {
     },
 
     handleMovieDetailsClick (id) {
-      location.hash = `#/movies/${id}`;
+      location.hash = `#/movies/${id}/`;
     },
 
     handleMovieCreate () {
-      location.hash = '#/movies?add=true';
+      location.hash = '#/movies?add=true/';
     }
   },
   mounted () {
