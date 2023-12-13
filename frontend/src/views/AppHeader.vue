@@ -43,8 +43,10 @@ export default {
   },
   methods: {
     hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
-      this.activeTab = active;
+      if (location.hash != '') {
+        const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
+        this.activeTab = active;
+      }
     },
 
     openProfile () {
