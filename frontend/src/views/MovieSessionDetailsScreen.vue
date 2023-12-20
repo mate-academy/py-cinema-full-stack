@@ -68,15 +68,9 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-<<<<<<< HEAD
-        const { data: session } = await
-            this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
-=======
         const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
->>>>>>> af76c8557db532894bc1d10e65873627359a2ec6
           headers: { Authorization: `Bearer ${this.token}` }
         });
-
         this.movieSession = session;
         this.loading = false;
       } catch (err) {
@@ -99,13 +93,7 @@ export default {
           'Content-Type': 'application/json'
         }
       };
-
-<<<<<<< HEAD
-      await
-          this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets },
-=======
       await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets },
->>>>>>> af76c8557db532894bc1d10e65873627359a2ec6
         config
       );
       this.fetchMovieSession(this.movieSession.id);
