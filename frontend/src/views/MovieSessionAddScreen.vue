@@ -57,8 +57,7 @@ export default {
 
     async fetchMovies () {
       try {
-        const { data: movies } = await
-            this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
+        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
@@ -68,11 +67,9 @@ export default {
         console.error(err.response.data);
       }
     },
-
     async fetchCinemaHalls () {
       try {
-        const { data: cinemaHalls } = await
-            this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`, {
+        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
