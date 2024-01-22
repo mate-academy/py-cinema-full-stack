@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    ''"corsheaders",
+    "" "corsheaders",
     "drf_spectacular",
     "debug_toolbar",
     "cinema",
