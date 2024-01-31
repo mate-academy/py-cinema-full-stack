@@ -9,6 +9,7 @@ ENV PYTHONUNBUFFERED 1
 
 
 RUN pip install --upgrade pip
+RUN echo "TEST"
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
