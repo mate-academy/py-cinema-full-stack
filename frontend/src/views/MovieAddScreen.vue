@@ -16,9 +16,9 @@
       </div>
     </div>
     <action-button
-    label="Submit"
-    @click="addMovie"
-    :disabled="!title || !duration || !description || !selectedActorIds.length || !selectedGenreIds.length"
+        label="Submit"
+        @click="addMovie"
+        :disabled="!title || !duration || !description || !selectedActorIds.length || !selectedGenreIds.length"
     ></action-button>
   </div>
 </template>
@@ -50,36 +50,37 @@ export default {
     image: null
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('movies\\?add=true'));
     },
 
-    async fetchActors () {
+    async fetchActors() {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: actors} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors/`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
-        this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
-          return {
-            id,
-            name: `${firstName} ${lastName}`
-          };
-        }
-        ); ;
+        this.actors = actors.map(({id, first_name: firstName, last_name: lastName}) => {
+              return {
+                id,
+                name: `${firstName} ${lastName}`
+              };
+            }
+        );
+        ;
       } catch (err) {
         console.error(err.response.data);
       }
     },
 
-    async fetchGenres () {
+    async fetchGenres() {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: genres} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
         this.genres = genres;
       } catch (err) {
@@ -87,7 +88,7 @@ export default {
       }
     },
 
-    async addMovie () {
+    async addMovie() {
       try {
         const headers = {
           Authorization: `Bearer ${this.token}`
@@ -106,22 +107,22 @@ export default {
           }
         };
 
-        const { data: movie } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movies`,
-          {
-            title: this.title,
-            duration: Number(this.duration),
-            description: this.description,
-            actors: this.selectedActorIds,
-            genres: this.selectedGenreIds
-          },
-          movieConfig
+        const {data: movie} = await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/cinema/movies/`,
+            {
+              title: this.title,
+              duration: Number(this.duration),
+              description: this.description,
+              actors: this.selectedActorIds,
+              genres: this.selectedGenreIds
+            },
+            movieConfig
         );
 
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          await axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
         }
 
         location.hash = '#/movies';
@@ -130,7 +131,7 @@ export default {
       }
     },
 
-    handleActorSelection (id) {
+    handleActorSelection(id) {
       if (this.selectedActorIds.includes(id)) {
         this.selectedActorIds = [...this.selectedActorIds.filter(actorId => actorId !== id)];
       } else {
@@ -138,7 +139,7 @@ export default {
       }
     },
 
-    handleGenreSelection (id) {
+    handleGenreSelection(id) {
       if (this.selectedGenreIds.includes(id)) {
         this.selectedGenreIds = [...this.selectedGenreIds.filter(genreId => genreId !== id)];
       } else {
@@ -146,23 +147,23 @@ export default {
       }
     },
 
-    handleImageUpload (file) {
+    handleImageUpload(file) {
       this.image = file;
     }
   },
   watch: {
-    active () {
+    active() {
       if (this.active) {
         this.fetchActors();
         this.fetchGenres();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -215,6 +216,7 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
 .description .label {
   font-weight: 600;
   font-size: 18px;
@@ -228,6 +230,7 @@ export default {
   background-color: var(--secondary-bg);
   border-radius: 10px;
 }
+
 .textarea-field:focus-within {
   border: 1px solid var(--border);
 }
@@ -243,6 +246,7 @@ textarea {
   font-size: 14px;
   color: var(--main-font);
 }
+
 textarea:focus-visible {
   outline: none;
 }
