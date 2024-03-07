@@ -122,11 +122,7 @@ export default {
           const data = new FormData();
           data.append('image', this.image);
           await axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
-          console.log('Image uploaded successfully');
-        } else {
-          console.log('No image uploaded');
         }
-
         location.hash = '#/movies';
       } catch (err) {
         console.error(err);
