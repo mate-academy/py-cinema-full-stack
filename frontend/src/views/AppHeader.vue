@@ -2,11 +2,11 @@
   <div class="header">
     <a class="app-title" href="/">Cinema Shop</a>
     <div class="menu">
-      <a href='#/movie-sessions' :class="activeTab === 'movie-sessions' && 'active'">Movie Sessions</a>
-      <a href='#/cinema-halls' v-if="user.is_staff" :class="activeTab === 'cinema-halls' && 'active'">Cinema Halls</a>
-      <a href='#/movies' :class="activeTab.match(/(movies|^$)/) && 'active'">Movies</a>
-      <a href='#/genres' v-if="user.is_staff" :class="activeTab === 'genres' && 'active'">Genres</a>
-      <a href='#/actors' v-if="user.is_staff" :class="activeTab === 'actors' && 'active'">Actors</a>
+      <a href='#/movie-sessions/' :class="activeTab === 'movie-sessions' && 'active'">Movie Sessions</a>
+      <a href='#/cinema-halls/' v-if="user.is_staff" :class="activeTab === 'cinema-halls' && 'active'">Cinema Halls</a>
+      <a href='#/movies/' :class="activeTab.match(/(movies|^$)/) && 'active'">Movies</a>
+      <a href='#/genres/' v-if="user.is_staff" :class="activeTab === 'genres' && 'active'">Genres</a>
+      <a href='#/actors/' v-if="user.is_staff" :class="activeTab === 'actors' && 'active'">Actors</a>
     </div>
     <div class="action-section">
       <div class="profile-section">
