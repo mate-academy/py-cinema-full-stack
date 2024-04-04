@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "8080:8080"
+      - "8000:8080"
     volumes:
       - ./backend:/app
       - ./backend/media:/vol/web/media
@@ -22,6 +22,11 @@ services:
   db:
     image: postgres:14-alpine
     ports:
-      - "5432:5432"
+      - "5435:5432"
     env_file:
       - .env
+
+
+volumes:
+  my_db:
+  media:
