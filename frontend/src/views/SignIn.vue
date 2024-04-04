@@ -2,7 +2,7 @@
   <div class="sign-in" v-if="active">
     <h1>Sign in to Cinema Shop</h1>
     <h2>Please enter your sign in details.
-    <a href="#/sign-up">Sign up</a>
+    <a href="/#sign-up">Sign up</a>
     here if you are not registered yet.</h2>
     <input-item
       label="Login"
@@ -32,7 +32,7 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
