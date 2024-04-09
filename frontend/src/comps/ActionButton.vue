@@ -64,6 +64,7 @@ export default {
   font-size: 16px;
   line-height: 20px;
 }
+
 .normal {
   width: 300px;
 }
