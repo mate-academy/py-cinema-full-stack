@@ -57,7 +57,7 @@ export default {
 
     async fetchMovies () {
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
