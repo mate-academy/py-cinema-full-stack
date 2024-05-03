@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -25,3 +25,16 @@ services:
       - "5432:5432"
     env_file:
       - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    command: >
+      sh -c "npm run dev -- --host"
+    env_file:
+      - .env
+    depends_on:
+      - backend
