@@ -44,11 +44,11 @@ def sample_movie_session(**params):
 
 def image_upload_url(movie_id):
     """Return URL for recipe image upload"""
-    return reverse("cinema:movie-upload-image", args=[movie_id])
+    return reverse("cinema:movie-upload-image/", args=[movie_id])
 
 
 def detail_url(movie_id):
-    return reverse("cinema:movie-detail", args=[movie_id])
+    return reverse("cinema:movie-detail/", args=[movie_id])
 
 
 class UnauthenticatedMovieApiTests(TestCase):

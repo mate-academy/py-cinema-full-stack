@@ -21,7 +21,7 @@ import PasswordInput from '../comps/PasswordInput.vue';
 
 export default {
   data: () => ({
-    active: false,
+    active: true,
     email: '',
     password: ''
   }),
