@@ -2,29 +2,29 @@
   <div v-if="active">
     <div class="multiselections">
       <custom-multiselect
-        label="Select actors"
-        :options="actors"
-        @option-selected="handleActorSelection"
-        @click="!actors.length && fetchActors()"
+          label="Select actors"
+          :options="actors"
+          @option-selected="handleActorSelection"
+          @click="!actors.length && fetchActors()"
       ></custom-multiselect>
       <custom-multiselect
-        label="Select genres"
-        :options="genres"
-        @option-selected="handleGenreSelection"
-        @click="!genres.length && fetchGenres()"
+          label="Select genres"
+          :options="genres"
+          @option-selected="handleGenreSelection"
+          @click="!genres.length && fetchGenres()"
       ></custom-multiselect>
     </div>
     <div class="movie-container">
       <movie-card
-        v-for="(movie, index) in movies"
-        :key="index"
-        v-bind="movie"
-        @click="handleMovieDetailsClick"
+          v-for="(movie, index) in movies"
+          :key="index"
+          v-bind="movie"
+          @click="handleMovieDetailsClick"
       ></movie-card>
     </div>
     <add-btn
-      v-if="isStaff"
-      @click="handleMovieCreate">
+        v-if="isStaff"
+        @click="handleMovieCreate">
     </add-btn>
   </div>
 </template>
@@ -52,32 +52,33 @@ export default {
     selectedGenreIds: []
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async fetchActors () {
+    async fetchActors() {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: actors} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors/`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
-        this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
-          return {
-            id,
-            name: `${firstName} ${lastName}`
-          };
-        }
-        ); ;
+        this.actors = actors.map(({id, first_name: firstName, last_name: lastName}) => {
+              return {
+                id,
+                name: `${firstName} ${lastName}`
+              };
+            }
+        );
+        ;
       } catch (err) {
         console.error(err.response.data);
       }
     },
 
-    async fetchGenres () {
+    async fetchGenres() {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: genres} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
         this.genres = genres;
       } catch (err) {
@@ -85,14 +86,14 @@ export default {
       }
     },
 
-    async fetchMovies () {
+    async fetchMovies() {
       const params = {};
       if (this.selectedActorIds.length) params.actors = this.selectedActorIds.join();
       if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join();
 
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
-          headers: { Authorization: `Bearer ${this.token}` },
+        const {data: movies} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
+          headers: {Authorization: `Bearer ${this.token}`},
           params
         });
 
@@ -110,7 +111,7 @@ export default {
       this.fetchMovies();
     }, 1000),
 
-    handleActorSelection (id) {
+    handleActorSelection(id) {
       if (this.selectedActorIds.includes(id)) {
         this.selectedActorIds = [...this.selectedActorIds.filter(actorId => actorId !== id)];
       } else {
@@ -120,7 +121,7 @@ export default {
       this.dispatchActorSelection();
     },
 
-    handleGenreSelection (id) {
+    handleGenreSelection(id) {
       if (this.selectedGenreIds.includes(id)) {
         this.selectedGenreIds = [...this.selectedGenreIds.filter(genreId => genreId !== id)];
       } else {
@@ -129,32 +130,32 @@ export default {
       this.dispatchGenreSelection();
     },
 
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(
-        !location.hash || location.hash.match('movies$') ||
-         location.hash.match(/#\/movies\/(\d+)/) || location.hash.match('/$'));
+          !location.hash || location.hash.match('movies$') ||
+          location.hash.match(/#\/movies\/(\d+)/) || location.hash.match('/$'));
     },
 
-    handleMovieDetailsClick (id) {
+    handleMovieDetailsClick(id) {
       location.hash = `#/movies/${id}`;
     },
 
-    handleMovieCreate () {
+    handleMovieCreate() {
       location.hash = '#/movies?add=true';
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
   watch: {
-    active () {
+    active() {
       if (this.active) {
         this.fetchMovies();
       }
     }
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
