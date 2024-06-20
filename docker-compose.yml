@@ -1,6 +1,22 @@
 version: "3"
 
 services:
+  web:
+    image: node:21.7.3-alpine3.19
+    container_name: project-node
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/var/www/project
+    working_dir: /var/www/project
+    command: >
+      sh -c "npm install
+      && npm run dev -- --host 0.0.0.0"
+    env_file:
+      - .env
+    depends_on:
+      - app
+
   app:
     build:
       context: .

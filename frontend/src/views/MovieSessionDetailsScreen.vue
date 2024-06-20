@@ -22,6 +22,7 @@ import moment from 'moment';
 
 import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
 import ActionButton from '../comps/ActionButton.vue';
+
 export default {
   props: {
     user: {
@@ -36,24 +37,25 @@ export default {
     chosenSeats: []
   }),
   computed: {
-    formattedTime () {
+    formattedTime() {
       return moment(this.movieSession.show_time).format('HH:mm');
     },
-    formattedDate () {
+    formattedDate() {
       return moment(this.movieSession.show_time).format('YYYY/MM/DD');
     },
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async hashHandler () {
+    async hashHandler() {
       const match = location.hash.match(/#\/movie-sessions\/(\d+)/);
       if (!match) {
         this.active = false;
         this.movieSession = {};
         return;
-      };
+      }
+      ;
 
       const [, id] = match;
       if (!id) {
@@ -65,11 +67,11 @@ export default {
       await this.fetchMovieSession(id);
     },
 
-    async fetchMovieSession (id) {
+    async fetchMovieSession(id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: session} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
 
         this.movieSession = session;
@@ -79,11 +81,11 @@ export default {
       }
     },
 
-    chooseSeat (seats) {
+    chooseSeat(seats) {
       this.chosenSeats = seats;
     },
 
-    async makeOrder () {
+    async makeOrder() {
       const tickets = this.chosenSeats.map(seat => ({
         ...seat,
         movie_session: this.movieSession.id
@@ -95,18 +97,18 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
-        config
+      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, {tickets},
+          config
       );
       this.fetchMovieSession(this.movieSession.id);
       this.chosenSeats = [];
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
