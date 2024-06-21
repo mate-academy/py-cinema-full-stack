@@ -32,7 +32,7 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post('http://127.0.0.1:8080/api/user/token/', {
           email: this.email,
           password: this.password
         });
