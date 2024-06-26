@@ -53,7 +53,8 @@ export default {
         this.active = false;
         this.movieSession = {};
         return;
-      };
+      }
+      ;
 
       const [, id] = match;
       if (!id) {
@@ -95,8 +96,7 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
-        config
+      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets }, config
       );
       this.fetchMovieSession(this.movieSession.id);
       this.chosenSeats = [];
