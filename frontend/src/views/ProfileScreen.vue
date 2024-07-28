@@ -50,7 +50,7 @@ export default {
       return localStorage.getItem('access');
     }
   },
-  methods: {
+  thods: {
     hashHandler () {
       this.active = Boolean(location.hash.match('my-profile$'));
     },
