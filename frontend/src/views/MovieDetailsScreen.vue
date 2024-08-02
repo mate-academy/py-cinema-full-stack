@@ -1,4 +1,4 @@
-<template>
+F<template>
   <div v-if="active" class="modal-wrapper" @click="handleClick">
     <movie-modal :movie="movie" @close-movie-details="handleMovieDetailsClose" ref="modal"></movie-modal>
   </div>
