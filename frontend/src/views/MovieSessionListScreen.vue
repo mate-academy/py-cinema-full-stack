@@ -9,7 +9,9 @@
       :title="session.movie_title"
       :image="session.movie_image"
       :times="session.times"
-      @open-details="handleMovieSessionDetails"></movie-card>
+      @open-details="handleMovieSessionDetails"
+      @click="handleMovieSessionDetails">
+      </movie-card>
     </div>
     <div v-else class="no-sessions">No movie sessions for selected date.</div>
     <add-btn
