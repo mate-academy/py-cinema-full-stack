@@ -5,7 +5,8 @@
       <input-item
         label="Email"
         v-model="email"
-        pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+        pattern="^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$
+"
         :initialValue="user.email"
       ></input-item>
       <password-input label="Password" v-model="password"></password-input>
