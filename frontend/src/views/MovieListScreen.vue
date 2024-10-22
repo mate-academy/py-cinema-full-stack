@@ -59,7 +59,7 @@ export default {
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
