@@ -42,7 +42,7 @@ export default {
 
     async fetchMovie (id) {
       try {
-        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies-${id}`, {
+        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
@@ -56,14 +56,14 @@ export default {
       location.hash = '#/movies';
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
-  components: { MovieModal }
+  components: {MovieModal}
 
 };
 </script>
