@@ -6,7 +6,8 @@
     here if you are registered yet.</h2>
     <input-item
       label="Email"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+      pattern="^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$"
+
       placeholder="Email"
       v-model="email"></input-item>
     <password-input v-model="password"></password-input>
@@ -26,23 +27,23 @@ export default {
     password: ''
   }),
   methods: {
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('sign-up$'));
     },
 
-    async signUp () {
+    async signUp() {
       try {
-        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
+        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register/`, {
           email: this.email,
           password: this.password
         });
 
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const {data} = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
 
-        const { access, refresh } = data;
+        const {access, refresh} = data;
 
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
@@ -53,11 +54,11 @@ export default {
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
