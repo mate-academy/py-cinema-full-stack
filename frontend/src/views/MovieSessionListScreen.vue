@@ -9,7 +9,10 @@
       :title="session.movie_title"
       :image="session.movie_image"
       :times="session.times"
-      @open-details="handleMovieSessionDetails"></movie-card>
+      @open-details="handleMovieSessionDetails">
+
+      @click="handleMovieSessionDetails">
+      </movie-card>
     </div>
     <div v-else class="no-sessions">No movie sessions for selected date.</div>
     <add-btn
@@ -85,7 +88,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date
