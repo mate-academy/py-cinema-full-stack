@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "name": "cinema-shop-vue-ui",
   "version": "0.0.0",
   "scripts": {
@@ -31,16 +30,4 @@
     "terser": "^5.14.2",
     "vite": "^3.0.2"
   }
-=======
-  "name": "py-cinema-full-stack",
-  "version": "1.0.0",
-  "description": "- Read [the guideline](https://github.com/mate-academy/py-task-guideline/blob/main/README.md) before start",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
->>>>>>> 48d93e9167ba45beab088b948fbb6f46810bdf51
 }
