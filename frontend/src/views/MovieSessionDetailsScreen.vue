@@ -68,7 +68,11 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
+<<<<<<< HEAD
         const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
+=======
+        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}`, {
+>>>>>>> 48d93e9167ba45beab088b948fbb6f46810bdf51
           headers: { Authorization: `Bearer ${this.token}` }
         });
 

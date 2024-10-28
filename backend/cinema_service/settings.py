@@ -179,5 +179,9 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [
+<<<<<<< HEAD
+=======
+    "http://127.0.0.1:5173",
+>>>>>>> 48d93e9167ba45beab088b948fbb6f46810bdf51
     "http://localhost:5173",
 ]

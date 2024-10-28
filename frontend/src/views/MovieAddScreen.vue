@@ -121,7 +121,12 @@ export default {
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
+<<<<<<< HEAD
           await axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
+=======
+          await
+              axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
+>>>>>>> 48d93e9167ba45beab088b948fbb6f46810bdf51
         }
 
         location.hash = '#/movies';
