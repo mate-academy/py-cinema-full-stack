@@ -104,13 +104,13 @@ export default {
     this.hashHandler();
   },
   watch: {
-    active () {
+    active() {
       if (this.active) {
         this.fetchMovieSessionsByDate();
       }
     }
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {

@@ -22,13 +22,14 @@ export default {
       this.handleMovieDetailsClose();
     },
 
-    hashHandler () {
+    hashHandler() {
       const match = location.hash.match(/#\/movies\/(\d+)/);
       if (!match) {
         this.active = false;
         this.movie = {};
         return;
-      };
+      }
+      ;
 
       const [, id] = match;
       if (!id) {
@@ -40,10 +41,10 @@ export default {
       this.fetchMovie(id);
     },
 
-    async fetchMovie (id) {
+    async fetchMovie(id) {
       try {
-        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies-${id}`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: movie} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${id}`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
 
         this.movie = movie;
@@ -52,18 +53,18 @@ export default {
       }
     },
 
-    handleMovieDetailsClose () {
+    handleMovieDetailsClose() {
       location.hash = '#/movies';
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
-  components: { MovieModal }
+  components: {MovieModal}
 
 };
 </script>
