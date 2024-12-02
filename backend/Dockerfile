@@ -7,6 +7,10 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+RUN apt-get update && apt-get install -y \
+    gdal-bin \
+    libgdal-dev \
+    && apt-get clean
 
 RUN pip install --upgrade pip
 COPY requirements.txt requirements.txt
