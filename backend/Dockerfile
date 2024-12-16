@@ -1,5 +1,5 @@
-FROM --platform=linux/amd64 python:3.10.9-slim-buster
-LABEL maintainer="danylo.t@mate.academy"
+FROM python:3.12-alpine
+LABEL maintainer="bondarevskiymaks@gmail.com"
 
 WORKDIR /app
 
