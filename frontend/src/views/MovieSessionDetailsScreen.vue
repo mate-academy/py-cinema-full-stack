@@ -1,155 +1,150 @@
 <template>
-  <div v-if="active && !loading" class="session-details">
-    <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + movieSession.movie.image + ')' }"></div>
-    <div class="container">
-      <div class="info">
-        <span>{{movieSession.movie.title}}</span>
-        <span>Date: {{formattedDate}}</span>
-        <span>Time: {{formattedTime}}</span>
-        <span>Cinema Hall: {{movieSession.cinema_hall.name}}</span>
-      </div>
-      <cinema-hall-schema
-      :takenSeats="movieSession.taken_places"
-      :cinemaHall="movieSession.cinema_hall"
-      @choose-seat="chooseSeat"></cinema-hall-schema>
-      <action-button label="Make order" @click="makeOrder" :disabled="!chosenSeats.length || !user"></action-button>
+  <div v-if="active" class="movie-sessions">
+    <date-picker @input="handleDateSelection"></date-picker>
+    <div class="movie-container" v-if="movieSessions.length">
+      <movie-card
+      v-for="(session, index) in movieSessionsGroupedByTime"
+      :key="index"
+      :id="session.id"
+      :title="session.movie_title"
+      :image="session.movie_image"
+      :times="session.times"
+      @open-details="handleMovieSessionDetails"></movie-card>
     </div>
+    <div v-else class="no-sessions">No movie sessions for selected date.</div>
+    <add-btn
+      v-if="isStaff"
+      @click="handleMovieCreate">
+    </add-btn>
   </div>
 </template>
 
 <script>
+import MovieCard from '../comps/MovieCard.vue';
+import AddBtn from '../comps/AddBtn.vue';
+import DatePicker from '../comps/DatePicker.vue';
+
 import moment from 'moment';
 
-import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
-import ActionButton from '../comps/ActionButton.vue';
 export default {
   props: {
-    user: {
-      type: Object,
-      default: null
+    isStaff: {
+      type: Boolean,
+      default: false
     }
   },
   data: () => ({
     active: false,
-    movieSession: {},
-    loading: false,
-    chosenSeats: []
+    movieSessions: [],
+    actors: [],
+    genres: [],
+    selectedActorIds: [],
+    selectedGenreIds: [],
+    date: moment(new Date()).format('YYYY-MM-DD')
   }),
   computed: {
-    formattedTime () {
-      return moment(this.movieSession.show_time).format('HH:mm');
+    movieSessionsGroupedByTime () {
+      return this.movieSessions.reduce((modifiedArr, item) => {
+        const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
+        if (movieIndex > -1) {
+          modifiedArr[movieIndex].times.push(item.show_time);
+        } else {
+          const showTime = item.show_time;
+          delete item.show_time;
+          const modifiedItem = {
+            ...item,
+            times: [showTime]
+          };
+          modifiedArr.push(modifiedItem);
+        }
+        return modifiedArr;
+      }, []);
     },
-    formattedDate () {
-      return moment(this.movieSession.show_time).format('YYYY/MM/DD');
-    },
+
     token () {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async hashHandler () {
-      const match = location.hash.match(/#\/movie-sessions\/(\d+)/);
-      if (!match) {
-        this.active = false;
-        this.movieSession = {};
-        return;
-      };
-
-      const [, id] = match;
-      if (!id) {
-        this.active = false;
-        return;
-      }
-
-      this.active = true;
-      await this.fetchMovieSession(id);
+    hashHandler () {
+      this.active = Boolean(location.hash.match('movie-sessions$'));
     },
 
-    async fetchMovieSession (id) {
+    handleMovieSessionDetails (sessionId) {
+      location.hash = `#/movie-sessions/${sessionId}`;
+    },
+
+    handleMovieCreate () {
+      location.hash = '#/movie-sessions?add=true';
+    },
+
+    handleDateSelection (date) {
+      this.date = date;
+      this.fetchMovieSessionsByDate();
+    },
+
+    async fetchMovieSessionsByDate () {
       try {
-        this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
+          headers: { Authorization: `Bearer ${this.token}` },
+          params: {
+            date: this.date
+          }
         });
 
-        this.movieSession = session;
-        this.loading = false;
+        this.movieSessions = movieSessions;
       } catch (err) {
         console.error(err.response.data);
       }
-    },
-
-    chooseSeat (seats) {
-      this.chosenSeats = seats;
-    },
-
-    async makeOrder () {
-      const tickets = this.chosenSeats.map(seat => ({
-        ...seat,
-        movie_session: this.movieSession.id
-      }));
-      const config = {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          'Content-Type': 'application/json'
-        }
-      };
-
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
-        config
-      );
-      this.fetchMovieSession(this.movieSession.id);
-      this.chosenSeats = [];
     }
+
   },
-  mounted () {
+  async mounted () {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+  },
+  watch: {
+    active () {
+      if (this.active) {
+        this.fetchMovieSessionsByDate();
+      }
+    }
   },
   beforeDestroy () {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
-    CinemaHallSchema,
-    ActionButton
+    MovieCard,
+    AddBtn,
+    DatePicker
   }
 };
 </script>
 
 <style scoped>
-.session-details {
+.movie-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.movie-sessions > div:first-of-type {
+  width: 400px
+}
+
+.movie-container {
   display: grid;
-  grid-template-columns: 350px 1fr;
-  column-gap: 60px;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 40px;
+  row-gap: 60px;
 }
 
 .movie-card {
-  width: 100%;
-  height: 470px;
-  background-repeat: no-repeat;
-  background-size: cover;
+  cursor: auto;
 }
 
-.info {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.info > span:first-of-type {
-  font-size: 25px;
-  font-weight: 700;
-  line-height: 30px;
-}
-
-.info > span:not(:first-of-type) {
+.no-sessions {
   font-size: 18px;
   line-height: 22px;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 50px;
 }
 </style>
