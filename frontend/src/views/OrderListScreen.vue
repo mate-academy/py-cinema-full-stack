@@ -4,31 +4,32 @@
     <div class="container">
       <div v-for="order in response.results" class="order">
         <div class="created-info">
-          <div>Id: {{order.id}}.</div>
-          <div>Created at {{createdAt(order.created_at)}}</div>
+          <div>Id: {{ order.id }}.</div>
+          <div>Created at {{ createdAt(order.created_at) }}</div>
         </div>
-        <div  v-for="ticket in order.tickets" class="ticket">
-          <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"></div>
+        <div v-for="ticket in order.tickets" class="ticket">
+          <div class="movie-card"
+               v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"></div>
           <div class="ticket-info">
-            <div><span class="label">Movie:</span> {{ticket.movie_session.movie_title}}</div>
-            <div><span class="label">Show time:</span> {{showTime(ticket.movie_session.show_time)}}</div>
-            <div><span class="label">Row:</span> {{ticket.row}}</div>
-            <div><span class="label">Seat:</span> {{ticket.seat}}</div>
+            <div><span class="label">Movie:</span> {{ ticket.movie_session.movie_title }}</div>
+            <div><span class="label">Show time:</span> {{ showTime(ticket.movie_session.show_time) }}</div>
+            <div><span class="label">Row:</span> {{ ticket.row }}</div>
+            <div><span class="label">Seat:</span> {{ ticket.seat }}</div>
           </div>
         </div>
       </div>
     </div>
     <div class="btn-container">
       <div
-        @click="fetchPrevious"
-        :class="['move-btn previous', !response.previous && 'disabled']">
+          @click="fetchPrevious"
+          :class="['move-btn previous', !response.previous && 'disabled']">
         <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <use href="/assets/icons/left_arrow.svg#left"></use>
         </svg>
       </div>
       <div
-        @click="fetchNext"
-        :class="['move-btn next', !response.next && 'disabled']">
+          @click="fetchNext"
+          :class="['move-btn next', !response.next && 'disabled']">
         <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <use href="/assets/icons/right_arrow.svg#right"></use>
         </svg>
@@ -144,6 +145,7 @@ export default {
   font-size: 25px;
   line-height: 30px;
 }
+
 .created-info > * {
   font-weight: 600;
 }
@@ -188,6 +190,7 @@ export default {
   justify-content: center;
   cursor: pointer;
 }
+
 .move-btn.disabled {
   pointer-events: none;
   opacity: 0.7;
