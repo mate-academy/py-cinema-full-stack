@@ -10,6 +10,9 @@ You need to connect them together, and make sure all functionality of Cinema Sho
 NOTE: Attach screenshots of all pages from the correctly connected frontend. Better to make them with opened developer tool, where will be shown requests to the API.
 
 
-![Movies](screenshots/movies.png "Optional Title")
+
 ![Movie_session](screenshots/movie_session.png "Optional Title")
+![Cinema_hall](screenshots/cinema_hall.png "Optional Title")
+![Movies](screenshots/movies.png "Optional Title")
+![Genres](screenshots/genres.png "Optional Title")
 ![Actors](screenshots/actors.png "Optional Title")
