@@ -11,6 +11,7 @@ NOTE: Attach screenshots of all pages from the correctly connected frontend. Bet
 
 
 
+![Movies_page](screenshots/movies_page.png "Optional Title")
 ![Movie_session](screenshots/movie_session.png "Optional Title")
 ![Cinema_hall](screenshots/cinema_hall.png "Optional Title")
 ![Movies](screenshots/movies.png "Optional Title")
