@@ -8,7 +8,8 @@
       label="Login"
       pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
       placeholder="Email"
-      v-model="email"></input-item>
+      v-model="email">
+    </input-item>
     <password-input v-model="password"></password-input>
     <action-button label="Sign in" @click="signIn"></action-button>
   </div>
@@ -32,7 +33,7 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
