@@ -2,6 +2,7 @@
 .vscode/
 *.iml
 .env
+frontend/.env
 .DS_Store
 venv/
 .pytest_cache/
