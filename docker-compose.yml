@@ -13,12 +13,13 @@ services:
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
+             python manage.py runserver 0.0.0.0:8080
+             python manage.py loaddata sample_cinema.json"
+
     env_file:
       - .env
     depends_on:
       - db
-
   db:
     image: postgres:14-alpine
     ports:
