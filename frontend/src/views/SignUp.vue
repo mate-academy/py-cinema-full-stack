@@ -3,7 +3,7 @@
     <h1>Sign up to Cinema Shop</h1>
     <h2>Please enter your credentials to sign up.
     <a href="#/sign-in">Sign in</a>
-    here if you are registered yet.</h2>
+    here if you are registered already.</h2>
     <input-item
       label="Email"
       pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
@@ -32,12 +32,14 @@ export default {
 
     async signUp () {
       try {
-        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
+        await
+            this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register/`, {
           email: this.email,
           password: this.password
         });
 
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await
+            this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
