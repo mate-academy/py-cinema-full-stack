@@ -1,5 +1,5 @@
-FROM --platform=linux/amd64 python:3.13-slim
-LABEL maintainer="danylo.t@mate.academy"
+FROM python:3.11-alpine3.18
+LABEL maintainer="mgoryn68@gmail.com"
 
 WORKDIR /app
 
@@ -11,6 +11,8 @@ ENV PYTHONUNBUFFERED 1
 RUN pip install --upgrade pip
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
+
+RUN apk add --no-cache postgresql-dev
 
 
 COPY . .
