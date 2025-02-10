@@ -53,7 +53,8 @@ export default {
         this.active = false;
         this.movieSession = {};
         return;
-      };
+      }
+      ;
 
       const [, id] = match;
       if (!id) {
@@ -68,7 +69,7 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}/`, {
+        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
