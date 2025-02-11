@@ -3,3 +3,12 @@ flake8-variables-names~=0.0.6
 pep8-naming~=0.14.1
 psycopg2-binary~=2.9.10
 django-cors-headers==4.6.0
+django-cors-headers
+djangorestframework
+drf_spectacular
+django-debug-toolbar
+djangorestframework-simplejwt
+Pillow
+gunicorn
+django-dotenv==1.4.2
+python-dotenv

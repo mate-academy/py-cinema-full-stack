@@ -13,7 +13,7 @@ services:
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
+             gunicorn cinema_service.wsgi:application"
     env_file:
       - .env
     depends_on:
@@ -26,6 +26,7 @@ services:
     env_file:
       - .env
     volumes:
-      - my_db:$PGDATA
+      - my_db:/var/lib/postgresql/data
+
 volumes:
   my_db:
