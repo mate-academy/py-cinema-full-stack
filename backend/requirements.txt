@@ -11,4 +11,3 @@ flake8-variables-names==0.0.5
 legacy-cgi==2.6.2
 pep8-naming==0.13.2
 psycopg2-binary==2.9.10
-django-cors-headers==4.7.0
