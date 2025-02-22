@@ -1,6 +1,8 @@
 <template>
   <div v-if="active" class="modal-wrapper" @click="handleClick">
-    <movie-modal :movie="movie" @close-movie-details="handleMovieDetailsClose" ref="modal"></movie-modal>
+    <div class="modal-content">
+      <movie-modal :movie="movie" @close-movie-details="handleMovieDetailsClose" ref="modal"></movie-modal>
+    </div>
   </div>
 </template>
 
@@ -42,7 +44,7 @@ export default {
 
     async fetchMovie (id) {
       try {
-        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies-${id}`, {
+        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
@@ -70,14 +72,21 @@ export default {
 
 <style scoped>
 .modal-wrapper {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 200%;
   background: rgba(210, 210, 210, 0.1);
   backdrop-filter: blur(7.5px);
   z-index: 1;
   padding: 80px 145px !important;
+}
+.modal-content {
+  max-height: calc(100% - 160px);
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
