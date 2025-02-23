@@ -1,3 +1,7 @@
 venv/
 python-version
 .env
+frontend/
+node_modules/
+*.pyc
+__pycache__/

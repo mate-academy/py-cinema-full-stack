@@ -10,9 +10,11 @@ services:
     volumes:
       - ./backend:/app
       - ./backend/media:/vol/web/media
+      - ./backend/fixtures:/app/fixtures
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
+             python manage.py loaddata /app/fixtures/sample_cinema.json &&
              python manage.py runserver 0.0.0.0:8080"
     env_file:
       - .env
@@ -25,3 +27,9 @@ services:
       - "5432:5432"
     env_file:
       - .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+
