@@ -32,10 +32,11 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
-          email: this.email,
-          password: this.password
-        });
+        const { data } =
+            await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
+              email: this.email,
+              password: this.password
+            });
 
         const { access, refresh } = data;
 
