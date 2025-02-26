@@ -3,9 +3,9 @@
     <div class="label">Cinema Halls</div>
     <div class="hall-container">
       <div v-for="hall in halls" class="hall" :key="hall.id">
-        <div class="name">{{hall.name}}</div>
-        <div class="size">Size: {{hall.rows}} x {{hall.seats_in_row}}</div>
-        <div>Capacity: {{hall.capacity}}</div>
+        <div class="name">{{ hall.name }}</div>
+        <div class="size">Size: {{ hall.rows }} x {{ hall.seats_in_row }}</div>
+        <div>Capacity: {{ hall.capacity }}</div>
       </div>
     </div>
     <add-btn @click="handleHallCreate"></add-btn>
@@ -16,6 +16,7 @@
 import AddBtn from '../comps/AddBtn.vue';
 
 import axios from 'axios';
+
 export default {
   props: {
     isStaff: {
@@ -28,15 +29,15 @@ export default {
     halls: []
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async fetchHalls () {
+    async fetchHalls() {
       try {
-        const { data: halls } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: halls} = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
         this.halls = halls;
       } catch (err) {
@@ -44,26 +45,26 @@ export default {
       }
     },
 
-    handleHallCreate () {
+    handleHallCreate() {
       location.hash = '#/cinema-halls?add=true';
     },
 
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('cinema-halls$'));
     }
   },
   watch: {
-    active () {
+    active() {
       if (this.active) {
         this.fetchHalls();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
