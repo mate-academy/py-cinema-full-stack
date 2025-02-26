@@ -1,5 +1,5 @@
 FROM --platform=linux/amd64 python:3.13-slim
-LABEL maintainer="danylo.t@mate.academy"
+LABEL maintainer="lishchynska.m@gmail.com"
 
 WORKDIR /app
 
@@ -23,6 +23,6 @@ RUN adduser \
     django-user
 
 RUN chown -R django-user:django-user /vol/
-RUN chmod -R 755 /vol/web/
+RUN chmod -R 755 /vol/web/media/
 
 USER django-user
