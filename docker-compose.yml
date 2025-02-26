@@ -25,3 +25,9 @@ services:
       - "5432:5432"
     env_file:
       - .env
+    container_name: cinema-db
+    volumes:
+      - postgres_cinema_data:/var/lib/postgresql/data/
+
+volumes:
+  postgres_cinema_data:
