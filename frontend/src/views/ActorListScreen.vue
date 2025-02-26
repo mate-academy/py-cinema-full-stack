@@ -4,16 +4,19 @@
       <div class="header">Add Actor</div>
       <div class="note">Please fill in the fields in details</div>
       <div class="input-container">
-        <input-item label="First name" width="wide" v-model="firstName"></input-item>
-        <input-item label="Last name" width="wide" v-model="lastName"></input-item>
+        <input-item label="First name" width="wide"
+                    v-model="firstName"></input-item>
+        <input-item label="Last name" width="wide"
+                    v-model="lastName"></input-item>
       </div>
       <action-button label="Submit" @click="addActor"></action-button>
     </div>
     <div class="actors">
       <div class="header">All Actors</div>
       <div class="container">
-        <div v-for="(actor, index) in actors" :key="actor.id" :class="index % 2 === 0 ? 'odd' : ''">
-          {{actor.first_name}} {{actor.last_name}}
+        <div v-for="(actor, index) in actors" :key="actor.id"
+             :class="index % 2 === 0 ? 'odd' : ''">
+          {{ actor.first_name }} {{ actor.last_name }}
         </div>
       </div>
       <add-btn @click="createMode = !createMode"></add-btn>
@@ -27,6 +30,7 @@ import axios from 'axios';
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+
 export default {
   props: {
     isStaff: {
@@ -42,15 +46,15 @@ export default {
     lastName: ''
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async fetchActors () {
+    async fetchActors() {
       try {
-        const { data: actors } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: actors} = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors/`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
         this.actors = actors;
       } catch (err) {
@@ -58,7 +62,7 @@ export default {
       }
     },
 
-    async addActor () {
+    async addActor() {
       try {
         const config = {
           headers: {
@@ -68,12 +72,12 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
-          {
-            first_name: this.firstName,
-            last_name: this.lastName
-          },
-          config
+            `${import.meta.env.VITE_API_URL}/api/cinema/actors/`,
+            {
+              first_name: this.firstName,
+              last_name: this.lastName
+            },
+            config
         );
 
         this.createMode = !this.createMode;
@@ -86,22 +90,22 @@ export default {
       }
     },
 
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('actors$'));
     }
   },
   watch: {
-    active () {
+    active() {
       if (this.active) {
         this.fetchActors();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
 

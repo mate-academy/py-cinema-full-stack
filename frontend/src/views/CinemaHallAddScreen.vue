@@ -1,15 +1,18 @@
 <template>
-    <div v-if="active && isStaff" class="hall-container">
+  <div v-if="active && isStaff" class="hall-container">
     <div class="header">Add a cinema hall</div>
     <div class="note">Please fill in the fields in details</div>
     <div class="container">
       <input-item label="Name" v-model="name" width="wide"></input-item>
       <div class="info-container">
-        <input-item label="Number of rows" v-model="countRows" width="narrow"></input-item>
-        <input-item label="Number of seats in row" v-model="countSeatsInRow" width="narrow"></input-item>
+        <input-item label="Number of rows" v-model="countRows"
+                    width="narrow"></input-item>
+        <input-item label="Number of seats in row" v-model="countSeatsInRow"
+                    width="narrow"></input-item>
       </div>
     </div>
-    <action-button label="Submit" @click="addCinemaHall" :disabled="!name || !countRows || !countSeatsInRow"></action-button>
+    <action-button label="Submit" @click="addCinemaHall"
+                   :disabled="!name || !countRows || !countSeatsInRow"></action-button>
   </div>
 </template>
 
@@ -33,16 +36,16 @@ export default {
     countSeatsInRow: 1
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('cinema-halls\\?add=true'));
     },
 
-    async addCinemaHall () {
+    async addCinemaHall() {
       try {
         const config = {
           headers: {
@@ -52,13 +55,13 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`,
-          {
-            name: this.name,
-            rows: Number(this.countRows),
-            seats_in_row: Number(this.countSeatsInRow)
-          },
-          config
+            `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`,
+            {
+              name: this.name,
+              rows: Number(this.countRows),
+              seats_in_row: Number(this.countSeatsInRow)
+            },
+            config
         );
 
         location.hash = '#/cinema-halls';
@@ -68,11 +71,11 @@ export default {
     }
 
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
