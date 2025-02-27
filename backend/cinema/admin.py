@@ -17,3 +17,4 @@ admin.site.register(Movie)
 admin.site.register(MovieSession)
 admin.site.register(Order)
 admin.site.register(Ticket)
+
