@@ -20,6 +20,7 @@ services:
       - db
 
   db:
+    container_name: cinema_db
     image: postgres:14-alpine
     ports:
       - "5432:5432"
