@@ -107,7 +107,7 @@ export default {
         };
 
         const { data: movie } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movies`,
+          `${import.meta.env.VITE_API_URL}/api/cinema/movies/`,
           {
             title: this.title,
             duration: Number(this.duration),
@@ -121,7 +121,7 @@ export default {
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          await axios.post(`/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
         }
 
         location.hash = '#/movies';
