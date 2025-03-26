@@ -178,6 +178,7 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
 }
 
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     ]
