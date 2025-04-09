@@ -1,0 +1,81 @@
+[
+  {
+    "model": "cinema.genre",
+    "pk": 1,
+    "fields": {
+      "name": "Action"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 2,
+    "fields": {
+      "name": "Comedy"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 1,
+    "fields": {
+      "first_name": "Tom",
+      "last_name": "Holland"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 2,
+    "fields": {
+      "first_name": "Emma",
+      "last_name": "Watson"
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "Explosion City",
+      "description": "An action-packed journey.",
+      "duration": 120,
+      "genres": [1],
+      "actors": [1, 2]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 2,
+    "fields": {
+      "title": "Funny Town",
+      "description": "Laughs guaranteed.",
+      "duration": 90,
+      "genres": [2],
+      "actors": [2]
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 1,
+    "fields": {
+      "name": "Main Hall",
+      "rows": 10,
+      "seats_in_row": 12
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "movie": 1,
+      "cinema_hall": 1,
+      "show_time": "2025-04-10T18:30:00Z"
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 2,
+    "fields": {
+      "movie": 2,
+      "cinema_hall": 1,
+      "show_time": "2025-04-11T15:00:00Z"
+    }
+  }
+]
