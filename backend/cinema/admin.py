@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import (
+from backend.cinema.models import (
     CinemaHall,
     Genre,
     Actor,
