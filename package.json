@@ -1,0 +1,24 @@
+{
+  "name": "py-cinema-full-stack",
+  "version": "1.0.0",
+  "description": "- Read [the guideline](https://github.com/mate-academy/py-task-guideline/blob/main/README.md) before start",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/frank0190/py-cinema-full-stack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/frank0190/py-cinema-full-stack/issues"
+  },
+  "homepage": "https://github.com/frank0190/py-cinema-full-stack#readme",
+  "dependencies": {
+    "vite": "^6.3.2",
+    "vue": "^3.5.13"
+  }
+}
