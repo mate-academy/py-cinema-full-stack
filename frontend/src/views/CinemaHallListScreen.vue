@@ -1,29 +1,21 @@
 <template>
-  <div v-if="active && isStaff" class="genres-container">
-    <div class="add-genre" v-if="createMode">
-      <div class="header">Add Genre</div>
-      <div class="note">Please fill in the fields in details</div>
-      <input-item label="Genre" width="wide" v-model="name"></input-item>
-      <action-button label="Submit" @click="addGenre"></action-button>
-    </div>
-    <div class="genres">
-      <div class="header">All Genres</div>
-      <div class="container">
-        <div v-for="(genre, index) in genres" :key="genre.id" :class="index % 2 === 0 ? 'odd' : ''">
-          {{genre.name}}
-        </div>
+  <div v-if="active && isStaff" class="cinema-halls">
+    <div class="label">Cinema Halls</div>
+    <div class="hall-container">
+      <div v-for="hall in halls" class="hall" :key="hall.id">
+        <div class="name">{{hall.name}}</div>
+        <div class="size">Size: {{hall.rows}} x {{hall.seats_in_row}}</div>
+        <div>Capacity: {{hall.capacity}}</div>
       </div>
-      <add-btn @click="createMode = !createMode"></add-btn>
     </div>
+    <add-btn @click="handleHallCreate"></add-btn>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 import AddBtn from '../comps/AddBtn.vue';
-import InputItem from '../comps/InputItem.vue';
-import ActionButton from '../comps/ActionButton.vue';
+
+import axios from 'axios';
 export default {
   props: {
     isStaff: {
@@ -33,9 +25,7 @@ export default {
   },
   data: () => ({
     active: false,
-    genres: [],
-    createMode: false,
-    name: ''
+    halls: []
   }),
   computed: {
     token () {
@@ -43,51 +33,29 @@ export default {
     }
   },
   methods: {
-    async fetchGenres () {
+    async fetchHalls () {
       try {
-        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
+        const { data: halls } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
-        this.genres = genres;
+        this.halls = halls;
       } catch (err) {
         console.error(err.response.data);
       }
     },
 
-    async addGenre () {
-      try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres/`,
-          {
-            name: this.name
-          },
-          config
-        );
-
-        this.createMode = !this.createMode;
-        this.fetchGenres();
-
-        this.name = '';
-      } catch (err) {
-        console.error(err);
-      }
+    handleHallCreate () {
+      location.hash = '#/cinema-halls?add=true';
     },
 
     hashHandler () {
-      this.active = Boolean(location.hash.match('genres$'));
+      this.active = Boolean(location.hash.match('cinema-halls$'));
     }
   },
   watch: {
     active () {
       if (this.active) {
-        this.fetchGenres();
+        this.fetchHalls();
       }
     }
   },
@@ -99,58 +67,52 @@ export default {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
-    AddBtn,
-    InputItem,
-    ActionButton
+    AddBtn
   }
-
 };
 </script>
 
 <style scoped>
-.genres-container, .genres-container > * {
+.cinema-halls {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  width: 100%;
 }
 
-.add-genre {
-  margin-bottom: 36px;
-}
-
-.action-button {
-  margin-top: 36px;
-}
-
-.header {
+.label {
   font-weight: 600;
   font-size: 50px;
-  line-height: 61px;
+  line-height: 60px;
+  margin-bottom: 60px;
 }
 
-.note {
-  font-size: 25px;
-  line-height: 31px;
+.hall-container {
+  display: flex;
+  gap: 65px;
+  flex-wrap: wrap;
 }
 
-.container {
-  width: 100%;
+.name {
+  font-weight: 700;
   font-size: 25px;
   line-height: 30px;
+  margin-bottom: 24px;
 }
 
-.container > div {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  border-radius: 10px;
+.size {
+  margin-bottom: 12px;
 }
 
-.container > .odd {
+.hall {
+  width: 196px;
+  height: 190px;
   background-color: var(--secondary-bg);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 22px;
 }
-
 </style>
