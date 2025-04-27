@@ -39,26 +39,26 @@ export default {
     selectedHallId: null
   }),
   computed: {
-    movieOptions () {
+    movieOptions() {
       return this.movies.map(movie => ({
         name: movie.title,
         id: movie.id
       }));
     },
 
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('movie-sessions\\?add=true'));
     },
 
-    async fetchMovies () {
+    async fetchMovies() {
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
-          headers: { Authorization: `Bearer ${this.token}` },
+        const {data: movies} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+          headers: {Authorization: `Bearer ${this.token}`},
           params: {}
         });
 
@@ -68,10 +68,10 @@ export default {
       }
     },
 
-    async fetchCinemaHalls () {
+    async fetchCinemaHalls() {
       try {
-        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
-          headers: { Authorization: `Bearer ${this.token}` },
+        const {data: cinemaHalls} = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
+          headers: {Authorization: `Bearer ${this.token}`},
           params: {}
         });
 
@@ -81,7 +81,7 @@ export default {
       }
     },
 
-    async addMovieSession () {
+    async addMovieSession() {
       const showTime = new Date(this.date);
       showTime.setHours(this.time.getHours());
       showTime.setMinutes(this.time.getMinutes());
@@ -95,13 +95,13 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`,
-          {
-            movie: this.selectedMovieId,
-            cinema_hall: this.selectedHallId,
-            show_time: showTime.toISOString()
-          },
-          config
+            `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`,
+            {
+              movie: this.selectedMovieId,
+              cinema_hall: this.selectedHallId,
+              show_time: showTime.toISOString()
+            },
+            config
         );
 
         location.hash = '#/movie-sessions';
@@ -110,28 +110,28 @@ export default {
       }
     },
 
-    handleMovieSelection (movieId) {
+    handleMovieSelection(movieId) {
       this.selectedMovieId = movieId;
     },
 
-    handleHallSelection (hallId) {
+    handleHallSelection(hallId) {
       this.selectedHallId = hallId;
     }
 
   },
   watch: {
-    active () {
+    active() {
       if (this.active) {
         this.fetchMovies();
         this.fetchCinemaHalls();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
