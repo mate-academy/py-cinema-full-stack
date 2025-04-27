@@ -1,3 +1,4 @@
+
 <template>
     <div v-if="active && isStaff" class="hall-container">
     <div class="header">Add a cinema hall</div>
@@ -33,16 +34,16 @@ export default {
     countSeatsInRow: 1
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('cinema-halls\\?add=true'));
     },
 
-    async addCinemaHall () {
+    async addCinemaHall() {
       try {
         const config = {
           headers: {
@@ -52,13 +53,13 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`,
-          {
-            name: this.name,
-            rows: Number(this.countRows),
-            seats_in_row: Number(this.countSeatsInRow)
-          },
-          config
+            `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`,
+            {
+              name: this.name,
+              rows: Number(this.countRows),
+              seats_in_row: Number(this.countSeatsInRow)
+            },
+            config
         );
 
         location.hash = '#/cinema-halls';
@@ -68,11 +69,11 @@ export default {
     }
 
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
