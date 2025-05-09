@@ -70,7 +70,7 @@ export default {
 
     async fetchCinemaHalls () {
       try {
-        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
+        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
