@@ -95,7 +95,7 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
+      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets },
         config
       );
       this.fetchMovieSession(this.movieSession.id);
