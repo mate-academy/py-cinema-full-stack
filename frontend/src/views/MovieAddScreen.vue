@@ -61,7 +61,7 @@ export default {
 
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
@@ -92,38 +92,20 @@ export default {
         const headers = {
           Authorization: `Bearer ${this.token}`
         };
-        const movieConfig = {
-          headers: {
-            ...headers,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        const imageConfig = {
-          headers: {
-            ...headers,
-            'Content-Type': 'multipart/form-data'
-          }
-        };
-
-        const { data: movie } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movies`,
-          {
-            title: this.title,
-            duration: Number(this.duration),
-            description: this.description,
-            actors: this.selectedActorIds,
-            genres: this.selectedGenreIds
-          },
-          movieConfig
-        );
-
+        const formData = new FormData();
+        formData.append('title', this.title);
+        formData.append('duration', Number(this.duration));
+        formData.append('description', this.description);
+        this.selectedActorIds.forEach(id => formData.append('actors', id));
+        this.selectedGenreIds.forEach(id => formData.append('genres', id));
         if (this.image) {
-          const data = new FormData();
-          data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          formData.append('image', this.image);
         }
-
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/cinema/movies/`,
+          formData,
+          { headers: { ...headers, 'Content-Type': 'multipart/form-data' } }
+        );
         location.hash = '#/movies';
       } catch (err) {
         console.error(err);
