@@ -10,7 +10,7 @@
       <div class="header">All Genres</div>
       <div class="container">
         <div v-for="(genre, index) in genres" :key="genre.id" :class="index % 2 === 0 ? 'odd' : ''">
-          {{genre.name}}
+          {{ genre.name }}
         </div>
       </div>
       <add-btn @click="createMode = !createMode"></add-btn>
@@ -24,6 +24,7 @@ import axios from 'axios';
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+
 export default {
   props: {
     isStaff: {
@@ -38,15 +39,15 @@ export default {
     name: ''
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async fetchGenres () {
+    async fetchGenres() {
       try {
-        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        const {data: genres} = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
+          headers: {Authorization: `Bearer ${this.token}`}
         });
         this.genres = genres;
       } catch (err) {
@@ -54,7 +55,7 @@ export default {
       }
     },
 
-    async addGenre () {
+    async addGenre() {
       try {
         const config = {
           headers: {
@@ -64,11 +65,11 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres`,
-          {
-            name: this.name
-          },
-          config
+            `${import.meta.env.VITE_API_URL}/api/cinema/genres/`,
+            {
+              name: this.name
+            },
+            config
         );
 
         this.createMode = !this.createMode;
@@ -80,22 +81,22 @@ export default {
       }
     },
 
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match('genres$'));
     }
   },
   watch: {
-    active () {
+    active() {
       if (this.active) {
         this.fetchGenres();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
