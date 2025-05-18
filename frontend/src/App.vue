@@ -9,7 +9,7 @@
     <genre-list-screen v-if="user" :isStaff="user.is_staff"></genre-list-screen>
     <actor-list-screen v-if="user" :isStaff="user.is_staff"></actor-list-screen>
     <movie-details-screen v-if="user"></movie-details-screen>
-    <movie-session-details-screen v-if="user" :user="user" ></movie-session-details-screen>
+    <movie-session-details-screen v-if="user" :user="user"></movie-session-details-screen>
     <movie-add-screen v-if="user" :isStaff="user.is_staff"></movie-add-screen>
     <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
     <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
@@ -76,7 +76,7 @@ export default {
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
+        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/`,
           { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
@@ -87,7 +87,7 @@ export default {
 
     async refreshToken () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh/`, {
           refresh: localStorage.getItem('refresh')
         });
 
