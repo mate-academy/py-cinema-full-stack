@@ -32,7 +32,7 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
@@ -44,7 +44,11 @@ export default {
 
         this.$emit('log-in');
       } catch (err) {
-        console.error(err.response.data);
+        if (err.response && err.response.data) {
+          console.error(err.response.data);
+        } else {
+          console.error('Network or unexpected error:', err);
+        }
       }
     }
   },

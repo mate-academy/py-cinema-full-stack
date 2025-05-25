@@ -1,13 +1,13 @@
 <template>
   <div
-  :class="['action-button',
-    type === 'outlined' && 'outlined',
-    width === 'small' && 'small',
-    width === 'normal' && 'normal',
-    disabled && 'disabled'
-  ]"
-  @click="$emit('click')"
-  >{{label}}</div>
+    :class="['action-button',
+      type === 'outlined' && 'outlined',
+      width === 'small' && 'small',
+      width === 'normal' && 'normal',
+      disabled && 'disabled'
+    ]"
+    @click="handleClick"
+  >{{ label }}</div>
 </template>
 
 <script>
@@ -20,23 +20,23 @@ export default {
     type: {
       type: String,
       default: 'filled',
-      validator: (val) => [
-        'filled',
-        'outlined'
-      ].includes(val)
+      validator: (val) => ['filled', 'outlined'].includes(val)
     },
     width: {
       type: String,
       default: 'wide',
-      validator: (val) => [
-        'small',
-        'normal',
-        'wide'
-      ].includes(val)
+      validator: (val) => ['small', 'normal', 'wide'].includes(val)
     },
     disabled: {
       type: Boolean,
       default: false
+    }
+  },
+  methods: {
+    handleClick() {
+      if (!this.disabled) {
+        this.$emit('click');
+      }
     }
   }
 };
@@ -64,6 +64,7 @@ export default {
   font-size: 16px;
   line-height: 20px;
 }
+
 .normal {
   width: 300px;
 }
@@ -76,5 +77,6 @@ export default {
 :not(.outlined).disabled {
   pointer-events: none;
   background-color: var(--border);
+  cursor: default;
 }
 </style>
