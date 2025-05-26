@@ -2,7 +2,7 @@
   <div class="sign-up" v-if="active">
     <h1>Sign up to Cinema Shop</h1>
     <h2>Please enter your credentials to sign up.
-    <a href="#/sign-in">Sign in</a>
+    <a href="#/sign-in/">Sign in</a>
     here if you are registered yet.</h2>
     <input-item
       label="Email"
