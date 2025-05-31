@@ -14,7 +14,7 @@ services:
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8080"
     env_file:
-      - .env
+      - backend/.env
     depends_on:
       - db
 
@@ -40,7 +40,7 @@ services:
       - /app/node_modules
     environment:
       - VITE_API_URL=http://localhost:8080
-    command: npm run dev
+    command: npm run dev -- --host --port 3000
     depends_on:
       - app
 
