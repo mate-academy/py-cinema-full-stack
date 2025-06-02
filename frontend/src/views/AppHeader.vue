@@ -38,13 +38,21 @@ export default {
   props: {
     user: {
       type: Object,
-      default: () => {}
+      default: () => ({}) // Provide a default empty object for user to prevent errors if user is null/undefined
     }
   },
   methods: {
     hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
-      this.activeTab = active;
+      const match = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
+      // Check if match is not null before destructuring
+      if (match) {
+        const [, active] = match;
+        this.activeTab = active;
+      } else {
+        // Handle cases where the hash doesn't match the regex
+        // For example, set a default activeTab or log a warning
+        this.activeTab = ''; // Or 'movies' as a fallback
+      }
     },
 
     openProfile () {
@@ -62,7 +70,7 @@ export default {
 
     const profileSectionEl = document.querySelector('.profile-section');
     document.addEventListener('click', evt => {
-      if (this.showPopup && !profileSectionEl.contains(evt.target)) this.showPopup = false;
+      if (this.showPopup && profileSectionEl && !profileSectionEl.contains(evt.target)) this.showPopup = false;
     });
   },
   beforeDestroy () {
