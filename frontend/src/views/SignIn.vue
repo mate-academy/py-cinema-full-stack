@@ -32,7 +32,7 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
@@ -41,7 +41,6 @@ export default {
 
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
-
         this.$emit('log-in');
       } catch (err) {
         console.error(err.response.data);
