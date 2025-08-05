@@ -10,7 +10,7 @@
         "actors": [
             "Jim Carrey"
         ],
-        "image": "media/uploads/movies/ace-ventura.jpg"
+        "image": "media/uploads/movies/ace-ventura.jpg/"
     },
     "cinema_hall": {
         "id": 1,
