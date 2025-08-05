@@ -8,7 +8,7 @@
         "actors": [
             "Jim Carrey"
         ],
-        "image": "media/uploads/movies/ace-ventura.jpg"
+        "image": "media/uploads/movies/ace-ventura.jpg/"
     },
     {
         "id": 2,
@@ -19,7 +19,7 @@
         "actors": [
             "Jim Carrey"
         ],
-        "image": "media/uploads/movies/liar-liar.jpeg"
+        "image": "media/uploads/movies/liar-liar.jpeg/"
     },
     {
         "id": 3,
@@ -30,7 +30,7 @@
         "actors": [
             "Tom Holland"
         ],
-        "image": "media/uploads/movies/spider-man-no-way-home.jpeg"
+        "image": "media/uploads/movies/spider-man-no-way-home.jpeg/"
     },
     {
         "id": 4,
@@ -43,6 +43,6 @@
             "Leonardo DiCaprio",
             "Kate Winslet"
         ],
-        "image": "media/uploads/movies/titanic.jpeg"
+        "image": "media/uploads/movies/titanic.jpeg/"
     }
 ]

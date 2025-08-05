@@ -14,7 +14,7 @@
                         "id": 1,
                         "show_time": "2023-01-26T11:15",
                         "movie_title": "Ace Ventura",
-                        "movie_image": "media/uploads/movies/ace-ventura.jpg",
+                        "movie_image": "media/uploads/movies/ace-ventura.jpg/",
                         "cinema_hall_name": "Red",
                         "cinema_hall_capacity": 48
                     }
@@ -27,7 +27,7 @@
                         "id": 1,
                         "show_time": "2023-01-26T11:15",
                         "movie_title": "Ace Ventura",
-                        "movie_image": "media/uploads/movies/ace-ventura.jpg",
+                        "movie_image": "media/uploads/movies/ace-ventura.jpg/",
                         "cinema_hall_name": "Red",
                         "cinema_hall_capacity": 48
                     }
