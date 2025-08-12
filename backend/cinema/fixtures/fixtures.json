@@ -1,0 +1,175 @@
+[
+  {
+    "model": "cinema.actor",
+    "pk": 1,
+    "fields": {
+      "first_name": "Jim",
+      "last_name": "Carrey"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 2,
+    "fields": {
+      "first_name": "Tom",
+      "last_name": "Holland"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 3,
+    "fields": {
+      "first_name": "Leonardo",
+      "last_name": "DiCaprio"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 4,
+    "fields": {
+      "first_name": "Kate",
+      "last_name": "Winslet"
+    }
+  },
+
+
+  {
+    "model": "cinema.genre",
+    "pk": 1,
+    "fields": {
+      "name": "drama"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 2,
+    "fields": {
+      "name": "comedy"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 3,
+    "fields": {
+      "name": "fantasy"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 4,
+    "fields": {
+      "name": "romance"
+    }
+  },
+
+
+  {
+    "model": "cinema.cinemahall",
+    "pk": 1,
+    "fields": {
+      "name": "Red",
+      "rows": 6,
+      "seats_in_row": 8
+    }
+  },
+
+
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "Ace Ventura",
+      "description": "A goofy detective specializing in animals goes in search of the missing mascot of the Miami Dolphins.",
+      "duration": 86,
+      "image": "uploads/movies/ace-ventura.jpg",
+      "genres": [2],
+      "actors": [1]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 2,
+    "fields": {
+      "title": "Liar Liar",
+      "description": "",
+      "duration": 0,
+      "image": "uploads/movies/liar-liar.jpeg",
+      "genres": [2],
+      "actors": [1]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 3,
+    "fields": {
+      "title": "Spider Man: No Way Home",
+      "description": "",
+      "duration": 0,
+      "image": "uploads/movies/spider-man-no-way-home.jpeg",
+      "genres": [3],
+      "actors": [2]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 4,
+    "fields": {
+      "title": "Titanic",
+      "description": "",
+      "duration": 0,
+      "image": "uploads/movies/titanic.jpeg",
+      "genres": [1, 4],
+      "actors": [3, 4]
+    }
+  },
+
+
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "show_time": "2023-01-24T11:15:00Z",
+      "movie": 1,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 2,
+    "fields": {
+      "show_time": "2023-01-26T14:00:00Z",
+      "movie": 1,
+      "cinema_hall": 1
+    }
+  },
+
+
+  {
+    "model": "cinema.order",
+    "pk": 1,
+    "fields": {
+      "created_at": "2023-01-26T12:38:52.312498Z",
+      "user": 1
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 1,
+    "fields": {
+      "movie_session": 1,
+      "order": 1,
+      "row": 5,
+      "seat": 4
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 2,
+    "fields": {
+      "movie_session": 1,
+      "order": 1,
+      "row": 5,
+      "seat": 5
+    }
+  }
+]
