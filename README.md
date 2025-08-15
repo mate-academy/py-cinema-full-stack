@@ -10,3 +10,7 @@ You need to connect them together, and make sure all functionality of Cinema Sho
 NOTE: Attach screenshots of all pages from the correctly connected frontend. Better to make them with opened developer tool, where will be shown requests to the API.
 
 ![скриншот](image/qw.jpg)
+![скриншот](image/1.png)
+![скриншот](image/2.png)
+![скриншот](image/3.png)
+![скриншот](image/4.png)
