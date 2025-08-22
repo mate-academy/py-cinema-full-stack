@@ -1,12 +1,11 @@
-version: "3"
-
 services:
   app:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    platform: linux/arm64/v8
     ports:
-      - "8080:8080"
+      - "8081:8080"
     volumes:
       - ./backend:/app
       - ./backend/media:/vol/web/media
@@ -21,7 +20,8 @@ services:
 
   db:
     image: postgres:14-alpine
+    platform: linux/arm64/v8
     ports:
-      - "5432:5432"
+      - "5433:5432"
     env_file:
       - .env
