@@ -89,44 +89,30 @@ export default {
 
     async addMovie () {
       try {
-        const headers = {
-          Authorization: `Bearer ${this.token}`
-        };
-        const movieConfig = {
-          headers: {
-            ...headers,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        const imageConfig = {
-          headers: {
-            ...headers,
-            'Content-Type': 'multipart/form-data'
-          }
-        };
-
+        const headers = { Authorization: `Bearer ${this.token}` };
         const { data: movie } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movies`,
-          {
-            title: this.title,
-            duration: Number(this.duration),
-            description: this.description,
-            actors: this.selectedActorIds,
-            genres: this.selectedGenreIds
-          },
-          movieConfig
+            `${import.meta.env.VITE_API_URL}/api/cinema/movies/`,
+            {
+              title: this.title,
+              duration: Number(this.duration),
+              description: this.description,
+              actors: this.selectedActorIds,
+              genres: this.selectedGenreIds
+            },
+            { headers }
         );
-
         if (this.image) {
-          const data = new FormData();
-          data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          const form = new FormData();
+          form.append('image', this.image);
+          await axios.post(
+              `${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image/`,
+              form,
+              { headers }
+          );
         }
-
-        location.hash = '#/movies';
+        location.hash = `#/movies/${movie.id}`;
       } catch (err) {
-        console.error(err);
+        console.error(err?.response?.data || err);
       }
     },
 
