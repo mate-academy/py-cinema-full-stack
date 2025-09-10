@@ -1,14 +1,17 @@
 <template>
   <div class="sign-in" v-if="active">
     <h1>Sign in to Cinema Shop</h1>
-    <h2>Please enter your sign in details.
-    <a href="#/sign-up">Sign up</a>
-    here if you are not registered yet.</h2>
+    <h2>
+      Please enter your sign in details.
+      <a href="#/sign-up">Sign up</a>
+      here if you are not registered yet.
+    </h2>
     <input-item
       label="Login"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+      pattern="^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
       placeholder="Email"
-      v-model="email"></input-item>
+      v-model="email"
+    ></input-item>
     <password-input v-model="password"></password-input>
     <action-button label="Sign in" @click="signIn"></action-button>
   </div>
@@ -23,19 +26,22 @@ export default {
   data: () => ({
     active: false,
     email: '',
-    password: ''
+    password: '',
   }),
   methods: {
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(!location.hash.match('sign-up$'));
     },
 
-    async signIn () {
+    async signIn() {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
-          email: this.email,
-          password: this.password
-        });
+        const { data } = await this.axios.post(
+          `${import.meta.env.VITE_API_URL}/api/user/token/`,
+          {
+            email: this.email,
+            password: this.password,
+          }
+        );
 
         const { access, refresh } = data;
 
@@ -46,20 +52,20 @@ export default {
       } catch (err) {
         console.error(err.response.data);
       }
-    }
+    },
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
     InputItem,
     PasswordInput,
-    ActionButton
-  }
+    ActionButton,
+  },
 };
 </script>
 
