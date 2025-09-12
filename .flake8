@@ -7,4 +7,7 @@ select = B,C,E,F,W,T4,B9,Q0,N8,VNE
 exclude =
     **migrations
     venv
-    tests
+    .venv
+    tests,tests/*
+    ENV,env,__pycache__,.git,.tox,.eggs,*.egg,site-packages,
+    Lib/site-packages,lib/site-packages,*/site-packages/*

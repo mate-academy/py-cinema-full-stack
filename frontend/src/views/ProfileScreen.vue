@@ -5,22 +5,34 @@
       <input-item
         label="Email"
         v-model="email"
-        pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+        pattern="^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
         :initialValue="user.email"
       ></input-item>
       <password-input label="Password" v-model="password"></password-input>
       <action-button label="Submit" @click="changeUserData"></action-button>
       <div class="result success" v-if="success">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="36"
+          height="36"
+          viewbox="0 0 36 36"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <use href="/assets/icons/success.svg#success"></use>
         </svg>
         <div>Updated</div>
       </div>
       <div class="result failure" v-if="error">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg
+          width="36"
+          height="36"
+          viewbox="0 0 36 36"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <use href="/assets/icons/error.svg#error"></use>
         </svg>
-        <div>{{error[0]}}</div>
+        <div>{{ error[0] }}</div>
       </div>
     </div>
   </div>
@@ -68,7 +80,11 @@ export default {
       if (this.password) body.password = this.password;
 
       try {
-        const { data } = await this.axios.patch(`${import.meta.env.VITE_API_URL}/api/user/me`, body, config);
+        const { data } = await this.axios.patch(
+          `${import.meta.env.VITE_API_URL}/api/user/me`,
+          body,
+          config
+        );
         this.success = !!data;
 
         this.email = '';
@@ -108,7 +124,8 @@ export default {
 </script>
 
 <style scoped>
-.profile, .profile > * {
+.profile,
+.profile > * {
   display: flex;
   flex-direction: column;
   align-items: center;
