@@ -11,13 +11,13 @@
       <password-input label="Password" v-model="password"></password-input>
       <action-button label="Submit" @click="changeUserData"></action-button>
       <div class="result success" v-if="success">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg/">
           <use href="/assets/icons/success.svg#success"></use>
         </svg>
         <div>Updated</div>
       </div>
       <div class="result failure" v-if="error">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg/">
           <use href="/assets/icons/error.svg#error"></use>
         </svg>
         <div>{{error[0]}}</div>
