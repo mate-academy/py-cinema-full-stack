@@ -4,13 +4,13 @@
     <div class="screen">Screen</div>
     <div class="schema">
       <div>
-        <div v-for="index in numOfRows" :key="`row-${index}`" class="rows">{{index + 1}}</div>
+        <div v-for="index in numOfRows" :key="`row/${index}/`" class="rows">{{index + 1}}</div>
       </div>
       <div class="container">
         <div v-for="colIndex in numOfCols" class="col">
           <div
           v-for="rowIndex in numOfRows"
-          :key="`seat-${colIndex}-${rowIndex}`"
+          :key="`seat/${colIndex}-${rowIndex}/`"
           :class="[
           'seat',
           takenSeats.find(seat => seat.row === rowIndex + 1 && seat.seat === colIndex + 1) && 'booked',
@@ -20,7 +20,7 @@
         </div>
       </div>
       <div>
-        <div v-for="index in numOfRows" :key="`row-${index}`" class="rows">{{index + 1}}</div>
+        <div v-for="index in numOfRows" :key="`row/${index}/`" class="rows">{{index + 1}}</div>
       </div>
     </div>
   </div>
