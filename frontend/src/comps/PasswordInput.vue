@@ -23,7 +23,7 @@
         @click="changeInputType"
         class="eye"
         width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <use href="/assets/icons/eye_crossed.svg#eye"></use>
+        <use href="/assets/icons/eye_crossed.svg#eye_crossed"></use>
       </svg>
     </div>
   </div>
