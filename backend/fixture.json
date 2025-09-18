@@ -1,0 +1,173 @@
+[
+  {
+    "model": "cinema.cinemahall",
+    "pk": 1,
+    "fields": { "name": "Grand Hall", "rows": 10, "seats_in_row": 20 }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 2,
+    "fields": { "name": "Classic Hall", "rows": 8, "seats_in_row": 15 }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 3,
+    "fields": { "name": "Small Hall", "rows": 5, "seats_in_row": 10 }
+  },
+
+  { "model": "cinema.genre", "pk": 1, "fields": { "name": "Romance" } },
+  { "model": "cinema.genre", "pk": 2, "fields": { "name": "Drama" } },
+  { "model": "cinema.genre", "pk": 3, "fields": { "name": "Historical" } },
+  { "model": "cinema.genre", "pk": 4, "fields": { "name": "Samurai" } },
+
+  { "model": "cinema.actor", "pk": 1, "fields": { "first_name": "Tony", "last_name": "Leung" } },
+  { "model": "cinema.actor", "pk": 2, "fields": { "first_name": "Maggie", "last_name": "Cheung" } },
+  { "model": "cinema.actor", "pk": 3, "fields": { "first_name": "Leslie", "last_name": "Cheung" } },
+  { "model": "cinema.actor", "pk": 4, "fields": { "first_name": "Toshiro", "last_name": "Mifune" } },
+  { "model": "cinema.actor", "pk": 5, "fields": { "first_name": "Takashi", "last_name": "Shimura" } },
+  { "model": "cinema.actor", "pk": 6, "fields": { "first_name": "Isuzu", "last_name": "Yamada" } },
+
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "In the Mood for Love",
+      "description": "A slow-burning romance set in 1960s Hong Kong.",
+      "duration": 98,
+      "genres": [1, 2],
+      "actors": [1, 2],
+      "image": null
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 2,
+    "fields": {
+      "title": "Chungking Express",
+      "description": "Two intertwined love stories in Hong Kong.",
+      "duration": 102,
+      "genres": [1, 2],
+      "actors": [1, 3],
+      "image": null
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 3,
+    "fields": {
+      "title": "Seven Samurai",
+      "description": "A village hires seven samurai to defend them from bandits.",
+      "duration": 207,
+      "genres": [3, 4],
+      "actors": [4, 5],
+      "image": null
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 4,
+    "fields": {
+      "title": "Rashomon",
+      "description": "A crime is recounted from multiple perspectives.",
+      "duration": 88,
+      "genres": [2, 3],
+      "actors": [4, 6],
+      "image": null
+    }
+  },
+
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "show_time": "2025-09-20T18:00:00Z",
+      "movie": 1,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 2,
+    "fields": {
+      "show_time": "2025-09-21T20:00:00Z",
+      "movie": 2,
+      "cinema_hall": 2
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 3,
+    "fields": {
+      "show_time": "2025-09-22T19:00:00Z",
+      "movie": 3,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 4,
+    "fields": {
+      "show_time": "2025-09-23T21:00:00Z",
+      "movie": 4,
+      "cinema_hall": 3
+    }
+  },
+
+  {
+    "model": "cinema.order",
+    "pk": 1,
+    "fields": {
+      "created_at": "2025-09-15T12:00:00Z",
+      "user": 1
+    }
+  },
+  {
+    "model": "cinema.order",
+    "pk": 2,
+    "fields": {
+      "created_at": "2025-09-16T14:30:00Z",
+      "user": 1
+    }
+  },
+
+  {
+    "model": "cinema.ticket",
+    "pk": 1,
+    "fields": {
+      "movie_session": 1,
+      "order": 1,
+      "row": 3,
+      "seat": 5
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 2,
+    "fields": {
+      "movie_session": 1,
+      "order": 1,
+      "row": 3,
+      "seat": 6
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 3,
+    "fields": {
+      "movie_session": 2,
+      "order": 2,
+      "row": 2,
+      "seat": 8
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 4,
+    "fields": {
+      "movie_session": 3,
+      "order": 2,
+      "row": 5,
+      "seat": 10
+    }
+  }
+]
