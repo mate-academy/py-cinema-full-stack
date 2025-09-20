@@ -34,6 +34,14 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
+CORS_ALLOW_ALL_ORIGINS = False
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -48,9 +56,11 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "cinema",
     "user",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -136,7 +146,7 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
 STATIC_URL = "static/"
-
+APPEND_SLASH = False
 MEDIA_URL = "/media/"
 MEDIA_ROOT = "/vol/web/media"
 
