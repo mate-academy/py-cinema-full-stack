@@ -28,7 +28,7 @@ export default {
   computed: {
     maxDate () {
       const date = new Date();
-      return date.setDate(date.getDate() + 7);
+      return date.setDate(date.getDate() + 90);
     }
   },
   watch: {
