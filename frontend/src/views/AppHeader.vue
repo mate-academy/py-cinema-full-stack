@@ -2,15 +2,15 @@
   <div class="header">
     <a class="app-title" href="/">Cinema Shop</a>
     <div class="menu">
-      <a href='#/movie-sessions' :class="activeTab === 'movie-sessions' && 'active'">Movie Sessions</a>
-      <a href='#/cinema-halls' v-if="user.is_staff" :class="activeTab === 'cinema-halls' && 'active'">Cinema Halls</a>
-      <a href='#/movies' :class="activeTab.match(/(movies|^$)/) && 'active'">Movies</a>
-      <a href='#/genres' v-if="user.is_staff" :class="activeTab === 'genres' && 'active'">Genres</a>
-      <a href='#/actors' v-if="user.is_staff" :class="activeTab === 'actors' && 'active'">Actors</a>
+      <a href='#/movie-sessions' :class="activeTab === 'movie-sessions/' && 'active'">Movie Sessions</a>
+      <a href='#/cinema-halls' v-if="user.is_staff" :class="activeTab === 'cinema-halls/' && 'active'">Cinema Halls</a>
+      <a href="#/movies" :class="activeTab === 'movies' && 'active'">Movies</a>
+      <a href='#/genres' v-if="user.is_staff" :class="activeTab === 'genres/' && 'active'">Genres</a>
+      <a href='#/actors' v-if="user.is_staff" :class="activeTab === 'actors/' && 'active'">Actors</a>
     </div>
     <div class="action-section">
       <div class="profile-section">
-        <a class="username" @click="showPopup = !showPopup">{{user.email}}</a>
+        <a class="username" @click="showPopup = !showPopup">{{ user.email }}</a>
         <header-popup
           @openProfile="openProfile"
           @openOrders="openOrders"
@@ -30,6 +30,7 @@
 <script>
 import ActionButton from '../comps/ActionButton.vue';
 import HeaderPopup from '../comps/HeaderPopup.vue';
+
 export default {
   data: () => ({
     activeTab: 'movies',
@@ -38,31 +39,29 @@ export default {
   props: {
     user: {
       type: Object,
-      default: () => {}
+      default: () => ({})
     }
   },
   methods: {
     hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
-      this.activeTab = active;
+      const match = location.hash.match(/^#\/([\w-]+)/);
+      this.activeTab = match ? match[1] : 'movies';
     },
-
     openProfile () {
       location.hash = '#/my-profile';
     },
-
     openOrders () {
       location.hash = '#/my-orders';
     }
-
   },
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
-
     const profileSectionEl = document.querySelector('.profile-section');
     document.addEventListener('click', evt => {
-      if (this.showPopup && !profileSectionEl.contains(evt.target)) this.showPopup = false;
+      if (this.showPopup && !profileSectionEl.contains(evt.target)) {
+        this.showPopup = false;
+      }
     });
   },
   beforeDestroy () {
@@ -72,7 +71,6 @@ export default {
     ActionButton,
     HeaderPopup
   }
-
 };
 </script>
 
