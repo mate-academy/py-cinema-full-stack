@@ -10,7 +10,7 @@
         <div v-for="colIndex in numOfCols" class="col">
           <div
           v-for="rowIndex in numOfRows"
-          :key="`seat/${colIndex}-${rowIndex}`"
+          :key="`seat/${colIndex}/${rowIndex}`"
           :class="[
           'seat',
           takenSeats.find(seat => seat.row === rowIndex + 1 && seat.seat === colIndex + 1) && 'booked',
