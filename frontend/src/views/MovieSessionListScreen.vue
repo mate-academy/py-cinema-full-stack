@@ -71,11 +71,11 @@ export default {
     },
 
     handleMovieSessionDetails (sessionId) {
-      location.hash = `#/movie-sessions/${sessionId}`;
+      location.hash = `#/movie-sessions/${sessionId}/`;
     },
 
     handleMovieCreate () {
-      location.hash = '#/movie-sessions?add=true';
+      location.hash = '#/movie-sessions?add=true/';
     },
 
     handleDateSelection (date) {
