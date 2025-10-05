@@ -149,25 +149,30 @@ class MovieViewSet(
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                "genres",
-                type={"type": "array", "items": {"type": "integer"}},
+                name="genres",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                many=True,
                 description=(
-                    "Filtra por IDs de gênero. Aceita '?genres=2,5' "
-                    "ou '?genres=2&genres=5'."
+                    "Filtra por IDs de gênero. Aceita '?genres=2,5' ou vários "
+                    "parâmetros '?genres=2&genres=5'."
                 ),
             ),
             OpenApiParameter(
-                "actors",
-                type={"type": "array", "items": {"type": "integer"}},
+                name="actors",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                many=True,
                 description=(
-                    "Filtra por IDs de ator. Aceita '?actors=2,5' "
-                    "ou '?actors=2&actors=5'."
+                    "Filtra por IDs de ator. Aceita '?actors=2,5' ou vários "
+                    "parâmetros '?actors=2&actors=5'."
                 ),
             ),
             OpenApiParameter(
-                "title",
+                name="title",
                 type=OpenApiTypes.STR,
-                description="Filtro por título do filme (ex.: ?title=fiction).",
+                location=OpenApiParameter.QUERY,
+                description="Filtro por título (icontains).",
             ),
         ]
     )
@@ -220,14 +225,16 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
     @extend_schema(
         parameters=[
             OpenApiParameter(
-                "movie",
+                name="movie",
                 type=OpenApiTypes.INT,
-                description="Filter by movie id (ex. ?movie=2)",
+                location=OpenApiParameter.QUERY,
+                description="Filter by movie id (ex.: ?movie=2)",
             ),
             OpenApiParameter(
-                "date",
+                name="date",
                 type=OpenApiTypes.DATE,
-                description="Filter by date (ex. ?date=2022-10-23)",
+                location=OpenApiParameter.QUERY,
+                description="Filter by date (YYYY-MM-DD, ex.: ?date=2022-10-23)",
             ),
         ]
     )
@@ -278,8 +285,8 @@ class OrderViewSet(
         """Impede cancelar pedidos de sessões já iniciadas."""
         order = self.get_object()
         now = datetime.now()  # projeto sem USE_TZ
-        for tim in order.tickets.select_related("movie_session"):
-            if tim.movie_session.show_time <= now:
+        for t in order.tickets.select_related("movie_session"):
+            if t.movie_session.show_time <= now:
                 return Response(
                     {
                         "detail": (

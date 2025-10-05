@@ -286,3 +286,28 @@ class OrderListSerializer(OrderSerializer):
 
         total_dec = _to_decimal(unit, MONEY_DEFAULT) * qty
         return _money_str(total_dec)
+
+
+# ---------- BASIC SERIALIZERS ----------
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ("id", "name")
+
+
+class ActorSerializer(serializers.ModelSerializer):
+    # 👇 ADICIONE ESTA LINHA
+    full_name = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Actor
+        fields = ("id", "first_name", "last_name", "full_name")
+
+
+class CinemaHallSerializer(serializers.ModelSerializer):
+    # 👇 ADICIONE ESTA LINHA
+    capacity = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = CinemaHall
+        fields = ("id", "name", "rows", "seats_in_row", "capacity")
