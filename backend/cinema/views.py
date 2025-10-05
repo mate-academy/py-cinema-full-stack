@@ -285,8 +285,8 @@ class OrderViewSet(
         """Impede cancelar pedidos de sessões já iniciadas."""
         order = self.get_object()
         now = datetime.now()  # projeto sem USE_TZ
-        for t in order.tickets.select_related("movie_session"):
-            if t.movie_session.show_time <= now:
+        for tic in order.tickets.select_related("movie_session"):
+            if tic.movie_session.show_time <= now:
                 return Response(
                     {
                         "detail": (

@@ -117,14 +117,13 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
-    # Adicione esta linha
+    # Esquema do drf-spectacular
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 
     # paginação global
     "DEFAULT_PAGINATION_CLASS": "cinema.pagination.DefaultPagination",
     "PAGE_SIZE": 10,
 }
-
 
 # OpenAPI / Swagger
 SPECTACULAR_SETTINGS = {

@@ -32,8 +32,8 @@ def _to_decimal(value, default=MONEY_DEFAULT):
 
 def _money_str(value):
     """Formata como string com 2 casas, sempre."""
-    d = _to_decimal(value, MONEY_DEFAULT)
-    return str(d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    det = _to_decimal(value, MONEY_DEFAULT)
+    return str(det.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 # ---------- BASIC SERIALIZERS ----------
