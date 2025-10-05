@@ -1,17 +1,22 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
-    SpectacularSwaggerView,
     SpectacularRedocView,
+    SpectacularSwaggerView,
 )
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/cinema/", include("cinema.urls", namespace="cinema")),
-    path("api/user/", include("user.urls", namespace="user")),
+
+    # Apps
+    path("api/cinema/", include(("cinema.urls", "cinema"), namespace="cinema")),
+    path("api/user/", include(("user.urls", "user"), namespace="user")),
+
+    # OpenAPI schema + docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/doc/swagger/",
@@ -23,5 +28,16 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
-    path("__debug__/", include("debug_toolbar.urls")),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+    # Redireciona a raiz para a documentação (evita 404 em "/")
+    path("", RedirectView.as_view(url="/api/doc/swagger/", permanent=False)),
+]
+
+# Django Debug Toolbar — só ativa se estiver instalado e em DEBUG
+if settings.DEBUG and "debug_toolbar" in settings.INSTALLED_APPS:
+    import debug_toolbar  # type: ignore
+    urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
+
+# Servir arquivos de mídia (imagens) em dev
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

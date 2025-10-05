@@ -1,118 +1,119 @@
 <template>
-  <div v-if="active && isStaff" class="cinema-halls">
-    <div class="label">Cinema Halls</div>
-    <div class="hall-container">
-      <div v-for="hall in halls" class="hall" :key="hall.id">
-        <div class="name">{{hall.name}}</div>
-        <div class="size">Size: {{hall.rows}} x {{hall.seats_in_row}}</div>
-        <div>Capacity: {{hall.capacity}}</div>
+  <div v-if="active" class="wrapper">
+    <div class="title">Cinema Halls</div>
+
+    <div v-if="loading" class="info">Loading…</div>
+    <div v-else-if="errorText" class="error">{{ errorText }}</div>
+
+    <div v-else class="grid">
+      <div v-for="h in halls" :key="h.id" class="card">
+        <div class="name">{{ h.name }}</div>
+        <div class="line">Size: {{ h.rows }} x {{ h.seats_in_row }}</div>
+        <div class="line">Capacity: {{ h.capacity ?? (h.rows * h.seats_in_row) }}</div>
       </div>
+
+      <div v-if="!halls.length" class="empty">No halls found.</div>
     </div>
-    <add-btn @click="handleHallCreate"></add-btn>
+
+    <add-btn v-if="isStaff" @click="openAdd" />
   </div>
 </template>
 
 <script>
 import AddBtn from '../comps/AddBtn.vue';
 
-import axios from 'axios';
 export default {
-  props: {
-    isStaff: {
-      type: Boolean,
-      default: false
-    }
-  },
+  name: 'CinemaHallListScreen',
+  props: { isStaff: { type: Boolean, default: false } },
+  components: { AddBtn },
+
   data: () => ({
     active: false,
-    halls: []
+    loading: false,
+    halls: [],
+    errorText: ''
   }),
+
   computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
+    token () { return localStorage.getItem('access'); }
   },
+
   methods: {
+    authHeader () { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
+
+    prettyErr (err) {
+      const res = err?.response;
+      if (!res) return err?.message || 'Network error';
+      if (res.data && typeof res.data === 'object') {
+        const first = Object.values(res.data)[0];
+        if (Array.isArray(first)) return first[0];
+        if (typeof first === 'string') return first;
+      }
+      return res.data?.detail || res.data?.error || `HTTP ${res.status}`;
+    },
+
     async fetchHalls () {
+      if (!this.token) { location.hash = '#/sign-in'; return; }
+      this.loading = true; this.errorText = '';
       try {
-        const { data: halls } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
-          headers: { Authorization: `Bearer ${this.token}` }
+        // ✅ rota com hífen e barra final
+        const { data } = await this.axios.get('/api/cinema/cinema-halls/', {
+          headers: this.authHeader()
         });
-        this.halls = halls;
+        this.halls = Array.isArray(data) ? data : (data?.results || []);
       } catch (err) {
-        console.error(err.response.data);
+        if (err?.response?.status === 401) {
+          localStorage.removeItem('access'); localStorage.removeItem('refresh');
+          location.hash = '#/sign-in'; return;
+        }
+        this.errorText = this.prettyErr(err);
+        this.halls = [];
+        console.error('[cinema-halls] error:', err);
+      } finally {
+        this.loading = false;
       }
     },
 
-    handleHallCreate () {
-      location.hash = '#/cinema-halls?add=true';
-    },
+    openAdd () { location.hash = '#/cinema-halls?add=true'; },
 
     hashHandler () {
-      this.active = Boolean(location.hash.match('cinema-halls$'));
+      this.active = Boolean(/#\/cinema-halls$/.test(location.hash));
     }
   },
+
   watch: {
-    active () {
-      if (this.active) {
-        this.fetchHalls();
-      }
-    }
+    active (val) { if (val) this.fetchHalls(); }
   },
+
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
   beforeDestroy () {
     window.removeEventListener('hashchange', this.hashHandler);
-  },
-  components: {
-    AddBtn
   }
 };
 </script>
 
 <style scoped>
-.cinema-halls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.wrapper { display: flex; flex-direction: column; gap: 24px; }
+.title { font-size: 44px; font-weight: 700; text-align: center; }
+.info, .error, .empty { text-align: center; opacity: .9; }
+.error { color: #ff6b6b; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 24px;
 }
 
-.label {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 60px;
-  margin-bottom: 60px;
+.card {
+  background: #141414;
+  border: 1px solid #282828;
+  border-radius: 16px;
+  padding: 22px;
+  text-align: center;
 }
-
-.hall-container {
-  display: flex;
-  gap: 65px;
-  flex-wrap: wrap;
-}
-
-.name {
-  font-weight: 700;
-  font-size: 25px;
-  line-height: 30px;
-  margin-bottom: 24px;
-}
-
-.size {
-  margin-bottom: 12px;
-}
-
-.hall {
-  width: 196px;
-  height: 190px;
-  background-color: var(--secondary-bg);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  line-height: 22px;
-}
+.name { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+.line { opacity: .9; margin-top: 8px; }
 </style>

@@ -1,27 +1,55 @@
-version: "3"
+version: "3.8"
 
 services:
+  db:
+    image: postgres:14-alpine
+    container_name: cinema_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apppass}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appuser} -d ${POSTGRES_DB:-appdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   app:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    container_name: cinema_app
+    depends_on:
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
+    working_dir: /app
     volumes:
       - ./backend:/app
       - ./backend/media:/vol/web/media
+    env_file:
+      - .env
+    environment:
+      # Garanta que o Django use o Postgres do serviço "db"
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_USER: ${POSTGRES_USER:-appuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-apppass}
     command: >
-      sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
-    env_file:
-      - .env
-    depends_on:
-      - db
+      sh -c "
+        python manage.py wait_for_db &&
+        python manage.py migrate &&
+        python manage.py runserver 0.0.0.0:8080
+      "
 
-  db:
-    image: postgres:14-alpine
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env
+networks:
+  default:
+    name: cinema_net
+
+volumes:
+  db_data:

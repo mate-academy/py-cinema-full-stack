@@ -1,195 +1,239 @@
 <template>
-  <div v-if="active" class="orders-container">
-    <div class="header">My orders</div>
-    <div class="container">
-      <div v-for="order in response.results" class="order">
-        <div class="created-info">
-          <div>Id: {{order.id}}.</div>
-          <div>Created at {{createdAt(order.created_at)}}</div>
-        </div>
-        <div  v-for="ticket in order.tickets" class="ticket">
-          <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"></div>
-          <div class="ticket-info">
-            <div><span class="label">Movie:</span> {{ticket.movie_session.movie_title}}</div>
-            <div><span class="label">Show time:</span> {{showTime(ticket.movie_session.show_time)}}</div>
-            <div><span class="label">Row:</span> {{ticket.row}}</div>
-            <div><span class="label">Seat:</span> {{ticket.seat}}</div>
+  <div v-if="active" class="wrapper">
+    <div class="title">My Orders</div>
+
+    <div v-if="loading" class="info">Loading orders…</div>
+    <div v-else-if="errorText" class="error">{{ errorText }}</div>
+
+    <div v-else>
+      <div v-if="!orders.length" class="empty">You have no orders yet.</div>
+
+      <div class="orders">
+        <div v-for="o in orders" :key="o.id" class="order-card">
+          <div class="order-head">
+            <span class="order-id">#{{ o.id }}</span>
+
+            <div class="order-head-right">
+              <span class="order-total">
+                {{ money(totalFor(o)) }}
+                <small class="muted" v-if="o.tickets?.length">
+                  ({{ o.tickets.length }} × {{ money(unitPriceFor(o)) }})
+                </small>
+              </span>
+
+              <button
+                class="cancel-btn"
+                :disabled="!canCancel(o) || cancellingId === o.id"
+                @click.stop="cancelOrder(o)"
+                v-if="o.tickets && o.tickets.length"
+                title="Cancel this order"
+              >
+                {{ cancellingId === o.id ? 'Cancelling…' : 'Cancel' }}
+              </button>
+
+              <span class="order-date">{{ formatDateTime(o.created_at) }}</span>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-    <div class="btn-container">
-      <div
-        @click="fetchPrevious"
-        :class="['move-btn previous', !response.previous && 'disabled']">
-        <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/left_arrow.svg#left"></use>
-        </svg>
-      </div>
-      <div
-        @click="fetchNext"
-        :class="['move-btn next', !response.next && 'disabled']">
-        <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/right_arrow.svg#right"></use>
-        </svg>
-      </div>
+
+          <div class="tickets">
+            <div v-for="t in (o.tickets || [])" :key="t.id" class="ticket">
+              <div class="poster">
+                <img
+                  v-if="t.movie_session && t.movie_session.movie_image"
+                  :src="absoluteMedia(t.movie_session.movie_image)"
+                  alt="poster"
+                />
+                <div v-else class="placeholder">No Image</div>
+              </div>
+
+              <div class="t-content">
+                <div class="movie">{{ t.movie_session?.movie_title || '—' }}</div>
+                <div class="meta">
+                  <span class="pill">{{ formatTime(t.movie_session?.show_time) }}</span>
+                  <span class="pill">{{ t.movie_session?.cinema_hall_name }}</span>
+                  <span class="pill">Row {{ t.row }}, Seat {{ t.seat }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div> <!-- order-card -->
+      </div> <!-- orders -->
     </div>
   </div>
 </template>
 
 <script>
-import moment from 'moment';
-
 export default {
+  name: 'OrderListScreen',
+
   data: () => ({
     active: false,
-    response: []
+    loading: false,
+    orders: [],
+    errorText: '',
+    cancellingId: null,
+    fallbackPrice: Number(import.meta.env.VITE_TICKET_PRICE || 20)
   }),
+
   computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
+    token () { return localStorage.getItem('access'); }
   },
+
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('my-orders$'));
+    baseUrl () {
+      const env = (import.meta.env && import.meta.env.VITE_API_URL) || '';
+      const base = env && env.trim() ? env.trim() : 'http://127.0.0.1:8080';
+      return new URL('/', base).origin;
+    },
+    buildUrl (path) { return new URL(path, this.baseUrl()).toString(); },
+    authHeader () { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
+
+    prettyErr (err) {
+      const res = err?.response;
+      if (!res) return err?.message || 'Network error';
+      if (res.data && typeof res.data === 'object') {
+        const first = Object.values(res.data)[0];
+        if (Array.isArray(first)) return first[0];
+        if (typeof first === 'string') return first;
+      }
+      return res.data?.detail || res.data?.error || `HTTP ${res.status}`;
+    },
+
+    absoluteMedia (pathOrUrl) {
+      if (!pathOrUrl) return '';
+      try { return new URL(pathOrUrl).toString(); }
+      catch { return this.buildUrl(pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`); }
+    },
+
+    // 'YYYY-MM-DDTHH:mm:ss' -> 'HH:mm'
+    formatTime (isoLocal) {
+      const m = String(isoLocal || '').match(/T(\d{2}):(\d{2})/);
+      return m ? `${m[1]}:${m[2]}` : '—';
+    },
+
+    // 'YYYY-MM-DDTHH:mm:ss' -> 'YYYY/MM/DD HH:mm'
+    formatDateTime (isoLocal) {
+      if (!isoLocal) return '—';
+      const d = new Date(String(isoLocal).replace(' ', 'T'));
+      const pad = (n) => String(n).padStart(2, '0');
+      const y = d.getFullYear();
+      const m = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const hh = pad(d.getHours());
+      const mm = pad(d.getMinutes());
+      return `${y}/${m}/${day} ${hh}:${mm}`;
+    },
+
+    // Usa BE se vier (string "20.00"), senão fallback .env
+    unitPriceFor (order) {
+      const be = Number(order?.unit_price);
+      return Number.isFinite(be) ? be : this.fallbackPrice;
+    },
+    // Usa BE se vier (string "40.00"), senão qty × fallback
+    totalFor (order) {
+      const be = Number(order?.total);
+      if (Number.isFinite(be)) return be;
+      const qty = Array.isArray(order?.tickets) ? order.tickets.length : 0;
+      return qty * this.fallbackPrice;
+    },
+    money (n) {
+      if (Number.isNaN(Number(n))) return '—';
+      return Number(n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    },
+
+    // Pega o menor show_time dentre os tickets do pedido
+    earliestShowTime (order) {
+      const times = (order?.tickets || [])
+        .map(t => t?.movie_session?.show_time)
+        .filter(Boolean)
+        .map(s => new Date(String(s).replace(' ', 'T')).getTime());
+      return times.length ? Math.min(...times) : null;
+    },
+    canCancel (order) {
+      const ts = this.earliestShowTime(order);
+      if (!ts) return false;
+      return ts > Date.now(); // somente antes do início
+    },
+
+    async cancelOrder (order) {
+      if (!this.token) { location.hash = '#/sign-in'; return; }
+      if (!this.canCancel(order)) return;
+      const ok = window.confirm('Do you really want to cancel this order? Seats will be released.');
+      if (!ok) return;
+
+      this.cancellingId = order.id;
+      this.errorText = '';
+      try {
+        const url = this.buildUrl(`/api/cinema/orders/${order.id}/`);
+        await this.axios.delete(url, { headers: this.authHeader() });
+        await this.fetchOrders();
+      } catch (err) {
+        this.errorText = this.prettyErr(err);
+      } finally {
+        this.cancellingId = null;
+      }
     },
 
     async fetchOrders () {
+      if (!this.token) { location.hash = '#/sign-in'; return; }
+      this.loading = true;
+      this.errorText = '';
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.response = response;
+        const url = this.buildUrl('/api/cinema/orders/');
+        const { data } = await this.axios.get(url, { headers: this.authHeader() });
+        this.orders = Array.isArray(data) ? data : (data?.results || []);
       } catch (err) {
-        console.error(err.response.data);
+        if (err?.response?.status === 401) {
+          localStorage.removeItem('access'); localStorage.removeItem('refresh');
+          location.hash = '#/sign-in';
+          return;
+        }
+        this.errorText = this.prettyErr(err);
+        this.orders = [];
+      } finally {
+        this.loading = false;
       }
     },
 
-    async fetchPrevious () {
-      try {
-        const { data: response } = await this.axios.get(this.response.previous, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.response = response;
-      } catch (err) {
-        console.error(err.response.data);
-      }
-    },
-
-    async fetchNext () {
-      try {
-        const { data: response } = await this.axios.get(this.response.next, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.response = response;
-      } catch (err) {
-        console.error(err.response.data);
-      }
-    },
-
-    createdAt (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
-    },
-
-    showTime (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
+    hashHandler () {
+      this.active = /#\/orders(?:$|\?)/.test(location.hash);
+      if (this.active) this.fetchOrders();
     }
   },
-  watch: {
-    active (value) {
-      if (!value) return;
-      this.fetchOrders();
-    }
-  },
+
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
+
   beforeDestroy () {
     window.removeEventListener('hashchange', this.hashHandler);
   }
-
 };
 </script>
 
 <style scoped>
-.orders-container, .orders-container > * {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-}
+.wrapper { display: flex; flex-direction: column; gap: 16px; }
+.title { font-size: 44px; font-weight: 700; }
+.info, .error, .empty { text-align: center; margin-top: 24px; opacity: .9; }
+.error { color: #ff6b6b; }
 
-.header {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
+.orders { display: grid; gap: 18px; margin-top: 12px; }
+.order-card {
+  border: 1px solid #2a2a2a;
+  background: #121212;
+  border-radius: 14px;
+  padding: 14px;
 }
+.order-head {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px; font-weight: 600;
+}
+.order-id { opacity: .9; }
+.order-head-right { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.order-total { font-weight: 700; }
+.order-total .muted { opacity: .7; font-weight: 400; font-size: 12px; }
+.order-date { opacity: .7; font-size: 14px; }
 
-.order {
-  box-shadow: 0 0 6px var(--secondary-bg);
-  width: 100%;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 26px 20px;
-}
-
-.created-info {
-  display: flex;
-  gap: 12px;
-  font-size: 25px;
-  line-height: 30px;
-}
-.created-info > * {
-  font-weight: 600;
-}
-
-.movie-card {
-  width: 76px;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-.ticket {
-  display: flex;
-  gap: 14px;
-}
-
-.ticket-info {
-  display: flex;
-  flex-direction: column;
-  font-size: 18px;
-  line-height: 22px;
-}
-
-.label {
-  font-weight: 600;
-}
-
-.btn-container {
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-}
-
-.move-btn {
-  height: 40px;
-  width: 40px;
-  background-color: var(--main-bg);
-  box-shadow: 0 0 10px var(--secondary-bg);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.move-btn.disabled {
-  pointer-events: none;
-  opacity: 0.7;
-}
-</style>
+.cancel-btn {
+  border: 1px solid #ff4d4d;

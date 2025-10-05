@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.3.0
+    hooks:
+      - id: flake8
+        # usa a mesma config do container
+        args: ["--config", "backend/.flake8"]
+        additional_dependencies:
+          - flake8-quotes
+        # só roda no backend
+        files: ^backend/
+        # IMPORTANTÍSSIMO: exclui via pre-commit (regex), pois o flake8 recebe a lista de arquivos
+        exclude: >
+          (?x)
+          ^backend/.*/migrations/ |
+          ^backend/cinema/tests/

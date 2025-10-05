@@ -1,21 +1,26 @@
 <template>
   <div id="app">
-    <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
-    <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
-    <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
-    <movie-list-screen v-if="user" :isStaff="user.is_staff"></movie-list-screen>
-    <movie-session-list-screen v-if="user" :isStaff="user.is_staff"></movie-session-list-screen>
-    <cinema-hall-list-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-list-screen>
-    <genre-list-screen v-if="user" :isStaff="user.is_staff"></genre-list-screen>
-    <actor-list-screen v-if="user" :isStaff="user.is_staff"></actor-list-screen>
-    <movie-details-screen v-if="user"></movie-details-screen>
-    <movie-session-details-screen v-if="user" :user="user" ></movie-session-details-screen>
-    <movie-add-screen v-if="user" :isStaff="user.is_staff"></movie-add-screen>
-    <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
-    <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
-    <order-list-screen v-if="user"></order-list-screen>
-    <profile-screen v-if="user" :user="user"></profile-screen>
-    <app-footer v-if="user"></app-footer>
+    <app-header v-if="user" :user="user" @log-out="logOut" />
+
+    <!-- telas públicas -->
+    <sign-in v-if="!user" @log-in="handleLogIn" />
+    <sign-up v-if="!user" @log-in="handleLogIn" />
+
+    <!-- telas privadas (cada uma se auto-ativa pelo hash) -->
+    <movie-list-screen v-if="user" :isStaff="user.is_staff" />
+    <movie-session-list-screen v-if="user" :isStaff="user.is_staff" />
+    <cinema-hall-list-screen v-if="user" :isStaff="user.is_staff" />
+    <genre-list-screen v-if="user" :isStaff="user.is_staff" />
+    <actor-list-screen v-if="user" :isStaff="user.is_staff" />
+    <movie-details-screen v-if="user" />
+    <movie-session-details-screen v-if="user" :user="user" />
+    <movie-add-screen v-if="user" :isStaff="user.is_staff" />
+    <movie-session-add-screen v-if="user" :isStaff="user.is_staff" />
+    <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff" />
+    <order-list-screen v-if="user" />
+    <profile-screen v-if="user" :user="user" />
+
+    <app-footer v-if="user" />
   </div>
 </template>
 
@@ -23,109 +28,140 @@
 import jwtDecode from 'jwt-decode';
 
 import SignIn from './views/SignIn.vue';
-import MovieListScreen from './views/MovieListScreen.vue';
+import SignUp from './views/SignUp.vue';
 import AppHeader from './views/AppHeader.vue';
 import AppFooter from './views/AppFooter.vue';
+
+import MovieListScreen from './views/MovieListScreen.vue';
 import MovieDetailsScreen from './views/MovieDetailsScreen.vue';
 import MovieAddScreen from './views/MovieAddScreen.vue';
+
 import MovieSessionListScreen from './views/MovieSessionListScreen.vue';
 import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue';
+import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
+
 import CinemaHallListScreen from './views/CinemaHallListScreen.vue';
 import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue';
+
 import GenreListScreen from './views/GenreListScreen.vue';
 import ActorListScreen from './views/ActorListScreen.vue';
-import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
+
 import OrderListScreen from './views/OrderListScreen.vue';
 import ProfileScreen from './views/ProfileScreen.vue';
-import SignUp from './views/SignUp.vue';
 
 export default {
+  components: {
+    SignIn,
+    SignUp,
+    AppHeader,
+    AppFooter,
+    MovieListScreen,
+    MovieDetailsScreen,
+    MovieAddScreen,
+    MovieSessionListScreen,
+    MovieSessionAddScreen,
+    MovieSessionDetailsScreen,
+    CinemaHallListScreen,
+    CinemaHallAddScreen,
+    GenreListScreen,
+    ActorListScreen,
+    OrderListScreen,
+    ProfileScreen
+  },
+
   data: () => ({
-    expiresAt: null,
     user: null,
-    type: 'password'
+    expiresAt: null, // epoch (segundos)
   }),
+
   methods: {
+    async handleLogIn () {
+      // chamado pelo SignIn / SignUp após salvar tokens no localStorage
+      await this.logIn();
+      location.hash = '#/';
+    },
+
     async logIn () {
-      const accessToken = localStorage.getItem('access');
-      if (!accessToken) return;
+      const access = localStorage.getItem('access');
+      if (!access) return;
 
-      const { exp } = jwtDecode(accessToken);
-      this.expiresAt = exp;
-
-      if (this.expiresAt * 1e3 > Date.now()) {
-        await this.fetchUser();
+      try {
+        const { exp } = jwtDecode(access);
+        this.expiresAt = exp;
+      } catch {
+        // token inválido — força log out
+        this.logOut();
         return;
       }
 
-      this.refreshToken();
-    },
-
-    async handleLogIn () {
-      await this.logIn();
-      location.hash = '#/';
+      // Se ainda está válido, busca o usuário; senão tenta renovar
+      if (this.expiresAt * 1000 > Date.now()) {
+        await this.fetchUser();
+      } else {
+        await this.refreshToken();
+      }
     },
 
     logOut () {
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
-
       this.user = null;
     },
 
     async fetchUser () {
-      const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
-          { headers: { Authorization: `Bearer ${accessToken}` } });
-
-        this.user = user;
+        // Authorization já é adicionado pelo interceptor do axios instance
+        const { data } = await this.axios.get('/api/user/me/');
+        this.user = data;
       } catch (err) {
-        console.error(err.response.data);
+        console.error('[me] error:', err?.response?.data || err?.message);
+        // se não conseguiu obter o usuário, encerra a sessão local
+        this.logOut();
       }
     },
 
     async refreshToken () {
-      try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
-        });
-
-        const { access, refresh } = data;
-
-        localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
-        this.logIn();
-      } catch (err) {
-        console.error(err.response.data);
+      const refresh = localStorage.getItem('refresh');
+      if (!refresh) {
+        this.logOut();
+        return;
       }
-    }
+
+      try {
+        // algumas configurações do SimpleJWT retornam apenas "access"
+        const { data } = await this.axios.post('/api/user/token/refresh/', { refresh });
+
+        if (data?.access) {
+          localStorage.setItem('access', data.access);
+          // mantém o refresh atual caso o backend não gire um novo
+          if (data?.refresh) localStorage.setItem('refresh', data.refresh);
+
+          const { exp } = jwtDecode(data.access);
+          this.expiresAt = exp;
+
+          await this.fetchUser();
+          return;
+        }
+
+        // sem access => não deu para renovar
+        this.logOut();
+      } catch (err) {
+        console.error('[refresh] error:', err?.response?.data || err?.message);
+        this.logOut();
+      }
+    },
   },
+
   created () {
+    // tenta autenticar ao carregar
     this.logIn();
 
+    // checagem simples para renovar o token quando expirar
     setInterval(() => {
-      if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
-      this.refreshToken();
-    }, 60 * 1e3);
-  },
-  components: {
-    SignIn,
-    MovieListScreen,
-    AppHeader,
-    AppFooter,
-    MovieDetailsScreen,
-    MovieAddScreen,
-    MovieSessionListScreen,
-    MovieSessionAddScreen,
-    CinemaHallListScreen,
-    CinemaHallAddScreen,
-    GenreListScreen,
-    ActorListScreen,
-    MovieSessionDetailsScreen,
-    OrderListScreen,
-    ProfileScreen,
-    SignUp
+      if (!this.expiresAt) return;
+      const willExpire = this.expiresAt * 1000 <= Date.now() + 30_000; // 30s de margem
+      if (willExpire) this.refreshToken();
+    }, 60 * 1000);
   }
 };
 </script>
@@ -135,7 +171,7 @@ export default {
   padding: 60px 100px;
 }
 
-#app > *:last-child{
+#app > *:last-child {
   padding-bottom: 40px;
 }
 
