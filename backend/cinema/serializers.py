@@ -1,5 +1,8 @@
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from typing import List
+
 from django.db import transaction
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -29,8 +32,8 @@ def _to_decimal(value, default=MONEY_DEFAULT):
 
 def _money_str(value):
     """Formata como string com 2 casas, sempre."""
-    dec = _to_decimal(value, MONEY_DEFAULT)
-    return str(dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+    d = _to_decimal(value, MONEY_DEFAULT)
+    return str(d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 # ---------- BASIC SERIALIZERS ----------
@@ -41,12 +44,18 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ActorSerializer(serializers.ModelSerializer):
+    # importante para o schema: propriedade explicitada como read-only
+    full_name = serializers.CharField(read_only=True)
+
     class Meta:
         model = Actor
         fields = ("id", "first_name", "last_name", "full_name")
 
 
 class CinemaHallSerializer(serializers.ModelSerializer):
+    # importante para o schema: propriedade explicitada como read-only
+    capacity = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = CinemaHall
         fields = ("id", "name", "rows", "seats_in_row", "capacity")
@@ -60,18 +69,9 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class MovieWriteSerializer(serializers.ModelSerializer):
-    """
-    Usado para create/update, recebendo listas de IDs para genres/actors.
-    Agora:
-      - 'duration' aceita string numérica e é normalizada para int (> 0).
-      - 'genres' e 'actors' são opcionais (POST pode omitir).
-    """
-    genres = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Genre.objects.all(), required=False
-    )
-    actors = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Actor.objects.all(), required=False
-    )
+    """Usado para create/update, com listas de IDs para genres/actors."""
+    genres = serializers.PrimaryKeyRelatedField(many=True, queryset=Genre.objects.all())
+    actors = serializers.PrimaryKeyRelatedField(many=True, queryset=Actor.objects.all())
 
     class Meta:
         model = Movie
@@ -85,40 +85,20 @@ class MovieWriteSerializer(serializers.ModelSerializer):
             "image",
         )
 
-    # --- Mudança principal: normalização/validação de duration ---
-    def validate_duration(self, value):
-        """
-        Aceita 'duration' como int ou string numérica e garante > 0.
-        """
-        if value in (None, ""):
-            # deixa o DRF/modelo tratarem 'required' ou 'blank' conforme o ModelField
-            return value
-        try:
-            value = int(value)
-        except (TypeError, ValueError):
-            raise serializers.ValidationError("duration deve ser um número inteiro.")
-        if value <= 0:
-            raise serializers.ValidationError("duration deve ser maior que zero.")
-        return value
-
     def create(self, validated_data):
         genres = validated_data.pop("genres", [])
         actors = validated_data.pop("actors", [])
         movie = Movie.objects.create(**validated_data)
-        if genres:
-            movie.genres.set(genres)
-        if actors:
-            movie.actors.set(actors)
+        movie.genres.set(genres)
+        movie.actors.set(actors)
         return movie
 
     def update(self, instance, validated_data):
         genres = validated_data.pop("genres", None)
         actors = validated_data.pop("actors", None)
-
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
         if genres is not None:
             instance.genres.set(genres)
         if actors is not None:
@@ -129,16 +109,23 @@ class MovieWriteSerializer(serializers.ModelSerializer):
 class MovieListSerializer(serializers.ModelSerializer):
     """Visão compacta para listagem."""
     genres = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
-    actors = serializers.SlugRelatedField(many=True, read_only=True, slug_field="full_name")
+    # Evita warning do drf-spectacular sobre 'full_name' sem hint no model
+    actors = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ("id", "title", "genres", "actors", "image")
 
+    @extend_schema_field(serializers.ListField(child=serializers.CharField()))
+    def get_actors(self, instance) -> List[str]:
+        names = [a.full_name for a in instance.actors.all()]
+        # ordena + dedup
+        return sorted(list(set(names)))
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        # dedup/ordena apenas gêneros; atores já vêm prontos do method field
         data["genres"] = sorted(list(set(data["genres"])))
-        data["actors"] = sorted(list(set(data["actors"])))
         return data
 
 
@@ -177,7 +164,9 @@ class MovieSessionListSerializer(MovieSessionSerializer):
     movie_title = serializers.CharField(source="movie.title", read_only=True)
     movie_image = serializers.ImageField(source="movie.image", read_only=True)
     cinema_hall_name = serializers.CharField(source="cinema_hall.name", read_only=True)
-    cinema_hall_capacity = serializers.IntegerField(source="cinema_hall.capacity", read_only=True)
+    cinema_hall_capacity = serializers.IntegerField(
+        source="cinema_hall.capacity", read_only=True
+    )
     tickets_available = serializers.IntegerField(read_only=True)
 
     class Meta:
@@ -258,7 +247,7 @@ class OrderListSerializer(OrderSerializer):
     class Meta(OrderSerializer.Meta):
         fields = ("id", "tickets", "created_at", "total", "unit_price")
 
-    def get_unit_price(self, obj):
+    def get_unit_price(self, obj) -> str:
         """
         Retorna o preço unitário como string 'xx.xx'.
         - Se o modelo tiver Order.unit_price, usa; senão, fallback para 20.00.
@@ -269,7 +258,7 @@ class OrderListSerializer(OrderSerializer):
             price = MONEY_DEFAULT
         return _money_str(price)
 
-    def get_total(self, obj):
+    def get_total(self, obj) -> str:
         """
         Retorna o total como string 'xx.xx'.
         - Se o modelo tiver Order.total, usa esse valor.
@@ -286,28 +275,3 @@ class OrderListSerializer(OrderSerializer):
 
         total_dec = _to_decimal(unit, MONEY_DEFAULT) * qty
         return _money_str(total_dec)
-
-
-# ---------- BASIC SERIALIZERS ----------
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        fields = ("id", "name")
-
-
-class ActorSerializer(serializers.ModelSerializer):
-    # 👇 ADICIONE ESTA LINHA
-    full_name = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = Actor
-        fields = ("id", "first_name", "last_name", "full_name")
-
-
-class CinemaHallSerializer(serializers.ModelSerializer):
-    # 👇 ADICIONE ESTA LINHA
-    capacity = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = CinemaHall
-        fields = ("id", "name", "rows", "seats_in_row", "capacity")
