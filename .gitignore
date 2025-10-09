@@ -1,7 +1,7 @@
 .idea/
 .vscode/
 *.iml
-.env
+backend/.env
 .DS_Store
 venv/
 .pytest_cache/
