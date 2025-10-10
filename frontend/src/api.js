@@ -1,14 +1,30 @@
-export function baseUrl () {
-  const env = (import.meta.env && import.meta.env.VITE_API_URL) || '';
-  const base = env && env.trim() ? env.trim() : 'http://localhost:8080';
-  return new URL('/', base).origin;
-}
+// src/api.js
+import api, { BASE_URL } from "./axios";
 
-export async function apiGet (path) {
-  const access = localStorage.getItem('access');
-  const resp = await fetch(new URL(path, baseUrl()).toString(), {
-    headers: { Authorization: `Bearer ${access}` }
-  });
-  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  return resp.json();
-}
+/* ===========================
+   USER
+=========================== */
+
+// Envia email e username juntos para cobrir ambos os casos de backend
+export const login = (email, password) =>
+  api
+    .post(`${BASE_URL}/api/user/token/`, { email, username: email, password })
+    .then((r) => r.data);
+
+export const refreshToken = (refresh) =>
+  api.post("/api/user/token/refresh/", { refresh }).then((r) => r.data);
+
+export const fetchMe = () => api.get("/api/user/me/").then((r) => r.data);
+
+/* ===========================
+   CINEMA
+=========================== */
+
+export const fetchMovies = (params = {}) =>
+  api.get("/api/cinema/movies/", { params }).then((r) => r.data);
+
+export const fetchMovieSessions = (params = {}) =>
+  api.get("/api/cinema/movie-sessions/", { params }).then((r) => r.data);
+
+export const fetchCinemaHalls = (params = {}) =>
+  api.get("/api/cinema/cinema-halls/", { params }).then((r) => r.data);
