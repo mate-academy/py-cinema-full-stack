@@ -1,70 +1,94 @@
 <template>
   <div v-if="active" class="modal-wrapper" @click="handleClick">
-    <movie-modal :movie="movie" @close-movie-details="handleMovieDetailsClose" ref="modal"></movie-modal>
+    <movie-modal
+      :movie="movie"
+      @close-movie-details="handleMovieDetailsClose"
+      ref="modal"
+    />
   </div>
 </template>
 
 <script>
+import api from '@/api';
 import MovieModal from '../comps/MovieModal.vue';
+
 export default {
+  name: 'MovieDetailsScreen',
+  components: { MovieModal },
+
   data: () => ({
     active: false,
     movie: {}
   }),
+
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
+
   methods: {
-    handleClick (evt) {
+    handleClick(evt) {
       if (evt.target !== this.$el) return;
       this.handleMovieDetailsClose();
     },
 
-    hashHandler () {
+    hashHandler() {
       const match = location.hash.match(/#\/movies\/(\d+)/);
       if (!match) {
         this.active = false;
         this.movie = {};
         return;
-      };
-
+      }
       const [, id] = match;
       if (!id) {
         this.active = false;
         return;
       }
-
       this.active = true;
       this.fetchMovie(id);
     },
 
-    async fetchMovie (id) {
-      try {
-        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies-${id}`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
+    authHeader() {
+      return this.token ? { Authorization: `Bearer ${this.token}` } : {};
+    },
 
-        this.movie = movie;
+    prettyErr(err) {
+      const res = err?.response;
+      if (!res) return err?.message || 'Network error';
+      if (res.data && typeof res.data === 'object') {
+        const first = Object.values(res.data)[0];
+        if (Array.isArray(first)) return first[0];
+        if (typeof first === 'string') return first;
+      }
+      return res.data?.detail || res.data?.error || `HTTP ${res.status}`;
+    },
+
+    async fetchMovie(id) {
+      try {
+        const { data: movie } = await api.get(
+          `/api/cinema/movies/${id}/`,
+          { headers: this.authHeader() }
+        );
+        this.movie = movie || {};
       } catch (err) {
-        console.error(err.response.data);
+        // eslint-disable-next-line no-console
+        console.error('[movie details] error:', this.prettyErr(err));
       }
     },
 
-    handleMovieDetailsClose () {
+    handleMovieDetailsClose() {
       location.hash = '#/movies';
     }
   },
-  mounted () {
+
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
-  },
-  components: { MovieModal }
-
+  }
 };
 </script>
 

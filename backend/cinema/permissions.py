@@ -1,13 +1,20 @@
-from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework import permissions
 
 
-class IsAdminOrIfAuthenticatedReadOnly(BasePermission):
+class IsAdminOrIfAuthenticatedReadOnly(permissions.BasePermission):
+    """
+    Leituras (SAFE_METHODS): liberadas para qualquer usuário (mesmo anônimo).
+    Escritas (POST/PUT/PATCH/DELETE): apenas para staff/admin (user.is_staff).
+    """
+
     def has_permission(self, request, view):
-        return bool(
-            (
-                request.method in SAFE_METHODS
-                and request.user
-                and request.user.is_authenticated
-            )
-            or (request.user and request.user.is_staff)
-        )
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        user = getattr(request, "user", None)
+        return bool(user and user.is_staff)
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        user = getattr(request, "user", None)
+        return bool(user and user.is_staff)

@@ -1,135 +1,79 @@
 <template>
-  <div class="profile" v-if="active">
-    <div class="header">My profile</div>
-    <div class="input-container">
-      <input-item
-        label="Email"
-        v-model="email"
-        pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
-        :initialValue="user.email"
-      ></input-item>
-      <password-input label="Password" v-model="password"></password-input>
-      <action-button label="Submit" @click="changeUserData"></action-button>
-      <div class="result success" v-if="success">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/success.svg#success"></use>
-        </svg>
-        <div>Updated</div>
-      </div>
-      <div class="result failure" v-if="error">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/error.svg#error"></use>
-        </svg>
-        <div>{{error[0]}}</div>
+  <div class="profile">
+    <h1>My profile</h1>
+
+    <div v-if="loading">Loading…</div>
+    <p v-if="errorText" class="error">{{ errorText }}</p>
+
+    <div v-if="!loading && me">
+      <ul class="info">
+        <li><strong>ID:</strong> <span>{{ me.id }}</span></li>
+        <li><strong>Email:</strong> <span>{{ me.email || me.username }}</span></li>
+        <li v-if="me.username"><strong>Username:</strong> <span>{{ me.username }}</span></li>
+        <li><strong>Staff:</strong> <span>{{ me.is_staff ? 'yes' : 'no' }}</span></li>
+      </ul>
+
+      <div class="actions">
+        <button @click="loadMe" :disabled="loading">Reload</button>
+        <button class="outline" @click="signOut">Sign out</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import InputItem from '../comps/InputItem.vue';
-import ActionButton from '../comps/ActionButton.vue';
-import PasswordInput from '../comps/PasswordInput.vue';
+import { fetchMe } from '@/api'
 
 export default {
-  props: {
-    user: {
-      type: Object,
-      default: () => {}
-    }
-  },
+  name: 'ProfileScreen',
+
   data: () => ({
-    active: false,
-    email: '',
-    password: '',
-    success: null,
-    error: null
+    me: null,
+    loading: false,
+    errorText: ''
   }),
-  computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
-  },
+
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('my-profile$'));
-    },
-
-    async changeUserData () {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          'Content-Type': 'application/json'
-        }
-      };
-
-      const body = {};
-      if (this.email && this.email !== this.user.email) body.email = this.email;
-      if (this.password) body.password = this.password;
-
+    async loadMe() {
+      this.loading = true
+      this.errorText = ''
       try {
-        const { data } = await this.axios.patch(`${import.meta.env.VITE_API_URL}/api/user/me`, body, config);
-        this.success = !!data;
-
-        this.email = '';
-        this.password = '';
+        this.me = await fetchMe()
       } catch (err) {
-        console.error(err);
-        const { password = null, email = null } = err.response.data;
-        this.error = password || email;
+        const status = err?.response?.status
+        this.errorText =
+          err?.response?.data?.detail ||
+          `Failed to load profile${status ? ` (HTTP ${status})` : ''}`
+        // eslint-disable-next-line no-console
+        console.error('[Profile] load failed:', status, err)
+      } finally {
+        this.loading = false
       }
-    }
-  },
-  watch: {
-    error () {
-      setTimeout(() => {
-        this.error = null;
-      }, 15 * 1e3);
     },
-    success () {
-      setTimeout(() => {
-        this.success = null;
-      }, 15 * 1e3);
+
+    signOut() {
+      // Limpa tokens e volta para a tela de login
+      localStorage.removeItem('access')
+      localStorage.removeItem('refresh')
+      // Se o app usa hash-router simples:
+      location.hash = '#/sign-in'
+      // e força recarregar dados
+      this.me = null
     }
   },
-  mounted () {
-    window.addEventListener('hashchange', this.hashHandler);
-    this.hashHandler();
-  },
-  beforeDestroy () {
-    window.removeEventListener('hashchange', this.hashHandler);
-  },
-  components: {
-    InputItem,
-    ActionButton,
-    PasswordInput
+
+  mounted() {
+    this.loadMe() // dispara GET /api/user/me/ para a screenshot
   }
-};
+}
 </script>
 
 <style scoped>
-.profile, .profile > * {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-}
-
-.action-button {
-  margin-top: 16px;
-}
-
-.header {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
-}
-
-.result {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-}
+.profile { display: grid; gap: 16px; max-width: 720px; margin: 0 auto; }
+.info { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.info li { display: grid; grid-template-columns: 140px 1fr; align-items: center; }
+.error { color: #ff6b6b; }
+.actions { display: flex; gap: 12px; margin-top: 8px; }
+button { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; }
+button.outline { background: transparent; border: 1px solid var(--main-font, #999); }
 </style>

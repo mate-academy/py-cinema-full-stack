@@ -1,168 +1,111 @@
 <template>
-  <div v-if="active && isStaff" class="actor-container">
-    <div class="add-actor" v-if="createMode">
-      <div class="header">Add Actor</div>
-      <div class="note">Please fill in the fields in details</div>
-      <div class="input-container">
-        <input-item label="First name" width="wide" v-model="firstName"></input-item>
-        <input-item label="Last name" width="wide" v-model="lastName"></input-item>
+  <section v-show="active" class="actor-list">
+    <div class="head">
+      <h1>Actors</h1>
+      <div class="actions">
+        <button @click="load" :disabled="loading">Reload</button>
+        <span v-if="count !== null" class="muted">Total: {{ count }}</span>
       </div>
-      <action-button label="Submit" @click="addActor"></action-button>
     </div>
-    <div class="actors">
-      <div class="header">All Actors</div>
-      <div class="container">
-        <div v-for="(actor, index) in actors" :key="actor.id" :class="index % 2 === 0 ? 'odd' : ''">
-          {{actor.first_name}} {{actor.last_name}}
+
+    <div v-if="loading" class="hint">Loading…</div>
+    <p v-if="errorText" class="err">{{ errorText }}</p>
+
+    <ul v-if="!loading && actors.length" class="grid">
+      <li v-for="a in actors" :key="a.id" class="card">
+        <div class="row1">
+          <strong class="name">{{ a.full_name || (a.first_name + ' ' + a.last_name) }}</strong>
+          <small class="id">#{{ a.id }}</small>
         </div>
-      </div>
-      <add-btn @click="createMode = !createMode"></add-btn>
+        <div class="meta">
+          <span v-if="a.first_name">First: {{ a.first_name }}</span>
+          <span v-if="a.last_name">Last: {{ a.last_name }}</span>
+        </div>
+      </li>
+    </ul>
+
+    <div v-if="paginated" class="pager">
+      <button @click="goPrev" :disabled="!previous || loading">Prev</button>
+      <button @click="goNext" :disabled="!next || loading">Next</button>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
-import axios from 'axios';
+import { fetchActors, initTokensFromStorage } from '@/api';
 
-import AddBtn from '../comps/AddBtn.vue';
-import InputItem from '../comps/InputItem.vue';
-import ActionButton from '../comps/ActionButton.vue';
 export default {
-  props: {
-    isStaff: {
-      type: Boolean,
-      default: false
-    }
-  },
+  name: 'ActorListScreen',
   data: () => ({
     active: false,
     actors: [],
-    createMode: false,
-    firstName: '',
-    lastName: ''
+    loading: false,
+    errorText: '',
+    count: null,
+    next: null,
+    previous: null
   }),
   computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
+    paginated () { return this.next !== null || this.previous !== null; }
   },
   methods: {
-    async fetchActors () {
+    isMyHash () { return /^#\/actors/.test(location.hash); },
+    async load (url = null) {
+      this.loading = true; this.errorText = '';
       try {
-        const { data: actors } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.actors = actors;
+        if (url) {
+          const headers = {};
+          const token = localStorage.getItem('auth_access');
+          if (token) headers.Authorization = `Bearer ${token}`;
+          const r = await fetch(url, { headers });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          this.applyData(await r.json());
+          return;
+        }
+        const data = await fetchActors({});
+        this.applyData(data);
       } catch (err) {
-        console.error(err.response.data);
+        const s = err?.response?.status || err?.message;
+        this.errorText = err?.response?.data?.detail || `Failed to load actors${s ? ` (${s})` : ''}`;
+        console.error('[Actors] load failed:', s, err);
+      } finally { this.loading = false; }
+    },
+    applyData (data) {
+      if (data && Array.isArray(data.results)) {
+        this.actors = data.results; this.count = data.count ?? this.actors.length;
+        this.next = data.next || null; this.previous = data.previous || null;
+      } else if (Array.isArray(data)) {
+        this.actors = data; this.count = data.length; this.next = null; this.previous = null;
+      } else {
+        this.actors = []; this.count = 0; this.next = null; this.previous = null;
       }
     },
-
-    async addActor () {
-      try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
-          {
-            first_name: this.firstName,
-            last_name: this.lastName
-          },
-          config
-        );
-
-        this.createMode = !this.createMode;
-        this.fetchActors();
-
-        this.firstName = '';
-        this.lastName = '';
-      } catch (err) {
-        console.error(err);
-      }
-    },
-
+    goNext () { if (this.next) this.load(this.next); },
+    goPrev () { if (this.previous) this.load(this.previous); },
     hashHandler () {
-      this.active = Boolean(location.hash.match('actors$'));
-    }
+      const was = this.active;
+      this.active = this.isMyHash();
+      if (this.active && !was) this.load();
+    },
   },
-  watch: {
-    active () {
-      if (this.active) {
-        this.fetchActors();
-      }
-    }
-  },
-  mounted () {
-    window.addEventListener('hashchange', this.hashHandler);
-    this.hashHandler();
-  },
-  beforeDestroy () {
-    window.removeEventListener('hashchange', this.hashHandler);
-  },
-
-  components: {
-    AddBtn,
-    InputItem,
-    ActionButton
-  }
-
+  created () { if (typeof initTokensFromStorage === 'function') initTokensFromStorage(); },
+  mounted () { window.addEventListener('hashchange', this.hashHandler); this.hashHandler(); },
+  beforeDestroy () { window.removeEventListener('hashchange', this.hashHandler); }
 };
 </script>
 
 <style scoped>
-.actor-container, .actor-container > * {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-}
-
-.add-actor {
-  margin-bottom: 36px;
-}
-
-.action-button {
-  margin-top: 36px;
-}
-
-.header {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
-}
-
-.note {
-  font-size: 25px;
-  line-height: 31px;
-}
-
-.container {
-  width: 100%;
-  font-size: 25px;
-  line-height: 30px;
-}
-
-.container > div {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  border-radius: 10px;
-}
-
-.container > .odd {
-  background-color: var(--secondary-bg);
-}
-
-.input-container {
-  width: 100%;
-  display: flex;
-  gap: 100px;
-}
+.actor-list { display:grid; gap:12px; padding:12px; }
+.head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.actions { display:flex; align-items:center; gap:8px; }
+.muted { opacity:.7; }
+.hint { opacity:.7; }
+.err { color:#ff6b6b; }
+.grid { list-style:none; padding:0; margin:0; display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:12px; }
+.card { border:1px solid #eee; border-radius:12px; background:#fff; padding:12px; display:grid; gap:6px; }
+.row1 { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.name { font-weight:600; }
+.id { opacity:.6; }
+.meta { display:flex; flex-wrap:wrap; gap:8px; font-size:13px; opacity:.9; }
+.pager { display:flex; gap:8px; margin-top:12px; }
 </style>

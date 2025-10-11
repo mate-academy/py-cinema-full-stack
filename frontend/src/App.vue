@@ -1,145 +1,87 @@
 <template>
   <div id="app">
-    <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
-    <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
-    <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
-    <movie-list-screen v-if="user" :isStaff="user.is_staff"></movie-list-screen>
-    <movie-session-list-screen v-if="user" :isStaff="user.is_staff"></movie-session-list-screen>
-    <cinema-hall-list-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-list-screen>
-    <genre-list-screen v-if="user" :isStaff="user.is_staff"></genre-list-screen>
-    <actor-list-screen v-if="user" :isStaff="user.is_staff"></actor-list-screen>
-    <movie-details-screen v-if="user"></movie-details-screen>
-    <movie-session-details-screen v-if="user" :user="user" ></movie-session-details-screen>
-    <movie-add-screen v-if="user" :isStaff="user.is_staff"></movie-add-screen>
-    <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
-    <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
-    <order-list-screen v-if="user"></order-list-screen>
-    <profile-screen v-if="user" :user="user"></profile-screen>
-    <app-footer v-if="user"></app-footer>
+    <!-- Header/Footer só em rotas privadas (quando autenticado) -->
+    <app-header v-if="showChrome" :user="user" @log-out="handleLogout" />
+
+    <!-- aqui o Router controla QUAL página renderizar -->
+    <router-view @log-in="handleLogin" />
+
+    <app-footer v-if="showChrome" />
   </div>
 </template>
 
 <script>
-import jwtDecode from 'jwt-decode';
-
-import SignIn from './views/SignIn.vue';
-import MovieListScreen from './views/MovieListScreen.vue';
-import AppHeader from './views/AppHeader.vue';
-import AppFooter from './views/AppFooter.vue';
-import MovieDetailsScreen from './views/MovieDetailsScreen.vue';
-import MovieAddScreen from './views/MovieAddScreen.vue';
-import MovieSessionListScreen from './views/MovieSessionListScreen.vue';
-import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue';
-import CinemaHallListScreen from './views/CinemaHallListScreen.vue';
-import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue';
-import GenreListScreen from './views/GenreListScreen.vue';
-import ActorListScreen from './views/ActorListScreen.vue';
-import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
-import OrderListScreen from './views/OrderListScreen.vue';
-import ProfileScreen from './views/ProfileScreen.vue';
-import SignUp from './views/SignUp.vue';
+import { isAuthenticated, me, clearTokens } from "@/api";
+import AppHeader from "@/views/AppHeader.vue";
+import AppFooter from "@/views/AppFooter.vue";
 
 export default {
+  name: "App",
+  components: { AppHeader, AppFooter },
+
   data: () => ({
-    expiresAt: null,
     user: null,
-    type: 'password'
   }),
+
+  computed: {
+    // mostra header/footer somente em rotas com meta.requiresAuth
+    showChrome() {
+      const onPrivateRoute = this.$route.matched.some(
+        (r) => r.meta && r.meta.requiresAuth
+      );
+      return onPrivateRoute && isAuthenticated();
+    },
+  },
+
+  watch: {
+    // quando a rota muda para uma privada, (re)carrega o usuário
+    "$route.fullPath": {
+      immediate: true,
+      handler() {
+        this.syncUser();
+      },
+    },
+  },
+
   methods: {
-    async logIn () {
-      const accessToken = localStorage.getItem('access');
-      if (!accessToken) return;
-
-      const { exp } = jwtDecode(accessToken);
-      this.expiresAt = exp;
-
-      if (this.expiresAt * 1e3 > Date.now()) {
-        await this.fetchUser();
-        return;
+    async syncUser() {
+      try {
+        if (isAuthenticated()) {
+          const data = await me();
+          this.user = data;
+        } else {
+          this.user = null;
+        }
+      } catch {
+        // se der erro, limpa tokens e volta pro login
+        this.user = null;
+        clearTokens();
+        if (this.$route.path !== "/login") {
+          this.$router.replace({
+            path: "/login",
+            query: { next: this.$route.fullPath },
+          });
+        }
       }
-
-      this.refreshToken();
     },
 
-    async handleLogIn () {
-      await this.logIn();
-      location.hash = '#/';
+    async handleLogin() {
+      // emitido opcionalmente pelo SignIn/SignUp
+      await this.syncUser();
+      if (this.$route.path === "/login") {
+        this.$router.replace("/movies");
+      }
     },
 
-    logOut () {
-      localStorage.removeItem('access');
-      localStorage.removeItem('refresh');
-
+    handleLogout() {
+      clearTokens();
       this.user = null;
+      this.$router.replace("/login");
     },
-
-    async fetchUser () {
-      const accessToken = localStorage.getItem('access');
-      try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
-          { headers: { Authorization: `Bearer ${accessToken}` } });
-
-        this.user = user;
-      } catch (err) {
-        console.error(err.response.data);
-      }
-    },
-
-    async refreshToken () {
-      try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
-        });
-
-        const { access, refresh } = data;
-
-        localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
-        this.logIn();
-      } catch (err) {
-        console.error(err.response.data);
-      }
-    }
   },
-  created () {
-    this.logIn();
-
-    setInterval(() => {
-      if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
-      this.refreshToken();
-    }, 60 * 1e3);
-  },
-  components: {
-    SignIn,
-    MovieListScreen,
-    AppHeader,
-    AppFooter,
-    MovieDetailsScreen,
-    MovieAddScreen,
-    MovieSessionListScreen,
-    MovieSessionAddScreen,
-    CinemaHallListScreen,
-    CinemaHallAddScreen,
-    GenreListScreen,
-    ActorListScreen,
-    MovieSessionDetailsScreen,
-    OrderListScreen,
-    ProfileScreen,
-    SignUp
-  }
 };
 </script>
 
-<style scoped>
-#app > *:not(:last-child):not(:first-child) {
-  padding: 60px 100px;
-}
-
-#app > *:last-child{
-  padding-bottom: 40px;
-}
-
-#app .sign-in {
-  padding: 0;
-}
+<style>
+html, body, #app { height: 100%; margin: 0; }
 </style>

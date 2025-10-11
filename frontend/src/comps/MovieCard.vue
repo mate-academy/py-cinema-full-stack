@@ -1,128 +1,126 @@
 <template>
-  <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + image + ')' }" @click="$emit('click', id)">
-    <div class="main-info">
-      <span class="title">{{title}}</span>
-      <div class="detail" @click="$emit('click', id)" v-if="!times.length">
-        <svg width="24" height="24" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/detail.svg#detail"></use>
-        </svg>
-      </div>
+  <div class="movie-card" @click="handleClick">
+    <div class="poster" :class="{ placeholder: !image }">
+      <img v-if="image" :src="buildImageUrl(image)" alt="movie poster" />
+      <span v-else class="no-image">No Image</span>
+
+      <!-- Botão de upload (apenas para staff) -->
+      <button
+        v-if="canEdit"
+        class="edit-btn"
+        title="Upload poster"
+        @click.stop="triggerFile"
+      >
+        📷
+      </button>
+      <input
+        ref="file"
+        type="file"
+        accept="image/*"
+        class="hidden-input"
+        @change="onFile"
+      />
     </div>
-    <div class="additional-info">
-      <div class="container" v-if="actors.length">
-        <span class="label">Actors: </span>
-        <span v-for="(actor, index) in actors" :key="index" class="item">{{actor}}</span>
+
+    <div class="info">
+      <h3 class="title">{{ title }}</h3>
+
+      <div class="meta">
+        <strong>Actors:</strong>
+        <span v-for="(actor, i) in actors" :key="i" class="tag">{{ actor }}</span>
       </div>
-      <div class="container" v-if="genres.length">
-        <span class="label">Genres: </span>
-        <span v-for="(genre, index) in genres" :key="index" class="item">{{genre}}</span>
-      </div>
-      <div class="container" v-if="times.length">
-        <span class="label">Time: </span>
-        <span v-for="(time, index) in formattedTime" :key="index" class="item time" @click="$emit('open-details', id)">{{time}}</span>
+
+      <div class="meta">
+        <strong>Genres:</strong>
+        <span v-for="(genre, i) in genres" :key="i" class="tag">{{ genre }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import moment from 'moment';
+import api from '@/api';
 
 export default {
+  name: 'MovieCard',
   props: {
-    id: {
-      type: Number
-    },
-    image: {
-      type: String,
-      default: ''
-    },
-    title: {
-      type: String,
-      default: ''
-    },
-    actors: {
-      type: Array,
-      default: () => []
-    },
-    genres: {
-      type: Array,
-      default: () => []
-    },
-    times: {
-      type: Array,
-      default: () => []
-    }
+    id: Number,
+    title: String,
+    image: String,
+    actors: Array,
+    genres: Array,
+    canEdit: { type: Boolean, default: false }
   },
-  computed: {
-    formattedTime () {
-      return this.times.map(time => moment(time).format('HH:mm'));
+  methods: {
+    handleClick() {
+      this.$emit('click', this.id);
+    },
+    baseOrigin() {
+      // Origem única via axios instance (configurada em src/api/index.js)
+      const base = api?.defaults?.baseURL;
+      return new URL('/', base).origin;
+    },
+    buildImageUrl(path) {
+      if (!path) return '';
+      try {
+        // URL absoluta já válida
+        return new URL(path).toString();
+      } catch (e) {
+        // Caminho relativo vindo do backend (ex.: /media/...)
+        const rel = path.startsWith('/') ? path : `/${path}`;
+        return new URL(rel, this.baseOrigin()).toString();
+      }
+    },
+    triggerFile() {
+      this.$refs.file.click();
+    },
+    onFile(e) {
+      const file = e.target.files?.[0];
+      if (file) this.$emit('upload-poster', { id: this.id, file });
+      // limpa o input para permitir re-selecionar o mesmo arquivo
+      e.target.value = '';
     }
   }
-
 };
 </script>
 
 <style scoped>
 .movie-card {
-  width: 100%;
-  height: 446px;
-  background-repeat: no-repeat;
-  background-size: cover;
+  background-color: #141414;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 0 24px 25px;
-  cursor: pointer;
 }
+.movie-card:hover { transform: scale(1.02); box-shadow: 0 0 18px rgba(255,255,255,0.1); }
 
-.main-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.poster {
+  position: relative;
   width: 100%;
-  margin-bottom: 16px;
-}
-
-.container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 100%;
-}
-
-.label {
-  font-size: 18px;
-}
-
-.title {
-  font-size: 25px;
-}
-
-.label, .title {
-  font-weight: 600;
-}
-
-.item {
-  font-size: 14px;
-  background-color: rgba(102, 102, 102, 0.8);
-  padding: 3px 6px;
-  border-radius: 5px;
+  height: 350px;
   overflow: hidden;
-  text-overflow: ellipsis;
+  background-color: #1e1e1e;
+  display: flex; align-items: center; justify-content: center;
 }
-.item.time {
-  cursor: pointer;
-}
+.poster img { width: 100%; height: 100%; object-fit: cover; }
+.poster.placeholder { background: linear-gradient(145deg, #202020, #181818); color: #999; }
+.no-image { opacity: .7; font-size: 14px; }
 
-.container:first-child {
-  margin-bottom: 12px;
+.edit-btn {
+  position: absolute; right: 12px; top: 12px;
+  background: rgba(0,0,0,.55);
+  color: #fff; border: 1px solid #555; border-radius: 10px;
+  padding: 6px 8px; cursor: pointer; font-size: 16px;
+  transition: all .2s ease;
 }
+.edit-btn:hover { background: #fff; color: #111; border-color: #fff; }
+.hidden-input { display: none; }
 
-.detail {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.info { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+.title { font-weight: 600; font-size: 20px; margin: 0; color: #fff; }
+.meta { color: #ddd; font-size: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tag { background-color: #333; border-radius: 6px; padding: 2px 8px; font-size: 13px; color: #f1f1f1; }
 </style>
