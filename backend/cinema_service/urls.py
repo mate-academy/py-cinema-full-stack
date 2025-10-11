@@ -12,7 +12,7 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # Apps
+    # Apps (frontend usa /api/cinema/…)
     path("api/cinema/", include(("cinema.urls", "cinema"), namespace="cinema")),
     path("api/user/", include(("user.urls", "user"), namespace="user")),
 
@@ -41,3 +41,7 @@ if settings.DEBUG and "debug_toolbar" in settings.INSTALLED_APPS:
 # Servir arquivos de mídia (imagens) em dev
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# (Opcional) Retrocompatibilidade: descomente para manter /api/... além de /api/cinema/...
+# from django.urls import re_path
+# urlpatterns += [re_path(r"^api/(?!(user/|schema/|doc/)).*$", include(("cinema.urls", "cinema")))]

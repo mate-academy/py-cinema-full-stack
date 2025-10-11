@@ -1,133 +1,106 @@
 <template>
-  <div v-if="active && isStaff" class="genres-container">
-    <div class="add-genre" v-if="createMode">
-      <div class="header">Add Genre</div>
-      <div class="note">Please fill in the fields in details</div>
-      <input-item label="Genre" width="wide" v-model="name" />
-      <action-button label="Submit" @click="addGenre" />
-    </div>
-
-    <div class="genres">
-      <div class="header">All Genres</div>
-      <div class="container">
-        <div
-          v-for="(genre, index) in genres"
-          :key="genre.id"
-          :class="index % 2 === 0 ? 'odd' : ''"
-        >
-          {{ genre.name || genre.title }}
-        </div>
+  <section v-show="active" class="genre-list">
+    <div class="head">
+      <h1>Genres</h1>
+      <div class="actions">
+        <button @click="load" :disabled="loading">Reload</button>
+        <span v-if="count !== null" class="muted">Total: {{ count }}</span>
       </div>
-      <add-btn @click="createMode = !createMode" />
     </div>
 
-    <p v-if="errorText" style="color:#ff6b6b;margin-top:12px">{{ errorText }}</p>
-  </div>
+    <div v-if="loading" class="hint">Loading…</div>
+    <p v-if="errorText" class="err">{{ errorText }}</p>
+
+    <ul v-if="!loading && genres.length" class="grid">
+      <li v-for="g in genres" :key="g.id" class="card">
+        <div class="row1">
+          <strong class="name">{{ g.name }}</strong>
+          <small class="id">#{{ g.id }}</small>
+        </div>
+      </li>
+    </ul>
+
+    <div v-if="paginated" class="pager">
+      <button @click="goPrev" :disabled="!previous || loading">Prev</button>
+      <button @click="goNext" :disabled="!next || loading">Next</button>
+    </div>
+  </section>
 </template>
 
 <script>
-import axios from 'axios';
-import AddBtn from '../comps/AddBtn.vue';
-import InputItem from '../comps/InputItem.vue';
-import ActionButton from '../comps/ActionButton.vue';
+import { fetchGenres, initTokensFromStorage } from '@/api';
 
 export default {
   name: 'GenreListScreen',
-  props: { isStaff: { type: Boolean, default: false } },
-  components: { AddBtn, InputItem, ActionButton },
-
   data: () => ({
     active: false,
     genres: [],
-    createMode: false,
-    name: '',
-    errorText: ''
+    loading: false,
+    errorText: '',
+    count: null,
+    next: null,
+    previous: null,
   }),
-
   computed: {
-    token () { return localStorage.getItem('access'); }
+    paginated () { return this.next !== null || this.previous !== null; }
   },
-
   methods: {
-    baseUrl () {
-      const env = (import.meta.env && import.meta.env.VITE_API_URL) || '';
-      const base = env && env.trim() ? env.trim() : 'http://localhost:8080';
-      return new URL('/', base).origin;
-    },
-    buildUrl (path) { return new URL(path, this.baseUrl()).toString(); },
-    authHeader () { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
-    safeErr (err) {
-      return err?.response?.data?.detail ||
-             err?.response?.data?.error ||
-             (err?.response ? `HTTP ${err.response.status}` : (err?.message || 'Request failed'));
-    },
-
-    async fetchGenres () {
-      if (!this.token) { location.hash = '#/sign-in'; return; }
-      this.errorText = '';
+    isMyHash () { return /^#\/genres/.test(location.hash); },
+    async load (url = null) {
+      this.loading = true; this.errorText = '';
       try {
-        const url = this.buildUrl('/api/cinema/genres/');
-        const { data } = await axios.get(url, { headers: this.authHeader() });
-        this.genres = Array.isArray(data) ? data : [];
-      } catch (err) {
-        if (err?.response?.status === 401) {
-          localStorage.removeItem('access'); localStorage.removeItem('refresh');
-          location.hash = '#/sign-in';
+        if (url) {
+          const headers = {};
+          const token = localStorage.getItem('auth_access');
+          if (token) headers.Authorization = `Bearer ${token}`;
+          const r = await fetch(url, { headers });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          this.applyData(await r.json());
+          return;
         }
-        this.errorText = this.safeErr(err);
-        console.error('[genres] GET error:', err);
-      }
-    },
-
-    async addGenre () {
-      if (!this.token) { location.hash = '#/sign-in'; return; }
-      this.errorText = '';
-      try {
-        const url = this.buildUrl('/api/cinema/genres/');
-        await axios.post(
-          url,
-          { name: this.name },
-          { headers: { ...this.authHeader(), 'Content-Type': 'application/json' } }
-        );
-        this.createMode = false;
-        this.name = '';
-        this.fetchGenres();
+        const data = await fetchGenres({});
+        this.applyData(data);
       } catch (err) {
-        this.errorText = this.safeErr(err);
-        console.error('[genres] POST error:', err);
+        const s = err?.response?.status || err?.message;
+        this.errorText = err?.response?.data?.detail || `Failed to load genres${s ? ` (${s})` : ''}`;
+        console.error('[Genres] load failed:', s, err);
+      } finally { this.loading = false; }
+    },
+    applyData (data) {
+      if (data && Array.isArray(data.results)) {
+        this.genres = data.results; this.count = data.count ?? this.genres.length;
+        this.next = data.next || null; this.previous = data.previous || null;
+      } else if (Array.isArray(data)) {
+        this.genres = data; this.count = data.length; this.next = null; this.previous = null;
+      } else {
+        this.genres = []; this.count = 0; this.next = null; this.previous = null;
       }
     },
-
+    goNext () { if (this.next) this.load(this.next); },
+    goPrev () { if (this.previous) this.load(this.previous); },
     hashHandler () {
-      this.active = Boolean(location.hash.match('genres$'));
-    }
+      const was = this.active;
+      this.active = this.isMyHash();
+      if (this.active && !was) this.load();
+    },
   },
-
-  watch: {
-    active (val) { if (val) this.fetchGenres(); }
-  },
-
-  mounted () {
-    window.addEventListener('hashchange', this.hashHandler);
-    this.hashHandler();
-  },
-
-  beforeDestroy () {
-    window.removeEventListener('hashchange', this.hashHandler);
-  }
+  created () { if (typeof initTokensFromStorage === 'function') initTokensFromStorage(); },
+  mounted () { window.addEventListener('hashchange', this.hashHandler); this.hashHandler(); },
+  beforeDestroy () { window.removeEventListener('hashchange', this.hashHandler); }
 };
 </script>
 
 <style scoped>
-.genres-container, .genres-container > * {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 24px; width: 100%;
-}
-.add-genre { margin-bottom: 36px; }
-.action-button { margin-top: 36px; }
-.header { font-weight: 600; font-size: 50px; line-height: 61px; }
-.note { font-size: 25px; line-height: 31px; }
-.container { width: 100%; font-size: 25px; line-height: 30px; }
-.container > div { height: 50px; display: flex; align-items: center; padding: 0 10px; border-radius: 10px; }
-.container > .odd { background-color: var(--secondary-bg); }
+.genre-list { display:grid; gap:12px; padding:12px; }
+.head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.actions { display:flex; align-items:center; gap:8px; }
+.muted { opacity:.7; }
+.hint { opacity:.7; }
+.err { color:#ff6b6b; }
+.grid { list-style:none; padding:0; margin:0; display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:12px; }
+.card { border:1px solid #eee; border-radius:12px; background:#fff; padding:12px; display:grid; gap:6px; }
+.row1 { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.name { font-weight:600; }
+.id { opacity:.6; }
+.pager { display:flex; gap:8px; margin-top:12px; }
 </style>

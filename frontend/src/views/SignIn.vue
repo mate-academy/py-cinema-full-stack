@@ -1,123 +1,190 @@
 <template>
-  <div class="sign-in" v-if="active">
-    <h1>Sign in to Cinema Shop</h1>
-    <h2>
-      Please enter your sign in details.
-      <a href="#/sign-up">Sign up</a>
-      here if you are not registered yet.
-    </h2>
+  <div class="signin-page">
+    <div class="card">
+      <h1 class="title">Sign in to Cinema Shop</h1>
+      <p class="subtitle">
+        Please enter your sign in details.
+        <router-link to="/signup">Sign up</router-link> here if you are not registered yet.
+      </p>
 
-    <input-item
-      label="Login"
-      pattern="^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$"
-      placeholder="Email"
-      v-model="email"
-    />
+      <form @submit.prevent="signIn" class="form">
+        <label class="label">
+          <span>Login</span>
+          <input
+            v-model.trim="email"
+            type="email"
+            autocomplete="email"
+            required
+            autofocus
+            class="input"
+            placeholder="your@email.com"
+          />
+        </label>
 
-    <password-input v-model="password" />
+        <label class="label">
+          <span>Password</span>
+          <div class="password-row">
+            <input
+              v-model="password"
+              :type="show ? 'text' : 'password'"
+              autocomplete="current-password"
+              required
+              class="input"
+              placeholder="••••••••"
+            />
+            <button type="button" class="toggle" @click="show = !show">
+              {{ show ? '🙈' : '👁' }}
+            </button>
+          </div>
+        </label>
 
-    <action-button
-      :label="loading ? 'Signing in…' : 'Sign in'"
-      :disabled="loading"
-      @click="signIn"
-    />
-    <p v-if="errorText" style="color:#ff6b6b;margin-top:8px">{{ errorText }}</p>
+        <button :disabled="loading" type="submit" class="submit">
+          <span v-if="!loading">Sign in</span>
+          <span v-else>Signing in…</span>
+        </button>
+
+        <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
+      </form>
+    </div>
   </div>
 </template>
 
 <script>
-import ActionButton from '../comps/ActionButton.vue'
-import InputItem from '../comps/InputItem.vue'
-import PasswordInput from '../comps/PasswordInput.vue'
-import { login } from '../api'
-import { BASE_URL } from '../axios'
+// Usa o alias configurado no Vite
+import api, { login, me, setTokens, isAuthenticated } from "@/api";
 
 export default {
-  components: { InputItem, PasswordInput, ActionButton },
-
-  data: () => ({
-    active: false,
-    email: '',
-    password: '',
-    errorText: '',
-    loading: false
-  }),
-
-  methods: {
-    hashHandler() {
-      this.active = !/#\/sign-up$/.test(location.hash)
-    },
-
-    async signIn() {
-      if (this.loading) return
-      this.errorText = ''
-      this.loading = true
-
+  name: "SignIn",
+  data() {
+    return {
+      email: "",
+      password: "",
+      show: false,
+      loading: false,
+      errorMsg: "",
+    };
+  },
+  async mounted() {
+    // Se já estiver autenticado (tokens no storage), pula o login.
+    if (isAuthenticated()) {
       try {
-        // limpa tokens antigos
-        localStorage.removeItem('access')
-        localStorage.removeItem('refresh')
-
-        const data = await login(this.email, this.password)
-
-        if (!data?.access || !data?.refresh) {
-          throw new Error('Unexpected response from server')
-        }
-
-        // salva tokens
-        localStorage.setItem('access', data.access)
-        localStorage.setItem('refresh', data.refresh)
-
-        // notifica quem ouvir e, principalmente, REDIRECIONA
-        this.$emit('log-in')
-
-        // 🔁 Força navegação para uma rota logada e recarrega o app
-        // escolha a que existir no seu app: '#/profile', '#/movies' ou '#/'
-        location.hash = '#/profile'
-        // recarrega uma vez para que o App.vue/estado pegue os tokens
-        setTimeout(() => location.reload(), 0)
-      } catch (err) {
-        const status = err?.response?.status
-        const detail =
-          err?.response?.data?.detail ||
-          err?.response?.data?.error ||
-          (status === 401 && 'No active account found with the given credentials') ||
-          (status === 400 && 'Invalid payload') ||
-          err?.message || 'Failed to sign in'
-        // eslint-disable-next-line no-console
-        console.error('[SignIn] login failed:', status, detail, err?.response?.data)
-        this.errorText = detail
-      } finally {
-        this.loading = false
+        await me();
+        const nextPath = this.$route.query.next || "/movies"; // <-- respeita ?next=
+        this.$router.replace(nextPath);
+      } catch (_) {
+        /* se falhar, permanece na tela de login */
       }
     }
+    // Debug opcional:
+    // console.log("API baseURL =", api?.defaults?.baseURL);
   },
+  methods: {
+    async signIn() {
+      this.errorMsg = "";
+      this.loading = true;
+      try {
+        // Envia JSON PURO: { email, password }
+        const data = await login(this.email, this.password);
+        // login() já chama setTokens; mantemos por segurança:
+        setTokens({ access: data.access, refresh: data.refresh, persist: true });
 
-  mounted() {
-    window.addEventListener('hashchange', this.hashHandler)
-    this.hashHandler()
+        // Sanity check
+        await me();
+
+        // Redireciona para rota autenticada respeitando ?next=
+        const nextPath = this.$route.query.next || "/movies"; // <-- respeita ?next=
+        this.$router.replace(nextPath);
+      } catch (e) {
+        this.errorMsg =
+          e?.response?.data?.detail ||
+          (Array.isArray(e?.response?.data?.non_field_errors) &&
+            e.response.data.non_field_errors[0]) ||
+          (typeof e?.response?.data === "string" && e.response.data) ||
+          e?.message ||
+          "Login failed";
+      } finally {
+        this.loading = false;
+      }
+    },
   },
-
-  beforeDestroy() {
-    window.removeEventListener('hashchange', this.hashHandler)
-  }
-}
+};
 </script>
 
 <style scoped>
-.sign-in {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 24px;
+.signin-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #111;
+  color: #eee;
+  padding: 24px;
 }
-h1 { font-size: 50px; font-weight: 600; text-align: center; line-height: 60px; }
-h2 { font-size: 25px; text-align: center; margin-bottom: 16px; line-height: 30px; }
-a  { text-decoration: underline; font-weight: 600; cursor: pointer; color: var(--main-font); }
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: #1b1b1b;
+  border-radius: 16px;
+  padding: 24px 24px 28px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+.title {
+  margin: 0 0 8px;
+  font-size: 32px;
+  line-height: 1.2;
+}
+.subtitle {
+  margin: 0 0 24px;
+  color: #bbb;
+}
+.form {
+  display: grid;
+  gap: 16px;
+}
+.label span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.input {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #0f0f0f;
+  color: #eee;
+  padding: 0 12px;
+  outline: none;
+}
+.password-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.toggle {
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid #444;
+  background: #222;
+  color: #ddd;
+  cursor: pointer;
+}
+.submit {
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: #ff5252;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.submit:disabled {
+  opacity: .6;
+  cursor: default;
+}
+.error {
+  margin-top: 8px;
+  color: #ff7b7b;
+}
 </style>

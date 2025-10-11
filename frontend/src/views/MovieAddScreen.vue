@@ -34,7 +34,14 @@
     <action-button
       :label="loading ? 'Submitting…' : 'Submit'"
       @click="addMovie"
-      :disabled="loading || !title || !duration || !description || !selectedActorIds.length || !selectedGenreIds.length"
+      :disabled="
+        loading ||
+        !title ||
+        !duration ||
+        !description ||
+        !selectedActorIds.length ||
+        !selectedGenreIds.length
+      "
     />
 
     <p v-if="errorText" style="color:#ff6b6b;margin-top:10px">{{ errorText }}</p>
@@ -43,6 +50,7 @@
 </template>
 
 <script>
+import api from '@/api';
 import ActionButton from '../comps/ActionButton.vue';
 import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import InputItem from '../comps/InputItem.vue';
@@ -69,19 +77,17 @@ export default {
   }),
 
   computed: {
-    token() { return localStorage.getItem('access'); }
+    token() {
+      return localStorage.getItem('access');
+    }
   },
 
   methods: {
     /* ---------- Helpers ---------- */
-    baseUrl() {
-      const env = (import.meta.env && import.meta.env.VITE_API_URL) || '';
-      const base = env && env.trim() ? env.trim() : 'http://127.0.0.1:8080';
-      return new URL('/', base).origin;
+    authHeader() {
+      return this.token ? { Authorization: `Bearer ${this.token}` } : {};
     },
-    buildUrl(path) { return new URL(path, this.baseUrl()).toString(); },
-    authHeader() { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
-    prettyErr (err) {
+    prettyErr(err) {
       const res = err?.response;
       if (!res) return err?.message || 'Network error';
       if (res.data && typeof res.data === 'object') {
@@ -101,27 +107,40 @@ export default {
     /* ---------- Fetchers ---------- */
     async fetchActors() {
       try {
-        const url = this.buildUrl('/api/cinema/actors/');
-        const { data } = await this.axios.get(url, { headers: this.authHeader() });
+        const { data } = await api.get('/api/cinema/actors/', {
+          headers: this.authHeader()
+        });
         this.actors = (data || []).map(({ id, first_name, last_name, full_name }) => ({
           id,
           name: full_name || `${first_name || ''} ${last_name || ''}`.trim()
         }));
-      } catch (err) { console.error('[MovieAdd] fetchActors error:', err); }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[MovieAdd] fetchActors error:', err);
+      }
     },
     async fetchGenres() {
       try {
-        const url = this.buildUrl('/api/cinema/genres/');
-        const { data } = await this.axios.get(url, { headers: this.authHeader() });
+        const { data } = await api.get('/api/cinema/genres/', {
+          headers: this.authHeader()
+        });
         this.genres = Array.isArray(data) ? data : [];
-      } catch (err) { console.error('[MovieAdd] fetchGenres error:', err); }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[MovieAdd] fetchGenres error:', err);
+      }
     },
 
     /* ---------- Actions ---------- */
     async addMovie() {
       if (this.loading) return;
-      if (!this.token) { location.hash = '#/sign-in'; return; }
-      this.errorText = ''; this.successText = ''; this.loading = true;
+      if (!this.token) {
+        location.hash = '#/sign-in';
+        return;
+      }
+      this.errorText = '';
+      this.successText = '';
+      this.loading = true;
 
       const duration = this.normalizeDuration(this.duration);
       const body = {
@@ -134,8 +153,7 @@ export default {
 
       try {
         // 1) Cria o filme (JSON)
-        const createUrl = this.buildUrl('/api/cinema/movies/');
-        const { data: movie } = await this.axios.post(createUrl, body, {
+        const { data: movie } = await api.post('/api/cinema/movies/', body, {
           headers: { ...this.authHeader(), 'Content-Type': 'application/json' }
         });
 
@@ -143,22 +161,25 @@ export default {
         if (this.image && movie?.id) {
           const form = new FormData();
           form.append('image', this.image);
-          const uploadUrl = this.buildUrl(`/api/cinema/movies/${movie.id}/upload-image/`);
 
           const cfg = { headers: { ...this.authHeader() } };
-          delete cfg.headers['Content-Type']; // <- importante!
+          // Importante: NÃO setar 'Content-Type' manualmente com FormData
 
-          await this.axios.post(uploadUrl, form, cfg);
+          await api.post(`/api/cinema/movies/${movie.id}/upload-image/`, form, cfg);
         }
 
         this.successText = '✅ Movie created successfully!';
-        setTimeout(() => { location.hash = '#/movies'; }, 1000);
+        setTimeout(() => {
+          location.hash = '#/movies';
+        }, 1000);
       } catch (err) {
         if (err?.response?.status === 401) {
-          localStorage.removeItem('access'); localStorage.removeItem('refresh');
+          localStorage.removeItem('access');
+          localStorage.removeItem('refresh');
           location.hash = '#/sign-in';
         }
         this.errorText = this.prettyErr(err);
+        // eslint-disable-next-line no-console
         console.error('[MovieAdd] POST error:', err);
       } finally {
         this.loading = false;
@@ -167,15 +188,17 @@ export default {
 
     handleActorSelection(id) {
       this.selectedActorIds = this.selectedActorIds.includes(id)
-        ? this.selectedActorIds.filter(a => a !== id)
+        ? this.selectedActorIds.filter((a) => a !== id)
         : [...this.selectedActorIds, id];
     },
     handleGenreSelection(id) {
       this.selectedGenreIds = this.selectedGenreIds.includes(id)
-        ? this.selectedGenreIds.filter(g => g !== id)
+        ? this.selectedGenreIds.filter((g) => g !== id)
         : [...this.selectedGenreIds, id];
     },
-    handleImageUpload(file) { this.image = file; },
+    handleImageUpload(file) {
+      this.image = file;
+    },
 
     hashHandler() {
       this.active = Boolean(location.hash.match(/movies\?add=true$/));

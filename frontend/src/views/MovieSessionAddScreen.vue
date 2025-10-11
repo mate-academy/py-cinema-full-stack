@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import api from '@/api';
 import DatePicker from '../comps/DatePicker.vue';
 import ActionButton from '../comps/ActionButton.vue';
 import TimePicker from '../comps/TimePicker.vue';
@@ -57,20 +58,20 @@ export default {
   }),
 
   computed: {
-    token () { return localStorage.getItem('access'); },
+    token() { return localStorage.getItem('access'); },
 
-    movieOptions () {
-      return (this.movies || []).map(m => ({ id: m.id, name: m.title }));
+    movieOptions() {
+      return (this.movies || []).map((m) => ({ id: m.id, name: m.title }));
     },
-    hallOptions () {
-      return (this.halls || []).map(h => ({ id: h.id, name: h.name }));
+    hallOptions() {
+      return (this.halls || []).map((h) => ({ id: h.id, name: h.name }));
     }
   },
 
   methods: {
-    authHeader () { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
+    authHeader() { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
 
-    prettyErr (err) {
+    prettyErr(err) {
       const res = err?.response;
       if (!res) return err?.message || 'Network error';
       if (res.data && typeof res.data === 'object') {
@@ -81,37 +82,39 @@ export default {
       return res.data?.detail || res.data?.error || `HTTP ${res.status}`;
     },
 
-    hashHandler () {
+    hashHandler() {
       this.active = Boolean(location.hash.match(/movie-sessions\?add=true$/));
     },
 
-    async fetchMovies () {
+    async fetchMovies() {
       try {
-        const { data } = await this.axios.get('/api/cinema/movies/', {
+        const { data } = await api.get('/api/cinema/movies/', {
           headers: this.authHeader(),
           params: { limit: 1000, offset: 0 }
         });
         this.movies = Array.isArray(data) ? data : [];
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('[sessions] fetchMovies error:', err);
         this.errorText = this.prettyErr(err);
       }
     },
 
-    async fetchCinemaHalls () {
+    async fetchCinemaHalls() {
       try {
-        const { data } = await this.axios.get('/api/cinema/cinema-halls/', {
+        const { data } = await api.get('/api/cinema/cinema-halls/', {
           headers: this.authHeader()
         });
         this.halls = Array.isArray(data) ? data : [];
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('[sessions] fetchCinemaHalls error:', err);
         this.errorText = this.prettyErr(err);
       }
     },
 
     // Junta a data e a hora e retorna "YYYY-MM-DDTHH:mm:00" (local, sem 'Z')
-    toLocalNaiveISO (dateObj, timeObj) {
+    toLocalNaiveISO(dateObj, timeObj) {
       const d = new Date(dateObj);
       const t = new Date(timeObj);
       d.setHours(t.getHours(), t.getMinutes(), 0, 0);
@@ -119,7 +122,7 @@ export default {
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
     },
 
-    async addMovieSession () {
+    async addMovieSession() {
       if (!this.token) { location.hash = '#/sign-in'; return; }
       if (!this.selectedMovieId || !this.selectedHallId || !this.date || !this.time) return;
 
@@ -134,7 +137,7 @@ export default {
       };
 
       try {
-        await this.axios.post('/api/cinema/movie-sessions/', payload, {
+        await api.post('/api/cinema/movie-sessions/', payload, {
           headers: { ...this.authHeader(), 'Content-Type': 'application/json' }
         });
         this.successText = '✅ Movie session created!';
@@ -146,16 +149,17 @@ export default {
           return;
         }
         this.errorText = this.prettyErr(err);
+        // eslint-disable-next-line no-console
         console.error('[sessions] create error:', err);
       } finally {
         this.loading = false;
       }
     },
 
-    handleMovieSelection (movieId) { this.selectedMovieId = movieId; },
-    handleHallSelection (hallId) { this.selectedHallId = hallId; },
+    handleMovieSelection(movieId) { this.selectedMovieId = movieId; },
+    handleHallSelection(hallId) { this.selectedHallId = hallId; },
 
-    resetForm () {
+    resetForm() {
       this.selectedMovieId = null;
       this.selectedHallId = null;
       this.date = new Date();
@@ -166,7 +170,7 @@ export default {
   },
 
   watch: {
-    active (val) {
+    active(val) {
       if (val) {
         this.resetForm();
         this.fetchMovies();
@@ -175,11 +179,11 @@ export default {
     }
   },
 
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   }
 };

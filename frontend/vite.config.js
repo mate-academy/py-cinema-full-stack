@@ -1,21 +1,23 @@
-import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue2";
+import path from "path";
 
-import { defineConfig } from 'vite';
-import legacy from '@vitejs/plugin-legacy';
-import vue2 from '@vitejs/plugin-vue2';
-
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    vue2(),
-    legacy({
-      targets: ['ie >= 11'],
-      additionalLegacyPolyfills: ['regenerator-runtime/runtime']
-    })
-  ],
+  plugins: [vue()],
   resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
-  }
+    alias: { "@": path.resolve(__dirname, "src") },
+  },
+  server: {
+    host: "127.0.0.1",
+    port: 5174,
+    strictPort: true,
+    proxy: {
+      // Tudo que for /api será redirecionado ao backend (evita CORS)
+      "/api": {
+        target: "http://127.0.0.1:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

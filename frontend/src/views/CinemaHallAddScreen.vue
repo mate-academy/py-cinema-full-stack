@@ -37,6 +37,7 @@
 </template>
 
 <script>
+import api from '@/api';
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
 
@@ -56,8 +57,8 @@ export default {
   }),
 
   computed: {
-    token () { return localStorage.getItem('access'); },
-    isValid () {
+    token() { return localStorage.getItem('access'); },
+    isValid() {
       const r = this.toInt(this.rows);
       const s = this.toInt(this.seatsInRow);
       return Boolean(this.name?.trim()) && r > 0 && s > 0;
@@ -65,9 +66,9 @@ export default {
   },
 
   methods: {
-    authHeader () { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
+    authHeader() { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
 
-    prettyErr (err) {
+    prettyErr(err) {
       const res = err?.response;
       if (!res) return err?.message || 'Network error';
       if (res.data && typeof res.data === 'object') {
@@ -78,12 +79,12 @@ export default {
       return res.data?.detail || res.data?.error || `HTTP ${res.status}`;
     },
 
-    toInt (v) {
+    toInt(v) {
       const m = String(v ?? '').match(/\d+/);
       return m ? parseInt(m[0], 10) : 0;
     },
 
-    async addHall () {
+    async addHall() {
       if (!this.token) { location.hash = '#/sign-in'; return; }
       this.errorText = ''; this.successText = '';
       this.loading = true;
@@ -96,7 +97,7 @@ export default {
 
       try {
         // ✅ endpoint correto com hífen e barra final
-        await this.axios.post('/api/cinema/cinema-halls/', payload, {
+        await api.post('/api/cinema/cinema-halls/', payload, {
           headers: { ...this.authHeader(), 'Content-Type': 'application/json' }
         });
         this.successText = '✅ Cinema hall created!';
@@ -108,23 +109,24 @@ export default {
           return;
         }
         this.errorText = this.prettyErr(err);
+        // eslint-disable-next-line no-console
         console.error('[create hall] error:', err);
       } finally {
         this.loading = false;
       }
     },
 
-    hashHandler () {
+    hashHandler() {
       // abre quando URL termina com #/cinema-halls?add=true
       this.active = Boolean(location.hash.match(/cinema-halls\?add=true$/));
     }
   },
 
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   }
 };

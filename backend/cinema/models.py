@@ -2,6 +2,7 @@ import os
 import uuid
 
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
@@ -10,8 +11,8 @@ from django.utils.text import slugify
 # ---------- CINEMA HALL ----------
 class CinemaHall(models.Model):
     name = models.CharField(max_length=255)
-    rows = models.IntegerField()
-    seats_in_row = models.IntegerField()
+    rows = models.IntegerField(validators=[MinValueValidator(1)])
+    seats_in_row = models.IntegerField(validators=[MinValueValidator(1)])
 
     @property
     def capacity(self) -> int:
@@ -44,7 +45,12 @@ class Actor(models.Model):
 
 # ---------- MOVIE IMAGE PATH ----------
 def movie_image_file_path(instance, filename):
+    """
+    Gera um caminho único e “slugado” para cada upload de imagem de filme.
+    Ex.: uploads/movies/the-godfather-<uuid>.jpg
+    """
     _, extension = os.path.splitext(filename)
+    extension = extension.lower() or ".jpg"
     filename = f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
     return os.path.join("uploads/movies/", filename)
 
@@ -53,10 +59,16 @@ def movie_image_file_path(instance, filename):
 class Movie(models.Model):
     title = models.CharField(max_length=255, unique=True)  # 🔒 evita duplicados
     description = models.TextField()
-    duration = models.IntegerField()
+    duration = models.IntegerField(validators=[MinValueValidator(1)])
     genres = models.ManyToManyField(Genre, blank=True)
     actors = models.ManyToManyField(Actor, blank=True)
-    image = models.ImageField(null=True, upload_to=movie_image_file_path)
+    # Campo de imagem garantido (permite vazio e define pasta de upload):
+    image = models.ImageField(
+        null=True,
+        blank=True,
+        upload_to=movie_image_file_path,
+        help_text="Poster do filme (opcional)."
+    )
 
     class Meta:
         ordering = ["title"]
@@ -64,10 +76,19 @@ class Movie(models.Model):
     def __str__(self):
         return self.title
 
+    @property
+    def image_url(self) -> str | None:
+        """Retorna URL segura da imagem (ou None). Útil no serializer/frontend."""
+        try:
+            return self.image.url if self.image else None
+        except ValueError:
+            # Em alguns storages, acessar .url sem arquivo pode levantar erro
+            return None
+
 
 # ---------- MOVIE SESSION ----------
 class MovieSession(models.Model):
-    show_time = models.DateTimeField()
+    show_time = models.DateTimeField(db_index=True)
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     cinema_hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE)
 
@@ -98,8 +119,8 @@ class Ticket(models.Model):
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE, related_name="tickets"
     )
-    row = models.IntegerField()
-    seat = models.IntegerField()
+    row = models.IntegerField(validators=[MinValueValidator(1)])
+    seat = models.IntegerField(validators=[MinValueValidator(1)])
 
     @staticmethod
     def validate_ticket(row, seat, cinema_hall, error_to_raise):
@@ -111,8 +132,10 @@ class Ticket(models.Model):
             if not (1 <= ticket_attr_value <= count_attrs):
                 raise error_to_raise(
                     {
-                        ticket_attr_name: f"{ticket_attr_name} number must be in available range: "
-                        f"(1, {cinema_hall_attr_name}): (1, {count_attrs})"
+                        ticket_attr_name: (
+                            f"{ticket_attr_name} number must be in available range: "
+                            f"(1, {cinema_hall_attr_name}): (1, {count_attrs})"
+                        )
                     }
                 )
 
@@ -129,7 +152,9 @@ class Ticket(models.Model):
         update_fields=None,
     ):
         self.full_clean()
-        return super(Ticket, self).save(force_insert, force_update, using, update_fields)
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )
 
     def __str__(self):
         return f"{self.movie_session} (row: {self.row}, seat: {self.seat})"

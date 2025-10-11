@@ -39,6 +39,8 @@
 </template>
 
 <script>
+import api from '@/api';
+
 export default {
   name: 'MovieCard',
   props: {
@@ -47,16 +49,27 @@ export default {
     image: String,
     actors: Array,
     genres: Array,
-    canEdit: { type: Boolean, default: false } // <- novo
+    canEdit: { type: Boolean, default: false }
   },
   methods: {
     handleClick() {
       this.$emit('click', this.id);
     },
+    baseOrigin() {
+      // Origem única via axios instance (configurada em src/api/index.js)
+      const base = api?.defaults?.baseURL;
+      return new URL('/', base).origin;
+    },
     buildImageUrl(path) {
       if (!path) return '';
-      const base = (import.meta.env?.VITE_API_URL || 'http://127.0.0.1:8080').replace(/\/$/, '');
-      return path.startsWith('http') ? path : `${base}${path}`;
+      try {
+        // URL absoluta já válida
+        return new URL(path).toString();
+      } catch (e) {
+        // Caminho relativo vindo do backend (ex.: /media/...)
+        const rel = path.startsWith('/') ? path : `/${path}`;
+        return new URL(rel, this.baseOrigin()).toString();
+      }
     },
     triggerFile() {
       this.$refs.file.click();

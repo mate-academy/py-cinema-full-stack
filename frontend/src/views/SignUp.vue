@@ -9,7 +9,7 @@
 
     <input-item
       label="Email"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+      pattern="^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$"
       placeholder="Email"
       v-model="email"
     />
@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import api from '@/api';
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
@@ -46,24 +47,17 @@ export default {
   }),
 
   computed: {
-    canSubmit () {
-      const emailOk = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(this.email.trim());
+    canSubmit() {
+      const emailOk = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
+        this.email.trim()
+      );
       const passOk = (this.password || '').length >= 8;
       return emailOk && passOk;
-    },
-    baseOrigin () {
-      const env = (import.meta.env && import.meta.env.VITE_API_URL) || '';
-      return (env && env.trim() ? env.trim() : 'http://127.0.0.1:8080').replace(/\/+$/, '');
     }
   },
 
   methods: {
-    buildUrl (path) {
-      // garante URL absoluta e com 1 barra
-      return `${this.baseOrigin}${path.startsWith('/') ? '' : '/'}${path}`;
-    },
-
-    prettyErr (err) {
+    prettyErr(err) {
       const res = err?.response;
       if (!res) return err?.message || 'Network error';
       if (res.data && typeof res.data === 'object') {
@@ -74,11 +68,11 @@ export default {
       return res.data?.detail || res.data?.error || `HTTP ${res.status}`;
     },
 
-    async postJSON (url, payload) {
-      return this.axios.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
+    async postJSON(url, payload) {
+      return api.post(url, payload, { headers: { 'Content-Type': 'application/json' } });
     },
 
-    async signUp () {
+    async signUp() {
       if (!this.canSubmit || this.loading) return;
 
       this.loading = true;
@@ -91,11 +85,11 @@ export default {
         // 1) Criar usuário — tenta /register/ e faz fallback para /create/
         let created = false;
         try {
-          await this.postJSON(this.buildUrl('/api/user/register/'), creds);
+          await this.postJSON('/api/user/register/', creds);
           created = true;
         } catch (e1) {
           try {
-            await this.postJSON(this.buildUrl('/api/user/create/'), creds);
+            await this.postJSON('/api/user/create/', creds);
             created = true;
           } catch (e2) {
             throw e2; // propaga o erro real de criação
@@ -107,9 +101,9 @@ export default {
         // 2) Login automático — tenta /token/ e fallback para /token
         let tokenResp;
         try {
-          tokenResp = await this.postJSON(this.buildUrl('/api/user/token/'), creds);
+          tokenResp = await this.postJSON('/api/user/token/', creds);
         } catch (e3) {
-          tokenResp = await this.postJSON(this.buildUrl('/api/user/token'), creds);
+          tokenResp = await this.postJSON('/api/user/token', creds);
         }
 
         const { access, refresh } = tokenResp.data || {};
@@ -131,17 +125,17 @@ export default {
       }
     },
 
-    hashHandler () {
+    hashHandler() {
       this.active = /sign-up$/.test(location.hash);
     }
   },
 
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
 
-  beforeDestroy () {
+  beforeDestroy() {
     window.removeEventListener('hashchange', this.hashHandler);
   }
 };

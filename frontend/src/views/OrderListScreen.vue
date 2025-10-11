@@ -1,5 +1,5 @@
 <template>
-  <div v-if="active" class="wrapper">
+  <div class="wrapper">
     <div class="title">My Orders</div>
 
     <div v-if="loading" class="info">Loading orders…</div>
@@ -16,7 +16,7 @@
             <div class="order-head-right">
               <span class="order-total">
                 {{ money(totalFor(o)) }}
-                <small class="muted" v-if="o.tickets?.length">
+                <small class="muted" v-if="o.tickets && o.tickets.length">
                   ({{ o.tickets.length }} × {{ money(unitPriceFor(o)) }})
                 </small>
               </span>
@@ -24,7 +24,7 @@
               <button
                 class="cancel-btn"
                 :disabled="!canCancel(o) || cancellingId === o.id"
-                @click.stop="cancelOrder(o)"
+                @click.stop="onCancel(o)"
                 v-if="o.tickets && o.tickets.length"
                 title="Cancel this order"
               >
@@ -47,10 +47,12 @@
               </div>
 
               <div class="t-content">
-                <div class="movie">{{ t.movie_session?.movie_title || '—' }}</div>
+                <div class="movie">
+                  {{ (t.movie_session && t.movie_session.movie_title) || '—' }}
+                </div>
                 <div class="meta">
-                  <span class="pill">{{ formatTime(t.movie_session?.show_time) }}</span>
-                  <span class="pill">{{ t.movie_session?.cinema_hall_name }}</span>
+                  <span class="pill">{{ formatTime(t.movie_session && t.movie_session.show_time) }}</span>
+                  <span class="pill">{{ t.movie_session && t.movie_session.cinema_hall_name }}</span>
                   <span class="pill">Row {{ t.row }}, Seat {{ t.seat }}</span>
                 </div>
               </div>
@@ -58,64 +60,72 @@
           </div>
         </div> <!-- order-card -->
       </div> <!-- orders -->
+
+      <div class="pagination" v-if="next || previous">
+        <button :disabled="!previous" @click="go(previous)">Prev</button>
+        <button :disabled="!next" @click="go(next)">Next</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import api, { getOrders, cancelOrder as cancelOrderApi } from "@/api";
+
 export default {
-  name: 'OrderListScreen',
+  name: "OrderListScreen",
 
   data: () => ({
-    active: false,
     loading: false,
     orders: [],
-    errorText: '',
+    errorText: "",
     cancellingId: null,
-    fallbackPrice: Number(import.meta.env.VITE_TICKET_PRICE || 20)
+    next: null,
+    previous: null,
+    // fallback para quando o backend não enviar unit_price/total (você pode trocar a moeda se quiser)
+    fallbackPrice: Number((import.meta.env && import.meta.env.VITE_TICKET_PRICE) || 20),
   }),
 
-  computed: {
-    token () { return localStorage.getItem('access'); }
+  mounted() {
+    this.fetchOrders();
   },
 
   methods: {
-    baseUrl () {
-      const env = (import.meta.env && import.meta.env.VITE_API_URL) || '';
-      const base = env && env.trim() ? env.trim() : 'http://127.0.0.1:8080';
-      return new URL('/', base).origin;
-    },
-    buildUrl (path) { return new URL(path, this.baseUrl()).toString(); },
-    authHeader () { return this.token ? { Authorization: `Bearer ${this.token}` } : {}; },
-
-    prettyErr (err) {
-      const res = err?.response;
-      if (!res) return err?.message || 'Network error';
-      if (res.data && typeof res.data === 'object') {
+    prettyErr(err) {
+      const res = err && err.response;
+      if (!res) return (err && err.message) || "Network error";
+      if (res.data && typeof res.data === "object") {
         const first = Object.values(res.data)[0];
         if (Array.isArray(first)) return first[0];
-        if (typeof first === 'string') return first;
+        if (typeof first === "string") return first;
       }
       return res.data?.detail || res.data?.error || `HTTP ${res.status}`;
     },
 
-    absoluteMedia (pathOrUrl) {
-      if (!pathOrUrl) return '';
-      try { return new URL(pathOrUrl).toString(); }
-      catch { return this.buildUrl(pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`); }
+    absoluteMedia(pathOrUrl) {
+      if (!pathOrUrl) return "";
+      try {
+        return new URL(pathOrUrl).toString(); // já absoluta
+      } catch {
+        // relativo do backend (ex.: /media/...)
+        const base = api?.defaults?.baseURL || "/";
+        const rel = String(pathOrUrl).startsWith("/") ? pathOrUrl : `/${pathOrUrl}`;
+        return new URL(rel, base || window.location.origin).toString();
+      }
     },
 
     // 'YYYY-MM-DDTHH:mm:ss' -> 'HH:mm'
-    formatTime (isoLocal) {
-      const m = String(isoLocal || '').match(/T(\d{2}):(\d{2})/);
-      return m ? `${m[1]}:${m[2]}` : '—';
+    formatTime(isoLocal) {
+      const s = String(isoLocal || "");
+      const m = s.match(/T(\d{2}):(\d{2})/);
+      return m ? `${m[1]}:${m[2]}` : "—";
     },
 
     // 'YYYY-MM-DDTHH:mm:ss' -> 'YYYY/MM/DD HH:mm'
-    formatDateTime (isoLocal) {
-      if (!isoLocal) return '—';
-      const d = new Date(String(isoLocal).replace(' ', 'T'));
-      const pad = (n) => String(n).padStart(2, '0');
+    formatDateTime(isoLocal) {
+      if (!isoLocal) return "—";
+      const d = new Date(String(isoLocal).replace(" ", "T"));
+      const pad = (n) => String(n).padStart(2, "0");
       const y = d.getFullYear();
       const m = pad(d.getMonth() + 1);
       const day = pad(d.getDate());
@@ -124,48 +134,51 @@ export default {
       return `${y}/${m}/${day} ${hh}:${mm}`;
     },
 
-    // Usa BE se vier (string "20.00"), senão fallback .env
-    unitPriceFor (order) {
-      const be = Number(order?.unit_price);
+    // Usa BE se vier (string "20.00"), senão fallback
+    unitPriceFor(order) {
+      const be = Number(order && order.unit_price);
       return Number.isFinite(be) ? be : this.fallbackPrice;
     },
+
     // Usa BE se vier (string "40.00"), senão qty × fallback
-    totalFor (order) {
-      const be = Number(order?.total);
+    totalFor(order) {
+      const be = Number(order && order.total);
       if (Number.isFinite(be)) return be;
-      const qty = Array.isArray(order?.tickets) ? order.tickets.length : 0;
+      const qty = Array.isArray(order && order.tickets) ? order.tickets.length : 0;
       return qty * this.fallbackPrice;
     },
-    money (n) {
-      if (Number.isNaN(Number(n))) return '—';
-      return Number(n).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    money(n) {
+      const num = Number(n);
+      if (!Number.isFinite(num)) return "—";
+      // Ajuste a moeda se quiser. Mantive BRL como no seu código.
+      return num.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     },
 
     // Pega o menor show_time dentre os tickets do pedido
-    earliestShowTime (order) {
+    earliestShowTime(order) {
       const times = (order?.tickets || [])
-        .map(t => t?.movie_session?.show_time)
+        .map((t) => t && t.movie_session && t.movie_session.show_time)
         .filter(Boolean)
-        .map(s => new Date(String(s).replace(' ', 'T')).getTime());
+        .map((s) => new Date(String(s).replace(" ", "T")).getTime());
       return times.length ? Math.min(...times) : null;
     },
-    canCancel (order) {
+
+    canCancel(order) {
       const ts = this.earliestShowTime(order);
       if (!ts) return false;
-      return ts > Date.now(); // somente antes do início
+      return ts > Date.now(); // somente antes da sessão
     },
 
-    async cancelOrder (order) {
-      if (!this.token) { location.hash = '#/sign-in'; return; }
+    async onCancel(order) {
       if (!this.canCancel(order)) return;
-      const ok = window.confirm('Do you really want to cancel this order? Seats will be released.');
+      const ok = window.confirm("Do you really want to cancel this order? Seats will be released.");
       if (!ok) return;
 
       this.cancellingId = order.id;
-      this.errorText = '';
+      this.errorText = "";
       try {
-        const url = this.buildUrl(`/api/cinema/orders/${order.id}/`);
-        await this.axios.delete(url, { headers: this.authHeader() });
+        await cancelOrderApi(order.id);
         await this.fetchOrders();
       } catch (err) {
         this.errorText = this.prettyErr(err);
@@ -174,41 +187,34 @@ export default {
       }
     },
 
-    async fetchOrders () {
-      if (!this.token) { location.hash = '#/sign-in'; return; }
+    async fetchOrders(url) {
       this.loading = true;
-      this.errorText = '';
+      this.errorText = "";
       try {
-        const url = this.buildUrl('/api/cinema/orders/');
-        const { data } = await this.axios.get(url, { headers: this.authHeader() });
-        this.orders = Array.isArray(data) ? data : (data?.results || []);
-      } catch (err) {
-        if (err?.response?.status === 401) {
-          localStorage.removeItem('access'); localStorage.removeItem('refresh');
-          location.hash = '#/sign-in';
-          return;
+        let data;
+        if (url) {
+          // DRF next/previous podem ser absolutos — usamos a instância axios para manter cabeçalhos/interceptores
+          const res = await api.get(url);
+          data = res.data;
+        } else {
+          data = await getOrders(); // helper do api
         }
+        this.orders = Array.isArray(data) ? data : (data?.results || []);
+        this.next = data?.next || null;
+        this.previous = data?.previous || null;
+      } catch (err) {
         this.errorText = this.prettyErr(err);
         this.orders = [];
+        this.next = this.previous = null;
       } finally {
         this.loading = false;
       }
     },
 
-    hashHandler () {
-      this.active = /#\/orders(?:$|\?)/.test(location.hash);
-      if (this.active) this.fetchOrders();
-    }
+    go(url) {
+      if (url) this.fetchOrders(url);
+    },
   },
-
-  mounted () {
-    window.addEventListener('hashchange', this.hashHandler);
-    this.hashHandler();
-  },
-
-  beforeDestroy () {
-    window.removeEventListener('hashchange', this.hashHandler);
-  }
 };
 </script>
 
@@ -237,3 +243,42 @@ export default {
 
 .cancel-btn {
   border: 1px solid #ff4d4d;
+  background: transparent;
+  color: #ff4d4d;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.cancel-btn[disabled] { opacity: .5; cursor: not-allowed; }
+.cancel-btn:not([disabled]):hover { background: rgba(255, 77, 77, .12); }
+
+.tickets { display: grid; gap: 10px; }
+.ticket { display: grid; grid-template-columns: 70px 1fr; gap: 10px; align-items: center; }
+
+.poster { width: 70px; height: 90px; background: #0e0e0e; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.poster img { width: 100%; height: 100%; object-fit: cover; }
+.placeholder { font-size: 12px; opacity: .7; }
+
+.t-content { display: flex; flex-direction: column; gap: 6px; }
+.movie { font-weight: 600; }
+.meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.pill {
+  border: 1px solid #2a2a2a;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  opacity: .9;
+}
+
+.pagination { margin-top: 12px; display: flex; gap: 8px; justify-content: center; }
+.pagination button {
+  border: 1px solid #333;
+  background: #111;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.pagination button:disabled { opacity: .5; cursor: not-allowed; }
+</style>

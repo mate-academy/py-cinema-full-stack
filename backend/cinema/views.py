@@ -12,7 +12,6 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from cinema.models import Genre, Actor, CinemaHall, Movie, MovieSession, Order
 from cinema.permissions import IsAdminOrIfAuthenticatedReadOnly
-
 from cinema.serializers import (
     GenreSerializer,
     ActorSerializer,
@@ -64,12 +63,12 @@ class CinemaHallViewSet(
 
 
 # ---------- MOVIE ----------
-class MovieViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class MovieViewSet(viewsets.ModelViewSet):
+    """
+    - GET list/retrieve: liberado para todos.
+    - POST/PUT/PATCH/DELETE: apenas staff (via permission).
+    - Upload de imagem: POST /movies/{id}/upload-image/ (apenas staff).
+    """
     queryset = (
         Movie.objects
         .prefetch_related("genres", "actors")
@@ -132,15 +131,33 @@ class MovieViewSet(
             return MovieWriteSerializer
         return MovieSerializer
 
+    @extend_schema(
+        request=MovieImageSerializer,
+        responses=MovieImageSerializer,
+        parameters=[
+            OpenApiParameter(
+                name="id",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description="ID do filme"
+            ),
+        ],
+        examples=None,
+    )
     @action(
         methods=["POST"],
         detail=True,
         url_path="upload-image",
         permission_classes=[IsAdminUser],
+        parser_classes=[MultiPartParser, FormParser],
     )
     def upload_image(self, request, pk=None):
+        """
+        Upload de poster do filme.
+        Envie multipart/form-data com o campo 'image'.
+        """
         movie = self.get_object()
-        serializer = self.get_serializer(movie, data=request.data)
+        serializer = self.get_serializer(movie, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -204,8 +221,8 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
         if date:
             try:
-                date = datetime.strptime(date, "%Y-%m-%d").date()
-                queryset = queryset.filter(show_time__date=date)
+                date_obj = datetime.strptime(date, "%Y-%m-%d").date()
+                queryset = queryset.filter(show_time__date=date_obj)
             except ValueError:
                 pass
         if movie_id_str:

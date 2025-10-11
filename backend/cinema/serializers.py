@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
@@ -33,6 +34,22 @@ def _money_str(value):
     return str(dec.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
+def _abs_media(request, file_field):
+    """
+    Retorna URL ABSOLUTA para arquivos de mídia (ex.: imagens).
+    - Se houver request, usa request.build_absolute_uri(file_field.url).
+    - Caso contrário, retorna file_field.url (relativa).
+    """
+    if not file_field:
+        return None
+    url = getattr(file_field, "url", None)
+    if not url:
+        return None
+    if request:
+        return request.build_absolute_uri(url)
+    return url
+
+
 # ---------- BASIC SERIALIZERS ----------
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,12 +58,16 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ActorSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(read_only=True)
+
     class Meta:
         model = Actor
         fields = ("id", "first_name", "last_name", "full_name")
 
 
 class CinemaHallSerializer(serializers.ModelSerializer):
+    capacity = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = CinemaHall
         fields = ("id", "name", "rows", "seats_in_row", "capacity")
@@ -65,6 +86,7 @@ class MovieWriteSerializer(serializers.ModelSerializer):
     Agora:
       - 'duration' aceita string numérica e é normalizada para int (> 0).
       - 'genres' e 'actors' são opcionais (POST pode omitir).
+      - 'image' pode ser incluída (opcional).
     """
     genres = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Genre.objects.all(), required=False
@@ -85,20 +107,22 @@ class MovieWriteSerializer(serializers.ModelSerializer):
             "image",
         )
 
-    # --- Mudança principal: normalização/validação de duration ---
     def validate_duration(self, value):
         """
         Aceita 'duration' como int ou string numérica e garante > 0.
         """
         if value in (None, ""):
-            # deixa o DRF/modelo tratarem 'required' ou 'blank' conforme o ModelField
             return value
         try:
             value = int(value)
         except (TypeError, ValueError):
-            raise serializers.ValidationError("duration deve ser um número inteiro.")
+            raise serializers.ValidationError(
+                "duration deve ser um número inteiro."
+            )
         if value <= 0:
-            raise serializers.ValidationError("duration deve ser maior que zero.")
+            raise serializers.ValidationError(
+                "duration deve ser maior que zero."
+            )
         return value
 
     def create(self, validated_data):
@@ -128,12 +152,21 @@ class MovieWriteSerializer(serializers.ModelSerializer):
 
 class MovieListSerializer(serializers.ModelSerializer):
     """Visão compacta para listagem."""
-    genres = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
-    actors = serializers.SlugRelatedField(many=True, read_only=True, slug_field="full_name")
+    genres = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="name"
+    )
+    actors = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field="full_name"
+    )
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = ("id", "title", "genres", "actors", "image")
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        return _abs_media(request, obj.image)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -146,6 +179,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     """Detalhe de filme."""
     genres = GenreSerializer(many=True, read_only=True)
     actors = ActorSerializer(many=True, read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
@@ -158,6 +192,10 @@ class MovieDetailSerializer(serializers.ModelSerializer):
             "actors",
             "image",
         )
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        return _abs_media(request, obj.image)
 
 
 class MovieImageSerializer(serializers.ModelSerializer):
@@ -175,10 +213,14 @@ class MovieSessionSerializer(serializers.ModelSerializer):
 
 class MovieSessionListSerializer(MovieSessionSerializer):
     movie_title = serializers.CharField(source="movie.title", read_only=True)
-    movie_image = serializers.ImageField(source="movie.image", read_only=True)
-    cinema_hall_name = serializers.CharField(source="cinema_hall.name", read_only=True)
-    cinema_hall_capacity = serializers.IntegerField(source="cinema_hall.capacity", read_only=True)
-    tickets_available = serializers.IntegerField(read_only=True)
+    movie_image = serializers.SerializerMethodField()
+    cinema_hall_name = serializers.CharField(
+        source="cinema_hall.name", read_only=True
+    )
+    cinema_hall_capacity = serializers.IntegerField(
+        source="cinema_hall.capacity", read_only=True
+    )
+    tickets_available = serializers.SerializerMethodField()
 
     class Meta:
         model = MovieSession
@@ -191,6 +233,20 @@ class MovieSessionListSerializer(MovieSessionSerializer):
             "cinema_hall_capacity",
             "tickets_available",
         )
+
+    def get_movie_image(self, obj):
+        request = self.context.get("request")
+        return _abs_media(request, getattr(obj.movie, "image", None))
+
+    def get_tickets_available(self, obj):
+        """
+        Calcula assentos disponíveis: capacidade - ingressos vendidos.
+        Usa related_name='tickets' no modelo.
+        """
+        capacity = obj.cinema_hall.capacity
+        taken = getattr(obj, "tickets", None)
+        taken_count = taken.count() if taken is not None else 0
+        return max(capacity - taken_count, 0)
 
 
 # ---------- TICKET SERIALIZERS ----------
@@ -224,7 +280,9 @@ class TicketSeatsSerializer(TicketSerializer):
 class MovieSessionDetailSerializer(MovieSessionSerializer):
     movie = MovieListSerializer(many=False, read_only=True)
     cinema_hall = CinemaHallSerializer(many=False, read_only=True)
-    taken_places = TicketSeatsSerializer(source="tickets", many=True, read_only=True)
+    taken_places = TicketSeatsSerializer(
+        source="tickets", many=True, read_only=True
+    )
 
     class Meta:
         model = MovieSession
@@ -286,28 +344,3 @@ class OrderListSerializer(OrderSerializer):
 
         total_dec = _to_decimal(unit, MONEY_DEFAULT) * qty
         return _money_str(total_dec)
-
-
-# ---------- BASIC SERIALIZERS ----------
-class GenreSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Genre
-        fields = ("id", "name")
-
-
-class ActorSerializer(serializers.ModelSerializer):
-    # 👇 ADICIONE ESTA LINHA
-    full_name = serializers.CharField(read_only=True)
-
-    class Meta:
-        model = Actor
-        fields = ("id", "first_name", "last_name", "full_name")
-
-
-class CinemaHallSerializer(serializers.ModelSerializer):
-    # 👇 ADICIONE ESTA LINHA
-    capacity = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = CinemaHall
-        fields = ("id", "name", "rows", "seats_in_row", "capacity")
