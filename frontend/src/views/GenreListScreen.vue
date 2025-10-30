@@ -64,7 +64,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres`,
+          `${import.meta.env.VITE_API_URL}/api/cinema/genres/`,
           {
             name: this.name
           },
