@@ -1,13 +1,12 @@
 <template>
   <div>
     <div class="label">{{label}}</div>
-    <div :class="['input-field', width === 'normal' ? '' : width === 'wide' ? 'wide' : 'narrow', valid ? '' : 'invalid']">
+    <div :class="['input-field', width === 'normal' ? '' : width === 'wide' ? 'wide' : 'narrow']">
       <input
       v-model="value"
       @input="$emit('input', value)"
       :placeholder="placeholder"
       type="text"
-      :pattern="pattern"
       ref="inputEl"/>
     </div>
   </div>
@@ -16,8 +15,7 @@
 <script>
 export default {
   data: () => ({
-    value: '',
-    valid: true
+    value: ''
   }),
   props: {
     label: {
@@ -25,10 +23,6 @@ export default {
       default: ''
     },
     placeholder: {
-      type: String,
-      default: ''
-    },
-    pattern: {
       type: String,
       default: ''
     },
@@ -44,11 +38,6 @@ export default {
     initialValue: null
   },
   watch: {
-    value (val) {
-      if (!val || !this.pattern) return;
-
-      this.valid = this.$refs.inputEl.checkValidity();
-    },
     initialValue: {
       handler (val) {
         this.value = val;
@@ -83,16 +72,6 @@ export default {
 }
 .input-field.narrow {
   width: 255px;
-}
-
-.input-field.invalid,
-.input-field.invalid:focus-within {
-  border: 1px solid var(--red);
-  background-color: #400000;
-}
-
-.input-field.invalid input {
-  background: #400000;
 }
 
 .input-field input {
