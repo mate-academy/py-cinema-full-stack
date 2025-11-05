@@ -193,4 +193,14 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "x-csrftoken",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_ALL_ORIGINS = False
+
 APPEND_SLASH = False
