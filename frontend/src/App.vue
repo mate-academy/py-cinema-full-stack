@@ -3,13 +3,14 @@
     <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
     <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
     <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
+
     <movie-list-screen v-if="user" :isStaff="user.is_staff"></movie-list-screen>
     <movie-session-list-screen v-if="user" :isStaff="user.is_staff"></movie-session-list-screen>
     <cinema-hall-list-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-list-screen>
     <genre-list-screen v-if="user" :isStaff="user.is_staff"></genre-list-screen>
     <actor-list-screen v-if="user" :isStaff="user.is_staff"></actor-list-screen>
     <movie-details-screen v-if="user"></movie-details-screen>
-    <movie-session-details-screen v-if="user" :user="user" ></movie-session-details-screen>
+    <movie-session-details-screen v-if="user" :user="user"></movie-session-details-screen>
     <movie-add-screen v-if="user" :isStaff="user.is_staff"></movie-add-screen>
     <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
     <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
@@ -20,12 +21,14 @@
 </template>
 
 <script>
+import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 
 import SignIn from './views/SignIn.vue';
-import MovieListScreen from './views/MovieListScreen.vue';
+import SignUp from './views/SignUp.vue';
 import AppHeader from './views/AppHeader.vue';
 import AppFooter from './views/AppFooter.vue';
+import MovieListScreen from './views/MovieListScreen.vue';
 import MovieDetailsScreen from './views/MovieDetailsScreen.vue';
 import MovieAddScreen from './views/MovieAddScreen.vue';
 import MovieSessionListScreen from './views/MovieSessionListScreen.vue';
@@ -37,83 +40,95 @@ import ActorListScreen from './views/ActorListScreen.vue';
 import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
 import OrderListScreen from './views/OrderListScreen.vue';
 import ProfileScreen from './views/ProfileScreen.vue';
-import SignUp from './views/SignUp.vue';
 
 export default {
   data: () => ({
     expiresAt: null,
-    user: null,
-    type: 'password'
+    user: null
   }),
   methods: {
-    async logIn () {
+    async logIn() {
       const accessToken = localStorage.getItem('access');
       if (!accessToken) return;
 
-      const { exp } = jwtDecode(accessToken);
-      this.expiresAt = exp;
+      try {
+        const { exp } = jwtDecode(accessToken);
+        this.expiresAt = exp;
 
-      if (this.expiresAt * 1e3 > Date.now()) {
-        await this.fetchUser();
-        return;
+        if (this.expiresAt * 1000 > Date.now()) {
+          await this.fetchUser();
+          return;
+        }
+
+        await this.refreshToken();
+      } catch (err) {
+        console.error('Invalid access token', err);
+        this.user = null;
       }
-
-      this.refreshToken();
     },
 
-    async handleLogIn () {
+    async handleLogIn() {
       await this.logIn();
       location.hash = '#/';
     },
 
-    logOut () {
+    logOut() {
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
-
       this.user = null;
     },
 
-    async fetchUser () {
+    async fetchUser() {
       const accessToken = localStorage.getItem('access');
-      try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
-          { headers: { Authorization: `Bearer ${accessToken}` } });
+      if (!accessToken) return;
 
-        this.user = user;
+      try {
+        const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          withCredentials: true
+        });
+
+        this.user = data;
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Fetch user failed', err.response?.data || err);
+        this.user = null;
       }
     },
 
-    async refreshToken () {
+    async refreshToken() {
+      const refreshToken = localStorage.getItem('refresh');
+      if (!refreshToken) return;
+
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
-        });
+        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh/`,
+          { refresh: refreshToken },
+          { withCredentials: true }
+        );
 
-        const { access, refresh } = data;
-
-        localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
-        this.logIn();
+        localStorage.setItem('access', data.access);
+        localStorage.setItem('refresh', data.refresh);
+        await this.logIn();
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Refresh token failed', err.response?.data || err);
+        this.user = null;
       }
     }
   },
-  created () {
+  created() {
     this.logIn();
 
-    setInterval(() => {
-      if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
-      this.refreshToken();
-    }, 60 * 1e3);
+    setInterval(async () => {
+      if (!this.expiresAt || this.expiresAt * 1000 <= Date.now()) {
+        await this.refreshToken();
+      }
+    }, 60 * 1000);
   },
   components: {
     SignIn,
-    MovieListScreen,
+    SignUp,
     AppHeader,
     AppFooter,
+    MovieListScreen,
     MovieDetailsScreen,
     MovieAddScreen,
     MovieSessionListScreen,
@@ -124,8 +139,7 @@ export default {
     ActorListScreen,
     MovieSessionDetailsScreen,
     OrderListScreen,
-    ProfileScreen,
-    SignUp
+    ProfileScreen
   }
 };
 </script>
@@ -134,11 +148,9 @@ export default {
 #app > *:not(:last-child):not(:first-child) {
   padding: 60px 100px;
 }
-
-#app > *:last-child{
+#app > *:last-child {
   padding-bottom: 40px;
 }
-
 #app .sign-in {
   padding: 0;
 }
