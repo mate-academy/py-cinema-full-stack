@@ -14,7 +14,6 @@
     <password-input v-model="password"></password-input>
     <action-button
       label="Sign in"
-      :disabled="!email || !password"
       @click="signIn"
     ></action-button>
     <p v-if="error" class="error">{{ error }}</p>
@@ -48,7 +47,6 @@ export default {
             headers: {
               'Content-Type': 'application/json',
             },
-            withCredentials: true,
           }
         );
 
@@ -113,3 +111,26 @@ a {
   color: var(--main-font);
 }
 </style>
+
+// App.vue
+methods: {
+  async fetchUser() {
+    try {
+      const token = localStorage.getItem('access');
+      const { data } = await axios.get('http://localhost:8080/api/user/me/', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        withCredentials: true
+      });
+      this.user = data;
+    } catch (err) {
+      console.error('Fetch user failed', err);
+    }
+  },
+
+  async logIn() {
+    await this.fetchUser();
+    this.loggedIn = true;
+  }
+}
