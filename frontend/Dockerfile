@@ -2,10 +2,11 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-COPY cinema-shop-vue-ui/package*.json ./
+COPY ./frontend/package*.json ./
+
 RUN npm install
 
-COPY cinema-shop-vue-ui .
+COPY ./frontend .
 
 EXPOSE 5173
 
