@@ -1,11 +1,11 @@
-FROM --platform=linux/amd64 python:3.13-slim
+FROM python:3.13-slim
 LABEL maintainer="danylo.t@mate.academy"
 
 WORKDIR /app
 
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 
 RUN pip install --upgrade pip
