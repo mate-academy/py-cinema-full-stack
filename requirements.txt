@@ -1,3 +1,4 @@
+python-dotenv
 Django~=5.1.0
 django-debug-toolbar~=4.4.6
 djangorestframework~=3.15.2
