@@ -1,5 +1,5 @@
 <template>
-  <div v-if="active">
+  <div v-if="active" :class="{ 'background-blur': isShowingModal }">
     <div class="multiselections">
       <custom-multiselect
         label="Select actors"
@@ -54,12 +54,15 @@ export default {
   computed: {
     token () {
       return localStorage.getItem('access');
+    },
+    isShowingModal () {
+      return Boolean(location.hash.match(/#\/movies\/\d+/));
     }
   },
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
@@ -68,7 +71,7 @@ export default {
             name: `${firstName} ${lastName}`
           };
         }
-        ); ;
+        );
       } catch (err) {
         console.error(err.response.data);
       }
@@ -76,7 +79,7 @@ export default {
 
     async fetchGenres () {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
@@ -91,7 +94,7 @@ export default {
       if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join();
 
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params
         });
@@ -130,11 +133,18 @@ export default {
     },
 
     hashHandler () {
-      this.active = Boolean(
-        !location.hash || location.hash.match('movies$') ||
-         location.hash.match(/#\/movies\/(\d+)/) || location.hash.match('/$'));
-    },
+      const hash = location.hash;
 
+      const isMovieRoute = !hash || hash === '#/' || hash.startsWith('#/movies');
+
+      const isAddScreen = hash.includes('add=true');
+
+      const isOtherPage = hash.includes('/movie-sessions') ||
+                          hash.includes('/cinema-halls') ||
+                          hash.includes('/profile');
+
+      this.active = isMovieRoute && !isOtherPage && !isAddScreen;
+    },
     handleMovieDetailsClick (id) {
       location.hash = `#/movies/${id}`;
     },
@@ -178,4 +188,11 @@ export default {
   row-gap: 60px;
   margin-top: 60px;
 }
+
+.background-blur {
+  filter: blur(10px);
+  transition: filter 0.3s ease;
+  pointer-events: none;
+}
+
 </style>
