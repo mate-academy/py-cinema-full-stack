@@ -1,6 +1,14 @@
 <template>
-  <div v-if="active" class="modal-wrapper" @click="handleClick">
-    <movie-modal :movie="movie" @close-movie-details="handleMovieDetailsClose" ref="modal"></movie-modal>
+  <div v-if="active" class="modal-wrapper" @click.self="handleMovieDetailsClose">
+    <div class="movie-details-window">
+      <div class="content-wrapper">
+        <movie-modal
+          :movie="movie"
+          @close-movie-details="handleMovieDetailsClose"
+          ref="modal">
+        </movie-modal>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -17,18 +25,13 @@ export default {
     }
   },
   methods: {
-    handleClick (evt) {
-      if (evt.target !== this.$el) return;
-      this.handleMovieDetailsClose();
-    },
-
     hashHandler () {
       const match = location.hash.match(/#\/movies\/(\d+)/);
       if (!match) {
         this.active = false;
         this.movie = {};
         return;
-      };
+      }
 
       const [, id] = match;
       if (!id) {
@@ -42,7 +45,7 @@ export default {
 
     async fetchMovie (id) {
       try {
-        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies-${id}`, {
+        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
@@ -75,9 +78,20 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(210, 210, 210, 0.1);
-  backdrop-filter: blur(7.5px);
-  z-index: 1;
-  padding: 80px 145px !important;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 40px;
+}
+
+.movie-details-window {
+  width: 80%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  position: relative;
 }
 </style>

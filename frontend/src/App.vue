@@ -76,8 +76,7 @@ export default {
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
-          { headers: { Authorization: `Bearer ${accessToken}` } });
+        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/`, { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
       } catch (err) {
@@ -86,21 +85,33 @@ export default {
     },
 
     async refreshToken () {
+      const refresh = localStorage.getItem('refresh');
+
+      if (!refresh) {
+        this.logOut();
+        return;
+      }
+
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh/`, {
+          refresh
         });
 
-        const { access, refresh } = data;
+        const { access, refresh: newRefresh } = data;
 
         localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
+        if (newRefresh) {
+          localStorage.setItem('refresh', newRefresh);
+        }
+
         this.logIn();
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Refresh failed:', err.response?.data);
+        this.logOut();
       }
     }
   },
+
   created () {
     this.logIn();
 
