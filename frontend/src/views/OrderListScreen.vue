@@ -2,12 +2,12 @@
   <div v-if="active" class="orders-container">
     <div class="header">My orders</div>
     <div class="container">
-      <div v-for="order in response.results" class="order">
+      <div v-for="order in response.results" :key="order.id" class="order">
         <div class="created-info">
           <div>Id: {{order.id}}.</div>
           <div>Created at {{createdAt(order.created_at)}}</div>
         </div>
-        <div  v-for="ticket in order.tickets" class="ticket">
+        <div  v-for="ticket in order.tickets" :key="ticket.id" class="ticket">
           <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"></div>
           <div class="ticket-info">
             <div><span class="label">Movie:</span> {{ticket.movie_session.movie_title}}</div>
