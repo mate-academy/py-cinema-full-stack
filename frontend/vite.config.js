@@ -6,6 +6,11 @@ import vue2 from '@vitejs/plugin-vue2';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    port: 5173,
+    strictPort: true,
+    host: true
+  },
   plugins: [
     vue2(),
     legacy({
