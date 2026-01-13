@@ -70,8 +70,8 @@ export default {
       this.active = Boolean(location.hash.match('movie-sessions$'));
     },
 
-    handleMovieSessionDetails (sessionId) {
-      location.hash = `#/movie-sessions/${sessionId}`;
+    handleMovieSessionDetails (id) {
+      location.hash = `#/movie-sessions/${id}/`;
     },
 
     handleMovieCreate () {
@@ -85,7 +85,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date
