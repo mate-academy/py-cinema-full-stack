@@ -52,7 +52,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`,
+          `cinema/cinema_halls`,
           {
             name: this.name,
             rows: Number(this.countRows),
