@@ -1,20 +1,15 @@
-[
-    {
-        "id": 1,
-        "show_time": "2023-01-24T11:15:00",
-        "movie_title": "Ace Ventura",
-        "movie_image": "media/uploads/movies/ace-ventura.jpg",
-        "cinema_hall_name": "Red",
-        "cinema_hall_capacity": 48,
-        "tickets_available": 48
+export async function getMovieSessions() {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch("/api/cinema/movie_sessions/", {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-    {
-        "id": 2,
-        "show_time": "2023-01-26T14:00",
-        "movie_title": "Ace Ventura",
-        "movie_image": "media/uploads/movies/ace-ventura.jpg",
-        "cinema_hall_name": "Red",
-        "cinema_hall_capacity": 48,
-        "tickets_available": 46
-    }
-]
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch movie sessions");
+  }
+
+  return response.json();
+}

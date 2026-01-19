@@ -1,18 +1,15 @@
-[
-    {
-        "id": 1,
-        "name": "drama"
+export async function getGenres() {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch("/api/cinema/genres/", {
+    headers: {
+      Authorization: `Bearer ${token}`,
     },
-    {
-        "id": 2,
-        "name": "comedy"
-    },
-    {
-        "id": 3,
-        "name": "fantasy"
-    },
-    {
-        "id": 4,
-        "name": "romance"
-    }
-]
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch genres");
+  }
+
+  return response.json();
+}
