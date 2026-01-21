@@ -1,0 +1,6 @@
+[
+  {"model": "cinema.actor", "pk": 1, "fields": {"first_name": "Jim", "last_name": "Carrey"}},
+  {"model": "cinema.actor", "pk": 2, "fields": {"first_name": "Tom", "last_name": "Holland"}},
+  {"model": "cinema.actor", "pk": 3, "fields": {"first_name": "Leonardo", "last_name": "DiCaprio"}},
+  {"model": "cinema.actor", "pk": 4, "fields": {"first_name": "Kate", "last_name": "Winslet"}}
+]
