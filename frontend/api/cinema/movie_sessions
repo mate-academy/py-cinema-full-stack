@@ -7,7 +7,6 @@
         "cinema_hall_name": "Red",
         "cinema_hall_capacity": 48,
         "tickets_available": 48
-    },
     {
         "id": 2,
         "show_time": "2023-01-26T14:00",
