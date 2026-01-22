@@ -1,0 +1,30 @@
+[
+   {
+        "id": 0,
+        "name": "Grand Hall",
+        "rows": "10",
+        "seats_in_row": "5",
+        "capacity": "50"
+    },
+    {
+        "id": 1,
+        "name": "HubaBuba Cinema",
+        "rows": "1.5",
+        "seats_in_row": "0.34",
+        "capacity": "0.51"
+    },
+    {
+        "id": 2,
+        "name": "Micro Hall",
+        "rows": "10",
+        "seats_in_row": "1",
+        "capacity": "10"
+    },
+    {
+        "id": 3,
+        "name": "Tarantino HaHaHall",
+        "rows": "100",
+        "seats_in_row": "100",
+        "capacity": "10000"
+    }
+]
