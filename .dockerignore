@@ -1,3 +1,10 @@
+.env
+.venv
 venv/
 python-version
-.env
+frontend/node_modules
+frontend/dist
+
+.git
+.idea
+.vscode
