@@ -25,3 +25,15 @@ services:
       - "5432:5432"
     env_file:
       - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/webpage
+      - /webpage/node_modules
+    env_file:
+      - .env
