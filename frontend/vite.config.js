@@ -1,10 +1,8 @@
 import { fileURLToPath, URL } from 'node:url';
-
 import { defineConfig } from 'vite';
 import legacy from '@vitejs/plugin-legacy';
 import vue2 from '@vitejs/plugin-vue2';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue2(),
@@ -13,6 +11,20 @@ export default defineConfig({
       additionalLegacyPolyfills: ['regenerator-runtime/runtime']
     })
   ],
+  server: {
+    host: '127.0.0.1',
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true
+      },
+      '/media': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true
+      }
+    }
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
