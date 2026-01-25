@@ -1,27 +1,51 @@
-version: "3"
+version: "3.9"
 
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    container_name: drf-backend
     ports:
       - "8080:8080"
     volumes:
       - ./backend:/app
       - ./backend/media:/vol/web/media
     command: >
-      sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
+      sh -c "
+      python manage.py wait_for_db &&
+      python manage.py migrate &&
+      
+      python manage.py runserver 0.0.0.0:8080
+      "
     env_file:
       - .env
     depends_on:
       - db
 
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: vue-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+    depends_on:
+      - backend
+
   db:
     image: postgres:14-alpine
+    container_name: postgres-db
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     env_file:
       - .env
+
+volumes:
+  postgres_data:
