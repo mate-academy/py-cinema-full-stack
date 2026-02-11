@@ -19,6 +19,18 @@ services:
     depends_on:
       - db
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    command: ["npm", "run", "dev", "--", "--host"]
+
+
   db:
     image: postgres:14-alpine
     ports:
