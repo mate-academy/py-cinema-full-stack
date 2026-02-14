@@ -1,5 +1,5 @@
 <template>
-  <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + image + ')' }" @click="$emit('click', id)">
+  <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(\'http://127.0.0.1:8000' + image + '\')' }" @click="$emit('click', id)">
     <div class="main-info">
       <span class="title">{{title}}</span>
       <div class="detail" @click="$emit('click', id)" v-if="!times.length">

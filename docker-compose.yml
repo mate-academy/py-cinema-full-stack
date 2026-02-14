@@ -1,19 +1,17 @@
-version: "3"
-
 services:
   app:
     build:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "8080:8080"
+      - "8000:8000"
     volumes:
       - ./backend:/app
       - ./backend/media:/vol/web/media
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
+             python manage.py runserver 0.0.0.0:8000"
     env_file:
       - .env
     depends_on:
@@ -25,3 +23,15 @@ services:
       - "5432:5432"
     env_file:
       - .env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - app
