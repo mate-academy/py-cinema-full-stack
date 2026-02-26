@@ -1,0 +1,61 @@
+﻿[
+  {
+    "model": "cinema.genre",
+    "pk": 1,
+    "fields": { "name": "Sci-Fi" }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 2,
+    "fields": { "name": "Action" }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 1,
+    "fields": { "first_name": "Keanu", "last_name": "Reeves" }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 1,
+    "fields": { "name": "Blue Hall", "rows": 10, "seats_in_row": 15 }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "The Matrix",
+      "description": "A hacker discovers reality is a simulation.",
+      "duration": 136,
+      "genres": [1, 2],
+      "actors": [1],
+      "image": ""
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "show_time": "2026-03-01T18:00:00Z",
+      "movie": 1,
+      "cinema_hall": 1
+    }
+  },
+  {
+    "model": "cinema.order",
+    "pk": 1,
+    "fields": {
+      "created_at": "2026-02-25T14:00:00Z",
+      "user": 1
+    }
+  },
+  {
+    "model": "cinema.ticket",
+    "pk": 1,
+    "fields": {
+      "movie_session": 1,
+      "order": 1,
+      "row": 1,
+      "seat": 1
+    }
+  }
+]
