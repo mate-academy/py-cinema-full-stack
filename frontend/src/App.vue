@@ -3,13 +3,14 @@
     <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
     <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
     <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
+
     <movie-list-screen v-if="user" :isStaff="user.is_staff"></movie-list-screen>
     <movie-session-list-screen v-if="user" :isStaff="user.is_staff"></movie-session-list-screen>
     <cinema-hall-list-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-list-screen>
     <genre-list-screen v-if="user" :isStaff="user.is_staff"></genre-list-screen>
     <actor-list-screen v-if="user" :isStaff="user.is_staff"></actor-list-screen>
     <movie-details-screen v-if="user"></movie-details-screen>
-    <movie-session-details-screen v-if="user" :user="user" ></movie-session-details-screen>
+    <movie-session-details-screen v-if="user" :user="user"></movie-session-details-screen>
     <movie-add-screen v-if="user" :isStaff="user.is_staff"></movie-add-screen>
     <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
     <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
@@ -20,34 +21,39 @@
 </template>
 
 <script>
-import jwtDecode from 'jwt-decode';
+import jwtDecode from "jwt-decode";
 
-import SignIn from './views/SignIn.vue';
-import MovieListScreen from './views/MovieListScreen.vue';
-import AppHeader from './views/AppHeader.vue';
-import AppFooter from './views/AppFooter.vue';
-import MovieDetailsScreen from './views/MovieDetailsScreen.vue';
-import MovieAddScreen from './views/MovieAddScreen.vue';
-import MovieSessionListScreen from './views/MovieSessionListScreen.vue';
-import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue';
-import CinemaHallListScreen from './views/CinemaHallListScreen.vue';
-import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue';
-import GenreListScreen from './views/GenreListScreen.vue';
-import ActorListScreen from './views/ActorListScreen.vue';
-import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
-import OrderListScreen from './views/OrderListScreen.vue';
-import ProfileScreen from './views/ProfileScreen.vue';
-import SignUp from './views/SignUp.vue';
+import SignIn from "./views/SignIn.vue";
+import MovieListScreen from "./views/MovieListScreen.vue";
+import AppHeader from "./views/AppHeader.vue";
+import AppFooter from "./views/AppFooter.vue";
+import MovieDetailsScreen from "./views/MovieDetailsScreen.vue";
+import MovieAddScreen from "./views/MovieAddScreen.vue";
+import MovieSessionListScreen from "./views/MovieSessionListScreen.vue";
+import MovieSessionAddScreen from "./views/MovieSessionAddScreen.vue";
+import CinemaHallListScreen from "./views/CinemaHallListScreen.vue";
+import CinemaHallAddScreen from "./views/CinemaHallAddScreen.vue";
+import GenreListScreen from "./views/GenreListScreen.vue";
+import ActorListScreen from "./views/ActorListScreen.vue";
+import MovieSessionDetailsScreen from "./views/MovieSessionDetailsScreen.vue";
+import OrderListScreen from "./views/OrderListScreen.vue";
+import ProfileScreen from "./views/ProfileScreen.vue";
+import SignUp from "./views/SignUp.vue";
 
 export default {
   data: () => ({
     expiresAt: null,
     user: null,
-    type: 'password'
+    type: "password",
   }),
   methods: {
-    async logIn () {
-      const accessToken = localStorage.getItem('access');
+    apiBase() {
+      // VITE_API_URL is backend root (e.g. http://localhost:8000)
+      return `${import.meta.env.VITE_API_URL}/api`;
+    },
+
+    async logIn() {
+      const accessToken = localStorage.getItem("access");
       if (!accessToken) return;
 
       const { exp } = jwtDecode(accessToken);
@@ -58,50 +64,67 @@ export default {
         return;
       }
 
-      this.refreshToken();
+      await this.refreshToken();
     },
 
-    async handleLogIn () {
+    async handleLogIn() {
       await this.logIn();
-      location.hash = '#/';
+      location.hash = "#/";
     },
 
-    logOut () {
-      localStorage.removeItem('access');
-      localStorage.removeItem('refresh');
-
+    logOut() {
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
       this.user = null;
     },
 
-    async fetchUser () {
-      const accessToken = localStorage.getItem('access');
+    async fetchUser() {
+      const accessToken = localStorage.getItem("access");
+      if (!accessToken) return;
+
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
-          { headers: { Authorization: `Bearer ${accessToken}` } });
+        // правильний endpoint: GET /api/user/me/
+        const { data: user } = await this.axios.get(
+          `${this.apiBase()}/user/me/`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
 
         this.user = user;
       } catch (err) {
-        console.error(err.response.data);
+        const status = err?.response?.status;
+        const payload = err?.response?.data;
+        console.error("fetchUser failed:", status, payload || err.message);
       }
     },
 
-    async refreshToken () {
+    async refreshToken() {
+      const refresh = localStorage.getItem("refresh");
+      if (!refresh) return;
+
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
-        });
+        // правильний endpoint: POST /api/user/token/refresh/
+        const { data } = await this.axios.post(
+          `${this.apiBase()}/user/token/refresh/`,
+          { refresh }
+        );
 
-        const { access, refresh } = data;
+        const { access, refresh: newRefresh } = data;
 
-        localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
-        this.logIn();
+        localStorage.setItem("access", access);
+        if (newRefresh) localStorage.setItem("refresh", newRefresh);
+
+        await this.logIn();
       } catch (err) {
-        console.error(err.response.data);
+        const status = err?.response?.status;
+        const payload = err?.response?.data;
+        console.error("refreshToken failed:", status, payload || err.message);
+
+        // якщо refresh протух/невалідний — розлогін
+        this.logOut();
       }
-    }
+    },
   },
-  created () {
+  created() {
     this.logIn();
 
     setInterval(() => {
@@ -125,8 +148,8 @@ export default {
     MovieSessionDetailsScreen,
     OrderListScreen,
     ProfileScreen,
-    SignUp
-  }
+    SignUp,
+  },
 };
 </script>
 
@@ -135,7 +158,7 @@ export default {
   padding: 60px 100px;
 }
 
-#app > *:last-child{
+#app > *:last-child {
   padding-bottom: 40px;
 }
 

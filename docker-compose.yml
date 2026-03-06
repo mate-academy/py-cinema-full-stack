@@ -1,27 +1,61 @@
-version: "3"
-
 services:
-  app:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME:-cinema}
+      POSTGRES_USER: ${DB_USER:-cinema}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-cinema}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-cinema} -d ${DB_NAME:-cinema}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    ports:
-      - "8080:8080"
+    env_file:
+      - .env
+    # DEV: монтуємо код, щоб можна було редагувати без rebuild
     volumes:
       - ./backend:/app
-      - ./backend/media:/vol/web/media
-    command: >
-      sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
-    env_file:
-      - .env
+      - backend_static:/app/staticfiles
+      - backend_media:/app/media
     depends_on:
-      - db
-
-  db:
-    image: postgres:14-alpine
+      db:
+        condition: service_healthy
     ports:
-      - "5432:5432"
-    env_file:
-      - .env
+      - "8000:8000"
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        python manage.py collectstatic --noinput &&
+        gunicorn cinema_service.wsgi:application --bind 0.0.0.0:8000 --workers 3
+      "
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      # Backend root URL. Frontend code appends `/api/...` itself.
+      VITE_API_URL: "http://localhost:8000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    command: >
+      sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+  backend_static:
+  backend_media:
+  frontend_node_modules:
