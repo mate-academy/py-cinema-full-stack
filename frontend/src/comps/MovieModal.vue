@@ -45,6 +45,8 @@ export default {
   flex-direction: column;
   gap: 40px;
   position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .header {
@@ -57,6 +59,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .label {
@@ -81,20 +84,26 @@ export default {
 .info-container {
   height: 100%;
   display: flex;
+  align-items: flex-start;
+  overflow: hidden;
 }
 
 .info {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 img {
-  background-size: cover;
-  max-height: 510px;
+  display: block;
+  width: auto;
   max-width: 440px;
+  max-height: 100%;
+  height: auto;
+  object-fit: contain;
   margin-right: 40px;
+  flex-shrink: 0;
 }
+
 img.absent {
   margin-right: 0;
 }
