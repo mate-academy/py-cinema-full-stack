@@ -1,3 +1,24 @@
+# Python virtual environment
 venv/
-python-version
+.python-version
+
+# Environment files
 .env
+
+# Node.js dependencies
+frontend/node_modules
+backend/node_modules
+
+# Логи
+npm-debug.log
+yarn-error.log
+
+# Python кеш
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite / DB файли
+*.db
+*.sqlite3

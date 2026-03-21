@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   backend:
     build:
@@ -27,6 +25,20 @@ services:
       - ./backend/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"   # фронтенд буде доступний на localhost:3000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules   # 👈 окремий volume для node_modules
+    stdin_open: true
+    tty: true
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
