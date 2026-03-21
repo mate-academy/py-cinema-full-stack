@@ -1,27 +1,33 @@
 version: "3"
 
 services:
-  app:
+  backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "8080:8080"
+      - "8001:8000"   # зовнішній порт 8001, внутрішній 8000
     volumes:
       - ./backend:/app
       - ./backend/media:/vol/web/media
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
+             python manage.py runserver 0.0.0.0:8000"
     env_file:
-      - .env
+      - ./backend/.env
     depends_on:
       - db
 
   db:
     image: postgres:14-alpine
     ports:
-      - "5432:5432"
+      - "5433:5432"   # зовнішній порт 5433, внутрішній 5432
     env_file:
-      - .env
+      - ./backend/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  media:
