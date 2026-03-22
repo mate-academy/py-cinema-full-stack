@@ -11,7 +11,7 @@ export default {
   props: {
     isStaff: {
       type: Boolean,
-      default: false
+      default: true   // ✅ тепер за замовчуванням true
     }
   },
   data: () => ({
