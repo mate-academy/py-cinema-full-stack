@@ -6,6 +6,8 @@
 
 <script>
 import MovieModal from '../comps/MovieModal.vue';
+import { getMovieDetails } from '@/api/cinema/movies';
+
 export default {
   data: () => ({
     active: false,
@@ -21,37 +23,29 @@ export default {
       if (evt.target !== this.$el) return;
       this.handleMovieDetailsClose();
     },
-
     hashHandler () {
       const match = location.hash.match(/#\/movies\/(\d+)/);
       if (!match) {
         this.active = false;
         this.movie = {};
         return;
-      };
-
+      }
       const [, id] = match;
       if (!id) {
         this.active = false;
         return;
       }
-
       this.active = true;
       this.fetchMovie(id);
     },
-
     async fetchMovie (id) {
       try {
-        const { data: movie } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies-${id}`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-
-        this.movie = movie;
+        const { data } = await getMovieDetails(this.token, id);
+        this.movie = data;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
-
     handleMovieDetailsClose () {
       location.hash = '#/movies';
     }
@@ -64,7 +58,6 @@ export default {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: { MovieModal }
-
 };
 </script>
 

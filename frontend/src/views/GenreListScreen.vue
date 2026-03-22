@@ -19,11 +19,12 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+
+import { getGenres, addGenre as addGenreApi } from '@/api/cinema/genres';
+
 export default {
   props: {
     isStaff: {
@@ -45,41 +46,22 @@ export default {
   methods: {
     async fetchGenres () {
       try {
-        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.genres = genres;
+        const { data } = await getGenres(this.token);
+        this.genres = data;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
-
     async addGenre () {
       try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres`,
-          {
-            name: this.name
-          },
-          config
-        );
-
+        await addGenreApi(this.token, { name: this.name });
         this.createMode = !this.createMode;
         this.fetchGenres();
-
         this.name = '';
       } catch (err) {
-        console.error(err);
+        console.error(err.response?.data || err);
       }
     },
-
     hashHandler () {
       this.active = Boolean(location.hash.match('genres$'));
     }
@@ -103,7 +85,6 @@ export default {
     InputItem,
     ActionButton
   }
-
 };
 </script>
 
@@ -115,32 +96,26 @@ export default {
   gap: 24px;
   width: 100%;
 }
-
 .add-genre {
   margin-bottom: 36px;
 }
-
 .action-button {
   margin-top: 36px;
 }
-
 .header {
   font-weight: 600;
   font-size: 50px;
   line-height: 61px;
 }
-
 .note {
   font-size: 25px;
   line-height: 31px;
 }
-
 .container {
   width: 100%;
   font-size: 25px;
   line-height: 30px;
 }
-
 .container > div {
   height: 50px;
   display: flex;
@@ -148,9 +123,7 @@ export default {
   padding: 0 10px;
   border-radius: 10px;
 }
-
 .container > .odd {
   background-color: var(--secondary-bg);
 }
-
 </style>

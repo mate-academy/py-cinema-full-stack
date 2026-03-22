@@ -14,8 +14,8 @@
 
 <script>
 import AddBtn from '../comps/AddBtn.vue';
+import { getCinemaHalls } from '@/api/cinema/cinema_halls';
 
-import axios from 'axios';
 export default {
   props: {
     isStaff: {
@@ -35,19 +35,15 @@ export default {
   methods: {
     async fetchHalls () {
       try {
-        const { data: halls } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.halls = halls;
+        const { data } = await getCinemaHalls(this.token);
+        this.halls = data;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
-
     handleHallCreate () {
       location.hash = '#/cinema-halls?add=true';
     },
-
     hashHandler () {
       this.active = Boolean(location.hash.match('cinema-halls$'));
     }
@@ -71,48 +67,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.cinema-halls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.label {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 60px;
-  margin-bottom: 60px;
-}
-
-.hall-container {
-  display: flex;
-  gap: 65px;
-  flex-wrap: wrap;
-}
-
-.name {
-  font-weight: 700;
-  font-size: 25px;
-  line-height: 30px;
-  margin-bottom: 24px;
-}
-
-.size {
-  margin-bottom: 12px;
-}
-
-.hall {
-  width: 196px;
-  height: 190px;
-  background-color: var(--secondary-bg);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  line-height: 22px;
-}
-</style>

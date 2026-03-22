@@ -16,9 +16,9 @@
       </div>
     </div>
     <action-button
-    label="Submit"
-    @click="addMovie"
-    :disabled="!title || !duration || !description || !selectedActorIds.length || !selectedGenreIds.length"
+      label="Submit"
+      @click="addMovie"
+      :disabled="!title || !duration || !description || !selectedActorIds.length || !selectedGenreIds.length"
     ></action-button>
   </div>
 </template>
@@ -29,6 +29,9 @@ import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import InputItem from '../comps/InputItem.vue';
 import ImageUploader from '../comps/ImageUploader.vue';
 
+import { getActors } from '@/api/cinema/actors';
+import { getGenres } from '@/api/cinema/genres';
+import { addMovie } from '@/api/cinema/movies';
 import axios from 'axios';
 
 export default {
@@ -58,70 +61,48 @@ export default {
     hashHandler () {
       this.active = Boolean(location.hash.match('movies\\?add=true'));
     },
-
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
-          return {
-            id,
-            name: `${firstName} ${lastName}`
-          };
-        }
-        ); ;
+        const { data } = await getActors(this.token);
+        this.actors = data.map(({ id, first_name: firstName, last_name: lastName }) => ({
+          id,
+          name: `${firstName} ${lastName}`
+        }));
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err);
       }
     },
-
     async fetchGenres () {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.genres = genres;
+        const { data } = await getGenres(this.token);
+        this.genres = data;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err);
       }
     },
-
     async addMovie () {
       try {
-        const headers = {
-          Authorization: `Bearer ${this.token}`
-        };
-        const movieConfig = {
-          headers: {
-            ...headers,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        const imageConfig = {
-          headers: {
-            ...headers,
-            'Content-Type': 'multipart/form-data'
-          }
-        };
-
-        const { data: movie } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movies`,
-          {
-            title: this.title,
-            duration: Number(this.duration),
-            description: this.description,
-            actors: this.selectedActorIds,
-            genres: this.selectedGenreIds
-          },
-          movieConfig
-        );
+        const { data: movie } = await addMovie(this.token, {
+          title: this.title,
+          duration: Number(this.duration),
+          description: this.description,
+          actors: this.selectedActorIds,
+          genres: this.selectedGenreIds
+        });
 
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          await axios.post(
+            `${import.meta.env.VITE_API_URL}/movies/${movie.id}/upload-image/`,
+            data,
+            {
+              headers: {
+                Authorization: `Bearer ${this.token}`,
+                'Content-Type': 'multipart/form-data'
+              }
+            }
+          );
         }
 
         location.hash = '#/movies';
@@ -129,23 +110,20 @@ export default {
         console.error(err);
       }
     },
-
     handleActorSelection (id) {
       if (this.selectedActorIds.includes(id)) {
-        this.selectedActorIds = [...this.selectedActorIds.filter(actorId => actorId !== id)];
+        this.selectedActorIds = this.selectedActorIds.filter(actorId => actorId !== id);
       } else {
         this.selectedActorIds.push(id);
       }
     },
-
     handleGenreSelection (id) {
       if (this.selectedGenreIds.includes(id)) {
-        this.selectedGenreIds = [...this.selectedGenreIds.filter(genreId => genreId !== id)];
+        this.selectedGenreIds = this.selectedGenreIds.filter(genreId => genreId !== id);
       } else {
         this.selectedGenreIds.push(id);
       }
     },
-
     handleImageUpload (file) {
       this.image = file;
     }
@@ -171,79 +149,5 @@ export default {
     ActionButton,
     ImageUploader
   }
-
 };
 </script>
-
-<style scoped>
-.movie-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-}
-
-.header {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
-}
-
-.note {
-  font-size: 25px;
-  line-height: 31px;
-}
-
-.container {
-  width: 100%;
-  display: grid;
-  grid-template-rows: repeat(4, 1fr);
-  grid-template-columns: repeat(2, 1fr);
-  column-gap: 100px;
-  row-gap: 24px;
-  margin-bottom: 36px;
-}
-
-.image-uploader {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.description {
-  grid-column: 2;
-  grid-row: 2 / span 4;
-  display: flex;
-  flex-direction: column;
-}
-.description .label {
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 22px;
-  margin-bottom: 8px;
-}
-
-.textarea-field {
-  height: 100%;
-  max-height: 300px;
-  background-color: var(--secondary-bg);
-  border-radius: 10px;
-}
-.textarea-field:focus-within {
-  border: 1px solid var(--border);
-}
-
-textarea {
-  border-radius: 10px;
-  background-color: inherit;
-  height: 100%;
-  width: 100%;
-  resize: none;
-  border: none;
-  padding: 10px;
-  font-size: 14px;
-  color: var(--main-font);
-}
-textarea:focus-visible {
-  outline: none;
-}
-</style>

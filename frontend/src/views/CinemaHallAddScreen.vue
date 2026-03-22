@@ -1,5 +1,5 @@
 <template>
-    <div v-if="active && isStaff" class="hall-container">
+  <div v-if="active && isStaff" class="hall-container">
     <div class="header">Add a cinema hall</div>
     <div class="note">Please fill in the fields in details</div>
     <div class="container">
@@ -9,15 +9,18 @@
         <input-item label="Number of seats in row" v-model="countSeatsInRow" width="narrow"></input-item>
       </div>
     </div>
-    <action-button label="Submit" @click="addCinemaHall" :disabled="!name || !countRows || !countSeatsInRow"></action-button>
+    <action-button
+      label="Submit"
+      @click="addCinemaHall"
+      :disabled="!name || !countRows || !countSeatsInRow"
+    ></action-button>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
+import { addCinemaHall } from '@/api/cinema/cinema_halls';
 
 export default {
   props: {
@@ -41,32 +44,18 @@ export default {
     hashHandler () {
       this.active = Boolean(location.hash.match('cinema-halls\\?add=true'));
     },
-
     async addCinemaHall () {
       try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`,
-          {
-            name: this.name,
-            rows: Number(this.countRows),
-            seats_in_row: Number(this.countSeatsInRow)
-          },
-          config
-        );
-
+        await addCinemaHall(this.token, {
+          name: this.name,
+          rows: Number(this.countRows),
+          seats_in_row: Number(this.countSeatsInRow)
+        });
         location.hash = '#/cinema-halls';
       } catch (err) {
-        console.error(err);
+        console.error(err.response?.data || err);
       }
     }
-
   },
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
@@ -90,18 +79,15 @@ export default {
   justify-content: center;
   gap: 24px;
 }
-
 .header {
   font-weight: 600;
   font-size: 50px;
   line-height: 61px;
 }
-
 .note {
   font-size: 25px;
   line-height: 31px;
 }
-
 .container {
   width: 100%;
   max-width: 570px;
@@ -111,7 +97,6 @@ export default {
   gap: 24px;
   margin-bottom: 36px;
 }
-
 .info-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

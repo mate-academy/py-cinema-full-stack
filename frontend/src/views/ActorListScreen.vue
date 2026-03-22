@@ -22,11 +22,13 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+
+import { getActors } from '@/api/cinema/actors';
+import { addActor } from '@/api/cinema/actors';
+
 export default {
   props: {
     isStaff: {
@@ -49,43 +51,26 @@ export default {
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.actors = actors;
+        const { data } = await getActors(this.token);
+        this.actors = data;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
-
     async addActor () {
       try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
-          {
-            first_name: this.firstName,
-            last_name: this.lastName
-          },
-          config
-        );
-
+        await addActor(this.token, {
+          first_name: this.firstName,
+          last_name: this.lastName
+        });
         this.createMode = !this.createMode;
         this.fetchActors();
-
         this.firstName = '';
         this.lastName = '';
       } catch (err) {
-        console.error(err);
+        console.error(err.response?.data || err);
       }
     },
-
     hashHandler () {
       this.active = Boolean(location.hash.match('actors$'));
     }
@@ -104,65 +89,10 @@ export default {
   beforeDestroy () {
     window.removeEventListener('hashchange', this.hashHandler);
   },
-
   components: {
     AddBtn,
     InputItem,
     ActionButton
   }
-
 };
 </script>
-
-<style scoped>
-.actor-container, .actor-container > * {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-}
-
-.add-actor {
-  margin-bottom: 36px;
-}
-
-.action-button {
-  margin-top: 36px;
-}
-
-.header {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
-}
-
-.note {
-  font-size: 25px;
-  line-height: 31px;
-}
-
-.container {
-  width: 100%;
-  font-size: 25px;
-  line-height: 30px;
-}
-
-.container > div {
-  height: 50px;
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  border-radius: 10px;
-}
-
-.container > .odd {
-  background-color: var(--secondary-bg);
-}
-
-.input-container {
-  width: 100%;
-  display: flex;
-  gap: 100px;
-}
-</style>

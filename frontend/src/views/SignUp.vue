@@ -18,6 +18,8 @@
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
+import { registerUser } from '@/api/user/register';
+import { loginUser } from '@/api/user/token';
 
 export default {
   data: () => ({
@@ -29,27 +31,16 @@ export default {
     hashHandler () {
       this.active = Boolean(location.hash.match('sign-up$'));
     },
-
     async signUp () {
       try {
-        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
-          email: this.email,
-          password: this.password
-        });
-
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
-          email: this.email,
-          password: this.password
-        });
-
+        await registerUser(this.email, this.password);
+        const { data } = await loginUser(this.email, this.password);
         const { access, refresh } = data;
-
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
-
         this.$emit('log-in');
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     }
   },
@@ -81,21 +72,18 @@ export default {
   align-items: center;
   gap: 24px;
 }
-
 h1 {
   font-size: 50px;
   font-weight: 600;
   text-align: center;
   line-height: 60px;
 }
-
 h2 {
   font-size: 25px;
   text-align: center;
   margin-bottom: 16px;
   line-height: 30px;
 }
-
 a {
   text-decoration: underline;
   font-weight: 600;
