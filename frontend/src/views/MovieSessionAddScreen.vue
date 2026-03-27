@@ -34,11 +34,6 @@ import ActionButton from '../comps/ActionButton.vue';
 import TimePicker from '../comps/TimePicker.vue';
 import CustomSelect from '../comps/CustomSelect.vue';
 
-// Перевірте шляхи імпорту згідно з вашою структурою api/cinema/...
-import { getMovies } from '@/api/cinema/movies';
-import { createMovieSession } from '@/api/cinema/movieSessions';
-import { getCinemaHalls } from '@/api/cinema/cinemaHalls';
-
 export default {
   name: 'AddMovieSessionScreen',
   props: {
@@ -68,33 +63,26 @@ export default {
         name: hall.name,
         id: hall.id
       }));
-    },
-    token() {
-      return localStorage.getItem('access');
     }
   },
   methods: {
     hashHandler() {
-      // Екранування зворотної косої риски для коректної роботи регулярного виразу
-      this.active = Boolean(window.location.hash.match('movie-sessions\\?add=true'));
+      this.active = Boolean(window.location.hash.includes('movie-sessions') && window.location.hash.includes('add=true'));
     },
     async fetchData() {
-      if (!this.token) return;
       try {
         const [moviesRes, hallsRes] = await Promise.all([
-          getMovies(this.token),
-          getCinemaHalls(this.token)
+          this.axios.get('/cinema/movies/'),
+          this.axios.get('/cinema/cinema-halls/')
         ]);
 
-        // Обробка пагінації (results), якщо вона є на бекенді
         this.movies = Array.isArray(moviesRes.data) ? moviesRes.data : (moviesRes.data.results || []);
         this.cinemaHalls = Array.isArray(hallsRes.data) ? hallsRes.data : (hallsRes.data.results || []);
       } catch (err) {
-        console.error('Error fetching data for session:', err.response?.data || err);
+        console.error('Error fetching data for session:', err);
       }
     },
     async addMovieSession() {
-      // Формуємо фінальну дату та час
       const finalDateTime = new Date(this.date);
       const timeObj = new Date(this.time);
 
@@ -103,16 +91,16 @@ export default {
       finalDateTime.setSeconds(0);
 
       try {
-        await createMovieSession(this.token, {
+        await this.axios.post('/cinema/movie-sessions/', {
           movie: this.selectedMovieId,
           cinema_hall: this.selectedHallId,
           show_time: finalDateTime.toISOString()
         });
-        // Повертаємося до списку сеансів
-        window.location.hash = '#/movie-sessions';
+
+        this.$router.push('/movie-sessions');
       } catch (err) {
-        console.error('Failed to create session:', err.response?.data || err);
-        alert('Error: ' + JSON.stringify(err.response?.data || 'Server error'));
+        console.error('Failed to create session:', err);
+        alert('Помилка при створенні сеансу');
       }
     },
     handleMovieSelection(movieId) {
@@ -124,9 +112,7 @@ export default {
   },
   watch: {
     active(newVal) {
-      if (newVal) {
-        this.fetchData();
-      }
+      if (newVal) this.fetchData();
     }
   },
   mounted() {

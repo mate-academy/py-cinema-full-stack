@@ -37,9 +37,6 @@ import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
 
-// Перевірте шлях до API (імовірно @/api/cinema/actors)
-import { getActors, addActor as addActorApi } from '@/api/cinema/actors';
-
 export default {
   name: 'ActorListScreen',
   props: {
@@ -55,43 +52,32 @@ export default {
     firstName: '',
     lastName: ''
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     hashHandler() {
       this.active = window.location.hash.endsWith('actors');
     },
     async fetchActors() {
-      if (!this.token) return;
       try {
-        const { data } = await getActors(this.token);
-        // Обробка пагінації Django (results)
+        const { data } = await this.axios.get('/cinema/actors/');
         this.actors = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error('Fetch actors error:', err.response?.data || err);
+        console.error('Fetch actors error:', err);
       }
     },
     async addActor() {
       if (!this.firstName.trim() || !this.lastName.trim()) return;
       try {
-        await addActorApi(this.token, {
+        await this.axios.post('/cinema/actors/', {
           first_name: this.firstName,
           last_name: this.lastName
         });
-
-        // Скидання стану
         this.createMode = false;
         this.firstName = '';
         this.lastName = '';
-
-        // Оновлення списку
         await this.fetchActors();
       } catch (err) {
-        console.error('Add actor error:', err.response?.data || err);
-        alert('Failed to add actor. Check console for details.');
+        console.error('Add actor error:', err);
+        alert('Failed to add actor.');
       }
     }
   },
@@ -107,7 +93,6 @@ export default {
     this.hashHandler();
     if (this.active) this.fetchActors();
   },
-  // Vue 3: unmounted замість beforeDestroy
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },

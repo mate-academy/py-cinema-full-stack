@@ -28,8 +28,6 @@ import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
 import DatePicker from '../comps/DatePicker.vue';
 import moment from 'moment';
-// Перевірте шлях до API!
-import { getMovieSessions } from '@/api/cinema/movieSessions';
 
 export default {
   name: 'MovieSessionListScreen',
@@ -46,7 +44,6 @@ export default {
   }),
   computed: {
     movieSessionsGroupedByTime() {
-      // Групуємо без мутації оригінального масиву movieSessions
       return this.movieSessions.reduce((acc, item) => {
         const movieIndex = acc.findIndex(s => s.movie_title === item.movie_title);
         if (movieIndex > -1) {
@@ -59,9 +56,6 @@ export default {
         }
         return acc;
       }, []);
-    },
-    token() {
-      return localStorage.getItem('access');
     }
   },
   methods: {
@@ -69,10 +63,10 @@ export default {
       this.active = Boolean(window.location.hash.match('movie-sessions$'));
     },
     handleMovieSessionDetails(sessionId) {
-      window.location.hash = `#/movie-sessions/${sessionId}`;
+      this.$router.push(`/movie-sessions/${sessionId}`);
     },
     handleMovieCreate() {
-      window.location.hash = '#/movie-sessions?add=true';
+      this.$router.push('/movie-sessions/add');
     },
     handleDateSelection(newDate) {
       this.date = moment(newDate).format('YYYY-MM-DD');
@@ -81,11 +75,12 @@ export default {
     async fetchMovieSessionsByDate() {
       if (!this.active) return;
       try {
-        const { data } = await getMovieSessions(this.token, { date: this.date });
-        // Обробка пагінації Django (results)
+        const { data } = await this.axios.get('/cinema/movie-sessions/', {
+          params: { date: this.date }
+        });
         this.movieSessions = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error('Fetch sessions error:', err.response?.data || err);
+        console.error('Fetch sessions error:', err);
       }
     }
   },

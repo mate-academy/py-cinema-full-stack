@@ -30,8 +30,6 @@
 <script>
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
-// Перевірте шлях до API (імовірно @/api/cinema/cinemaHalls)
-import { addCinemaHall } from '@/api/cinema/cinemaHalls';
 
 export default {
   name: 'AddCinemaHallScreen',
@@ -47,33 +45,26 @@ export default {
     countRows: 1,
     countSeatsInRow: 1
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     hashHandler() {
-      // Використовуємо подвійний backslash для коректного екранування в рядку
-      this.active = Boolean(window.location.hash.match('cinema-halls\\?add=true'));
+      this.active = Boolean(window.location.hash.includes('cinema-halls') && window.location.hash.includes('add=true'));
     },
     async addCinemaHall() {
-      if (!this.token) return;
       try {
-        await addCinemaHall(this.token, {
+        await this.axios.post('/cinema/cinema-halls/', {
           name: this.name,
           rows: Number(this.countRows),
           seats_in_row: Number(this.countSeatsInRow)
         });
-        // Очищуємо поля перед переходом
+
         this.name = '';
         this.countRows = 1;
         this.countSeatsInRow = 1;
 
-        window.location.hash = '#/cinema-halls';
+        this.$router.push('/cinema-halls');
       } catch (err) {
-        console.error('Failed to add hall:', err.response?.data || err);
-        alert('Помилка при створенні залу. Перевірте дані.');
+        console.error('Failed to add hall:', err);
+        alert('Помилка при створенні залу.');
       }
     }
   },
@@ -81,7 +72,6 @@ export default {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  // Vue 3 використовує unmounted замість beforeDestroy
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
@@ -128,7 +118,6 @@ export default {
   width: 100%;
 }
 
-/* Адаптивність для мобільних пристроїв */
 @media (max-width: 600px) {
   .info-container {
     grid-template-columns: 1fr;

@@ -30,9 +30,6 @@ import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
 
-// Перевірте шлях до API (зазвичай @/api/cinema/genres)
-import { getGenres, addGenre as addGenreApi } from '@/api/cinema/genres';
-
 export default {
   name: 'GenreListScreen',
   props: {
@@ -47,35 +44,28 @@ export default {
     createMode: false,
     name: ''
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     hashHandler() {
       this.active = Boolean(window.location.hash.match('genres$'));
     },
     async fetchGenres() {
-      if (!this.token) return;
       try {
-        const { data } = await getGenres(this.token);
-        // Обробка пагінації (results) або звичайного масиву
+        const { data } = await this.axios.get('/cinema/genres/');
         this.genres = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error('Fetch genres error:', err.response?.data || err);
+        console.error('Fetch genres error:', err);
       }
     },
     async addGenre() {
       if (!this.name.trim()) return;
       try {
-        await addGenreApi(this.token, { name: this.name });
+        await this.axios.post('/cinema/genres/', { name: this.name });
         this.createMode = false;
         this.name = '';
-        await this.fetchGenres(); // Оновлюємо список після додавання
+        await this.fetchGenres();
       } catch (err) {
-        console.error('Add genre error:', err.response?.data || err);
-        alert('Помилка при додаванні: ' + JSON.stringify(err.response?.data || 'Server error'));
+        console.error('Add genre error:', err);
+        alert('Помилка при додаванні жанру');
       }
     }
   },
@@ -91,7 +81,6 @@ export default {
     this.hashHandler();
     if (this.active) this.fetchGenres();
   },
-  // Vue 3: unmounted замість beforeDestroy
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },

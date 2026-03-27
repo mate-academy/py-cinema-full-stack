@@ -1,6 +1,6 @@
 <template>
-  <div v-if="active && isStaff" class="movie-list-screen">
-    <AddBtn @click="handleMovieCreate" />
+  <div v-if="active" class="movie-list-screen">
+    <AddBtn v-if="isStaff" @click="handleMovieCreate" />
 
     <div class="filters">
       <CustomMultiselect
@@ -37,17 +37,13 @@ import debounce from 'lodash.debounce';
 import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
-// Перевірте шляхи до API згідно з вашою структурою api/cinema/
-import { getMovies } from '@/api/cinema/movies';
-import { getActors } from '@/api/cinema/actors';
-import { getGenres } from '@/api/cinema/genres';
 
 export default {
   name: 'MovieListScreen',
   props: {
     isStaff: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   data: () => ({
@@ -58,15 +54,10 @@ export default {
     selectedActorIds: [],
     selectedGenreIds: []
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     async fetchActors() {
       try {
-        const { data } = await getActors(this.token);
+        const { data } = await this.axios.get('/cinema/actors/');
         const actorsData = Array.isArray(data) ? data : (data.results || []);
         this.actors = actorsData.map(actor => ({
           id: actor.id,
@@ -78,7 +69,7 @@ export default {
     },
     async fetchGenres() {
       try {
-        const { data } = await getGenres(this.token);
+        const { data } = await this.axios.get('/cinema/genres/');
         this.genres = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
         console.error('Genres fetch error:', err);
@@ -86,19 +77,16 @@ export default {
     },
     async fetchMovies() {
       const params = {};
-      // Django REST Framework часто очікує фільтри через кому (actors=1,2,3)
       if (this.selectedActorIds.length) params.actors = this.selectedActorIds.join(',');
       if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join(',');
 
       try {
-        const { data } = await getMovies(this.token, params);
-        // Обробка пагінації: якщо є results — беремо їх, якщо ні — весь масив
+        const { data } = await this.axios.get('/cinema/movies/', { params });
         this.movies = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
         console.error('Movies fetch error:', err);
       }
     },
-    // Оновлений дебаунс для Vue 3
     debouncedFetchMovies: debounce(function() {
       this.fetchMovies();
     }, 500),
@@ -123,18 +111,13 @@ export default {
     },
     hashHandler() {
       const hash = window.location.hash;
-      // Більш чітке правило для головної сторінки фільмів
-      this.active = Boolean(
-        !hash ||
-        hash === '#/' ||
-        hash.includes('movies')
-      );
+      this.active = Boolean(!hash || hash === '#/' || hash.includes('movies'));
     },
     handleMovieDetailsClick(id) {
-      window.location.hash = `#/movies/${id}`;
+      this.$router.push(`/movies/${id}`);
     },
     handleMovieCreate() {
-      window.location.hash = '#/movies?add=true';
+      this.$router.push('/movies/add');
     }
   },
   mounted() {
@@ -143,11 +126,6 @@ export default {
     this.fetchActors();
     this.fetchGenres();
     if (this.active) this.fetchMovies();
-  },
-  watch: {
-    active(newVal) {
-      if (newVal) this.fetchMovies();
-    }
   },
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);

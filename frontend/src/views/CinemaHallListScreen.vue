@@ -18,8 +18,6 @@
 
 <script>
 import AddBtn from '../comps/AddBtn.vue';
-// Перевірте шлях до API (імовірно @/api/cinema/cinemaHalls)
-import { getCinemaHalls } from '@/api/cinema/cinemaHalls';
 
 export default {
   name: 'CinemaHallListScreen',
@@ -33,27 +31,19 @@ export default {
     active: false,
     halls: []
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     async fetchHalls() {
-      if (!this.token) return;
       try {
-        const { data } = await getCinemaHalls(this.token);
-        // Обробка пагінації Django (results) або простого масиву
+        const { data } = await this.axios.get('/cinema/cinema-halls/');
         this.halls = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error('Fetch halls error:', err.response?.data || err);
+        console.error('Fetch halls error:', err);
       }
     },
     handleHallCreate() {
-      window.location.hash = '#/cinema-halls?add=true';
+      this.$router.push('/cinema-halls/add');
     },
     hashHandler() {
-      // Більш точна перевірка хешу
       this.active = window.location.hash.endsWith('cinema-halls');
     }
   },
@@ -69,7 +59,6 @@ export default {
     this.hashHandler();
     if (this.active) this.fetchHalls();
   },
-  // Vue 3 використовує unmounted
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },

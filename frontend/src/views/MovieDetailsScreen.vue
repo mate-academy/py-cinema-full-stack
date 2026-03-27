@@ -10,8 +10,6 @@
 
 <script>
 import MovieModal from '../comps/MovieModal.vue';
-// Перевірте шлях до API (api/cinema/movies)
-import { getMovieDetails } from '@/api/cinema/movies';
 
 export default {
   name: 'MovieDetailsScreen',
@@ -19,13 +17,7 @@ export default {
     active: false,
     movie: {}
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
-    // Використовуємо простіший підхід .self у шаблоні замість ручної перевірки target
     hashHandler() {
       const match = window.location.hash.match(/#\/movies\/(\d+)/);
       if (!match) {
@@ -41,16 +33,14 @@ export default {
     async fetchMovie(id) {
       if (!id) return;
       try {
-        const { data } = await getMovieDetails(this.token, id);
+        const { data } = await this.axios.get(`/cinema/movies/${id}/`);
         this.movie = data;
       } catch (err) {
-        console.error('Failed to fetch movie details:', err.response?.data || err);
-        // Якщо фільм не знайдено, краще закрити модалку
+        console.error('Failed to fetch movie details:', err);
         if (err.response?.status === 404) this.handleMovieDetailsClose();
       }
     },
     handleMovieDetailsClose() {
-      // Повертаємо користувача на список фільмів
       window.location.hash = '#/movies';
     }
   },
@@ -58,7 +48,6 @@ export default {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  // Vue 3: unmounted замість beforeDestroy
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
@@ -73,9 +62,9 @@ export default {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.4); /* Трохи темніше для кращого акценту */
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
-  z-index: 100; /* Піднімаємо z-index, щоб модалка була над усім */
+  z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;

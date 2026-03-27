@@ -44,12 +44,6 @@ import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import InputItem from '../comps/InputItem.vue';
 import ImageUploader from '../comps/ImageUploader.vue';
 
-// Перевірте шляхи імпорту згідно з вашою структурою api/cinema/...
-import { getActors } from '@/api/cinema/actors';
-import { getGenres } from '@/api/cinema/genres';
-import { addMovie } from '@/api/cinema/movies';
-import axios from 'axios';
-
 export default {
   name: 'AddMovieScreen',
   props: {
@@ -69,24 +63,17 @@ export default {
     selectedGenreIds: [],
     image: null
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     hashHandler() {
-      this.active = Boolean(window.location.hash.match('movies\\?add=true'));
+      this.active = Boolean(window.location.hash.includes('movies') && window.location.hash.includes('add=true'));
     },
     async fetchInitialData() {
-      if (!this.token) return;
       try {
         const [actorsRes, genresRes] = await Promise.all([
-          getActors(this.token),
-          getGenres(this.token)
+          this.axios.get('/cinema/actors/'),
+          this.axios.get('/cinema/genres/')
         ]);
 
-        // Обробка результатів з урахуванням можливої пагінації Django
         const actorsData = Array.isArray(actorsRes.data) ? actorsRes.data : (actorsRes.data.results || []);
         const genresData = Array.isArray(genresRes.data) ? genresRes.data : (genresRes.data.results || []);
 
@@ -101,8 +88,7 @@ export default {
     },
     async addMovie() {
       try {
-        // 1. Створення запису про фільм
-        const { data: movie } = await addMovie(this.token, {
+        const { data: movie } = await this.axios.post('/cinema/movies/', {
           title: this.title,
           duration: Number(this.duration),
           description: this.description,
@@ -110,27 +96,18 @@ export default {
           genres: this.selectedGenreIds
         });
 
-        // 2. Завантаження зображення, якщо воно обране
         if (this.image && movie.id) {
           const formData = new FormData();
           formData.append('image', this.image);
 
-          // Використовуємо відносний шлях, оскільки baseURL вже вказано в main.js
-          await axios.post(
-            `cinema/movies/${movie.id}/upload-image/`,
-            formData,
-            {
-              headers: {
-                Authorization: `Bearer ${this.token}`,
-                'Content-Type': 'multipart/form-data'
-              }
-            }
-          );
+          await this.axios.post(`/cinema/movies/${movie.id}/upload-image/`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
         }
 
-        window.location.hash = '#/movies';
+        this.$router.push('/movies');
       } catch (err) {
-        console.error('Failed to add movie:', err.response?.data || err);
+        console.error('Failed to add movie:', err);
         alert('Помилка при додаванні фільму');
       }
     },
@@ -156,9 +133,7 @@ export default {
   },
   watch: {
     active(newVal) {
-      if (newVal) {
-        this.fetchInitialData();
-      }
+      if (newVal) this.fetchInitialData();
     }
   },
   mounted() {
@@ -185,6 +160,7 @@ export default {
   gap: 24px;
   max-width: 800px;
   margin: 0 auto;
+  padding: 20px;
 }
 .header {
   font-weight: 600;

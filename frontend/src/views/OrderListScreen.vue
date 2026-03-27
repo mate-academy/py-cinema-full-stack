@@ -25,33 +25,23 @@
 </template>
 
 <script>
-// Перевірте шлях! Судячи з вашої структури папок, він може бути:
-// import { getOrders } from '@/api/cinema/orders';
-import { getOrders } from '@/api/cinema/orders';
-
 export default {
   name: 'OrderListScreen',
   data: () => ({
     active: false,
     orders: []
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     hashHandler() {
       this.active = Boolean(window.location.hash.match('my-orders$'));
     },
     async fetchOrders() {
-      if (!this.token) return;
+      if (!this.active) return;
       try {
-        const { data } = await getOrders(this.token);
-        // Якщо Django повертає пагінацію, дані будуть у data.results
+        const { data } = await this.axios.get('/cinema/orders/');
         this.orders = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error('Fetch orders error:', err.response?.data || err);
+        console.error('Fetch orders error:', err);
       }
     },
     formatDateTime(value) {
@@ -60,7 +50,6 @@ export default {
     }
   },
   watch: {
-    // Якщо хеш змінився на "мої замовлення", оновлюємо список
     active(newVal) {
       if (newVal) this.fetchOrders();
     }
@@ -70,7 +59,6 @@ export default {
     this.hashHandler();
     this.fetchOrders();
   },
-  // У Vue 3 замість beforeDestroy використовуємо unmounted
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   }

@@ -35,9 +35,6 @@
 import moment from 'moment';
 import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
 import ActionButton from '../comps/ActionButton.vue';
-// Перевірте шляхи імпорту згідно з вашою структурою
-import { getMovieSessionDetails } from '@/api/cinema/movieSessions';
-import { createOrder } from '@/api/orders';
 
 export default {
   name: 'MovieSessionDetailsScreen',
@@ -59,9 +56,6 @@ export default {
     },
     formattedDate() {
       return this.movieSession.show_time ? moment(this.movieSession.show_time).format('YYYY/MM/DD') : '';
-    },
-    token() {
-      return localStorage.getItem('access');
     }
   },
   methods: {
@@ -80,10 +74,10 @@ export default {
     async fetchMovieSession(id) {
       try {
         this.loading = true;
-        const { data } = await getMovieSessionDetails(this.token, id);
+        const { data } = await this.axios.get(`/cinema/movie-sessions/${id}/`);
         this.movieSession = data;
       } catch (err) {
-        console.error('Error fetching session:', err.response?.data || err);
+        console.error('Error fetching session:', err);
       } finally {
         this.loading = false;
       }
@@ -92,21 +86,20 @@ export default {
       this.chosenSeats = seats;
     },
     async makeOrder() {
-      if (!this.token) return;
       try {
         const tickets = this.chosenSeats.map(seat => ({
-          ...seat,
+          row: seat.row,
+          seat: seat.seat,
           movie_session: this.movieSession.id
         }));
 
-        await createOrder(this.token, { tickets });
-        // Оновлюємо дані, щоб побачити заброньовані місця
+        await this.axios.post('/cinema/orders/', { tickets });
         await this.fetchMovieSession(this.movieSession.id);
         this.chosenSeats = [];
         alert('Order placed successfully!');
       } catch (err) {
-        console.error('Order error:', err.response?.data || err);
-        alert('Failed to place order. Please try again.');
+        console.error('Order error:', err);
+        alert('Failed to place order.');
       }
     }
   },
@@ -114,7 +107,6 @@ export default {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  // Замінено beforeDestroy на unmounted для Vue 3
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },

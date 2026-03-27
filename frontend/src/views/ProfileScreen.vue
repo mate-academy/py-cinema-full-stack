@@ -6,10 +6,10 @@
         label="Email"
         v-model="email"
         pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
-        :initialValue="localUser.email"
+        :placeholder="user?.email"
       ></input-item>
-      <password-input label="Password" v-model="password"></password-input>
-      <action-button label="Submit" @click="changeUserData"></action-button>
+      <password-input label="New Password" v-model="password"></password-input>
+      <action-button label="Submit" @click="changeUserData" :disabled="!email && !password"></action-button>
 
       <div class="result success" v-if="success">
         <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
@@ -32,8 +32,6 @@
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
-import { getUserProfile } from '@/api/user';
-import axios from 'axios';
 
 export default {
   name: 'ProfileScreen',
@@ -48,52 +46,30 @@ export default {
     email: '',
     password: '',
     success: false,
-    error: null,
-    localUser: {} // Локальна копія для уникнення прямої мутації пропсів
+    error: null
   }),
-  computed: {
-    token() {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
     hashHandler() {
       this.active = Boolean(window.location.hash.match('my-profile$'));
     },
     async changeUserData() {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${this.token}`
-        }
-      };
-
       const body = {};
-      // Порівнюємо з localUser
-      if (this.email && this.email !== this.localUser.email) body.email = this.email;
+      if (this.email && this.email !== this.user.email) body.email = this.email;
       if (this.password) body.password = this.password;
 
       if (Object.keys(body).length === 0) return;
 
       try {
-        // Виправлено URL: прибрано зайві префікси та додано слеш в кінці
-        const { data } = await axios.patch('user/me/', body, config);
+        await this.axios.patch('/user/me/', body);
         this.success = true;
-        this.localUser = data; // Оновлюємо локальні дані
         this.email = '';
         this.password = '';
         this.error = null;
+        // Оновлюємо дані користувача в App.vue через подію
+        this.$emit('refresh-user');
       } catch (err) {
         const errors = err.response?.data || {};
         this.error = errors.password || errors.email || errors.detail || "Error updating profile";
-      }
-    },
-    async loadProfile() {
-      if (!this.token) return;
-      try {
-        const { data } = await getUserProfile(this.token);
-        this.localUser = data;
-      } catch (err) {
-        console.error("Failed to load profile:", err);
       }
     }
   },
@@ -103,20 +79,12 @@ export default {
     },
     success(val) {
       if (val) setTimeout(() => { this.success = false; }, 5000);
-    },
-    // Стежимо за зміною вхідного пропса
-    user: {
-      handler(newVal) { this.localUser = { ...newVal }; },
-      immediate: true,
-      deep: true
     }
   },
   mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
-    this.loadProfile();
   },
-  // У Vue 3 використовується unmounted замість beforeDestroy
   unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
@@ -127,3 +95,33 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 40px;
+}
+.header {
+  font-size: 40px;
+  font-weight: 600;
+}
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+.result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+}
+.success { color: #4caf50; }
+.failure { color: #f44336; }
+</style>
