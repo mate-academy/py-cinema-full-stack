@@ -1,21 +1,25 @@
 <template>
-  <div v-if="active && !loading" class="session-details">
+  <div v-if="active && !loading && movieSession.id" class="session-details">
     <div
       class="movie-card"
-      :style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + movieSession.movie.image + ')' }"
+      :style="{
+        'background-image': `linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(${movieSession.movie?.image})`
+      }"
     ></div>
     <div class="container">
       <div class="info">
-        <span>{{movieSession.movie.title}}</span>
-        <span>Date: {{formattedDate}}</span>
-        <span>Time: {{formattedTime}}</span>
-        <span>Cinema Hall: {{movieSession.cinema_hall.name}}</span>
+        <span>{{ movieSession.movie?.title }}</span>
+        <span>Date: {{ formattedDate }}</span>
+        <span>Time: {{ formattedTime }}</span>
+        <span>Cinema Hall: {{ movieSession.cinema_hall?.name }}</span>
       </div>
+
       <cinema-hall-schema
-        :takenSeats="movieSession.taken_places"
-        :cinemaHall="movieSession.cinema_hall"
+        :takenSeats="movieSession.taken_places || []"
+        :cinemaHall="movieSession.cinema_hall || {}"
         @choose-seat="chooseSeat"
       ></cinema-hall-schema>
+
       <action-button
         label="Make order"
         @click="makeOrder"
@@ -23,16 +27,20 @@
       ></action-button>
     </div>
   </div>
+
+  <div v-else-if="loading" class="loader">Loading session details...</div>
 </template>
 
 <script>
 import moment from 'moment';
 import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
 import ActionButton from '../comps/ActionButton.vue';
-import { getMovieSessionDetails } from '@/api/cinema/movie_sessions';
-import { createOrder } from '@/api/cinema/orders';
+// Перевірте шляхи імпорту згідно з вашою структурою
+import { getMovieSessionDetails } from '@/api/cinema/movieSessions';
+import { createOrder } from '@/api/orders';
 
 export default {
+  name: 'MovieSessionDetailsScreen',
   props: {
     user: {
       type: Object,
@@ -46,65 +54,68 @@ export default {
     chosenSeats: []
   }),
   computed: {
-    formattedTime () {
-      return moment(this.movieSession.show_time).format('HH:mm');
+    formattedTime() {
+      return this.movieSession.show_time ? moment(this.movieSession.show_time).format('HH:mm') : '';
     },
-    formattedDate () {
-      return moment(this.movieSession.show_time).format('YYYY/MM/DD');
+    formattedDate() {
+      return this.movieSession.show_time ? moment(this.movieSession.show_time).format('YYYY/MM/DD') : '';
     },
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async hashHandler () {
-      const match = location.hash.match(/#\/movie-sessions\/(\d+)/);
+    async hashHandler() {
+      const match = window.location.hash.match(/#\/movie-sessions\/(\d+)/);
       if (!match) {
         this.active = false;
         this.movieSession = {};
         return;
       }
-      const [, id] = match;
-      if (!id) {
-        this.active = false;
-        return;
-      }
+
+      const id = match[1];
       this.active = true;
       await this.fetchMovieSession(id);
     },
-    async fetchMovieSession (id) {
+    async fetchMovieSession(id) {
       try {
         this.loading = true;
         const { data } = await getMovieSessionDetails(this.token, id);
         this.movieSession = data;
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error('Error fetching session:', err.response?.data || err);
       } finally {
         this.loading = false;
       }
     },
-    chooseSeat (seats) {
+    chooseSeat(seats) {
       this.chosenSeats = seats;
     },
-    async makeOrder () {
+    async makeOrder() {
+      if (!this.token) return;
       try {
         const tickets = this.chosenSeats.map(seat => ({
           ...seat,
           movie_session: this.movieSession.id
         }));
+
         await createOrder(this.token, { tickets });
+        // Оновлюємо дані, щоб побачити заброньовані місця
         await this.fetchMovieSession(this.movieSession.id);
         this.chosenSeats = [];
+        alert('Order placed successfully!');
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error('Order error:', err.response?.data || err);
+        alert('Failed to place order. Please try again.');
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  // Замінено beforeDestroy на unmounted для Vue 3
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -119,12 +130,14 @@ export default {
   display: grid;
   grid-template-columns: 350px 1fr;
   column-gap: 60px;
+  padding: 20px;
 }
 .movie-card {
   width: 100%;
   height: 470px;
   background-repeat: no-repeat;
   background-size: cover;
+  border-radius: 8px;
 }
 .info {
   display: flex;
@@ -144,5 +157,10 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 50px;
+}
+.loader {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 20px;
 }
 </style>

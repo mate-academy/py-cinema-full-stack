@@ -1,17 +1,53 @@
+<template>
+  <div v-if="active && isStaff" class="movie-list-screen">
+    <AddBtn @click="handleMovieCreate" />
+
+    <div class="filters">
+      <CustomMultiselect
+        :options="actors"
+        :selected="selectedActorIds"
+        @select="handleActorSelection"
+        label="Актори"
+      />
+
+      <CustomMultiselect
+        :options="genres"
+        :selected="selectedGenreIds"
+        @select="handleGenreSelection"
+        label="Жанри"
+      />
+    </div>
+
+    <div class="movies">
+      <MovieCard
+        v-for="movie in movies"
+        :key="movie.id"
+        :movie="movie"
+        @click="handleMovieDetailsClick(movie.id)"
+      />
+      <div v-if="movies.length === 0" class="no-movies">
+        Фільмів не знайдено за обраними параметрами.
+      </div>
+    </div>
+  </div>
+</template>
+
 <script>
 import debounce from 'lodash.debounce';
 import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
+// Перевірте шляхи до API згідно з вашою структурою api/cinema/
 import { getMovies } from '@/api/cinema/movies';
 import { getActors } from '@/api/cinema/actors';
 import { getGenres } from '@/api/cinema/genres';
 
 export default {
+  name: 'MovieListScreen',
   props: {
     isStaff: {
       type: Boolean,
-      default: true   // ✅ тепер за замовчуванням true
+      default: true
     }
   },
   data: () => ({
@@ -23,88 +59,97 @@ export default {
     selectedGenreIds: []
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    async fetchActors () {
+    async fetchActors() {
       try {
         const { data } = await getActors(this.token);
-        this.actors = data.map(({ id, first_name: firstName, last_name: lastName }) => ({
-          id,
-          name: `${firstName} ${lastName}`
+        const actorsData = Array.isArray(data) ? data : (data.results || []);
+        this.actors = actorsData.map(actor => ({
+          id: actor.id,
+          name: `${actor.first_name} ${actor.last_name}`
         }));
       } catch (err) {
-        console.error(err);
+        console.error('Actors fetch error:', err);
       }
     },
-    async fetchGenres () {
+    async fetchGenres() {
       try {
         const { data } = await getGenres(this.token);
-        this.genres = data;
+        this.genres = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err);
+        console.error('Genres fetch error:', err);
       }
     },
-    async fetchMovies () {
+    async fetchMovies() {
       const params = {};
-      if (this.selectedActorIds.length) params.actors = this.selectedActorIds.join();
-      if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join();
+      // Django REST Framework часто очікує фільтри через кому (actors=1,2,3)
+      if (this.selectedActorIds.length) params.actors = this.selectedActorIds.join(',');
+      if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join(',');
+
       try {
         const { data } = await getMovies(this.token, params);
-        this.movies = data;
+        // Обробка пагінації: якщо є results — беремо їх, якщо ні — весь масив
+        this.movies = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err);
+        console.error('Movies fetch error:', err);
       }
     },
-    dispatchActorSelection: debounce(function () {
+    // Оновлений дебаунс для Vue 3
+    debouncedFetchMovies: debounce(function() {
       this.fetchMovies();
-    }, 1000),
-    dispatchGenreSelection: debounce(function () {
-      this.fetchMovies();
-    }, 1000),
-    handleActorSelection (id) {
-      if (this.selectedActorIds.includes(id)) {
-        this.selectedActorIds = this.selectedActorIds.filter(actorId => actorId !== id);
+    }, 500),
+
+    handleActorSelection(id) {
+      const index = this.selectedActorIds.indexOf(id);
+      if (index > -1) {
+        this.selectedActorIds.splice(index, 1);
       } else {
         this.selectedActorIds.push(id);
       }
-      this.dispatchActorSelection();
+      this.debouncedFetchMovies();
     },
-    handleGenreSelection (id) {
-      if (this.selectedGenreIds.includes(id)) {
-        this.selectedGenreIds = this.selectedGenreIds.filter(genreId => genreId !== id);
+    handleGenreSelection(id) {
+      const index = this.selectedGenreIds.indexOf(id);
+      if (index > -1) {
+        this.selectedGenreIds.splice(index, 1);
       } else {
         this.selectedGenreIds.push(id);
       }
-      this.dispatchGenreSelection();
+      this.debouncedFetchMovies();
     },
-    hashHandler () {
+    hashHandler() {
+      const hash = window.location.hash;
+      // Більш чітке правило для головної сторінки фільмів
       this.active = Boolean(
-        !location.hash || location.hash.match('movies$') ||
-        location.hash.match(/#\/movies\/(\d+)/) || location.hash.match('/$')
+        !hash ||
+        hash === '#/' ||
+        hash.includes('movies')
       );
     },
-    handleMovieDetailsClick (id) {
-      location.hash = `#/movies/${id}`;
+    handleMovieDetailsClick(id) {
+      window.location.hash = `#/movies/${id}`;
     },
-    handleMovieCreate () {
-      location.hash = '#/movies?add=true';
+    handleMovieCreate() {
+      window.location.hash = '#/movies?add=true';
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    this.fetchActors();
+    this.fetchGenres();
+    if (this.active) this.fetchMovies();
   },
   watch: {
-    active () {
-      if (this.active) {
-        this.fetchMovies();
-      }
+    active(newVal) {
+      if (newVal) this.fetchMovies();
     }
   },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -114,3 +159,28 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.movie-list-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 20px;
+}
+.filters {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.movies {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+}
+.no-movies {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 18px;
+  color: #888;
+}
+</style>

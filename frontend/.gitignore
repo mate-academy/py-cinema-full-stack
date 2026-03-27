@@ -7,12 +7,17 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
-.DS_Store
 dist
 dist-ssr
 *.local
 
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing
 /cypress/videos/
 /cypress/screenshots/
 
@@ -25,4 +30,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment
 .env
+.env.production
+.env.development

@@ -1,25 +1,36 @@
 <template>
-  <div>
-    <div class="label">{{label}}</div>
-    <div :class="['input-field', width === 'normal' ? '' : width === 'wide' ? 'wide' : 'narrow', valid ? '' : 'invalid']">
+  <div class="input-wrapper">
+    <div v-if="label" class="label">{{ label }}</div>
+    <div
+      :class="[
+        'input-field',
+        width,
+        { 'invalid': !valid }
+      ]"
+    >
       <input
-      v-model="value"
-      @input="$emit('input', value)"
-      :placeholder="placeholder"
-      type="text"
-      :pattern="pattern"
-      ref="inputEl"/>
+        :value="modelValue"
+        @input="handleInput"
+        :placeholder="placeholder"
+        :type="type"
+        :pattern="pattern"
+        ref="inputEl"
+      />
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  data: () => ({
-    value: '',
-    valid: true
-  }),
+  name: 'InputItem',
+  // Декларуємо еміти для Vue 3
+  emits: ['update:modelValue'],
   props: {
+    // Vue 3 стандарт для v-model
+    modelValue: {
+      type: [String, Number],
+      default: ''
+    },
     label: {
       type: String,
       default: ''
@@ -30,42 +41,58 @@ export default {
     },
     pattern: {
       type: String,
-      default: ''
+      default: null
+    },
+    type: {
+      type: String,
+      default: 'text'
     },
     width: {
       type: String,
       default: 'normal',
-      validator: (val) => [
-        'narrow',
-        'normal',
-        'wide'
-      ].includes(val)
-    },
-    initialValue: null
+      validator: (val) => ['narrow', 'normal', 'wide'].includes(val)
+    }
+  },
+  data: () => ({
+    valid: true
+  }),
+  methods: {
+    handleInput(evt) {
+      const val = evt.target.value;
+      // Оновлюємо батьківський компонент
+      this.$emit('update:modelValue', val);
+
+      // Валідація через HTML5 pattern API
+      if (this.pattern && val) {
+        this.$nextTick(() => {
+          this.valid = this.$refs.inputEl.checkValidity();
+        });
+      } else {
+        this.valid = true;
+      }
+    }
   },
   watch: {
-    value (val) {
-      if (!val || !this.pattern) return;
-
-      this.valid = this.$refs.inputEl.checkValidity();
-    },
-    initialValue: {
-      handler (val) {
-        this.value = val;
-      },
-      immediate: true
+    // Якщо значення очищується ззовні, скидаємо валідність
+    modelValue(newVal) {
+      if (!newVal) this.valid = true;
     }
   }
 };
 </script>
 
 <style scoped>
+.input-wrapper {
+  width: auto;
+}
+
 .label {
   font-weight: 600;
   font-size: 18px;
   line-height: 22px;
   margin-bottom: 8px;
   user-select: none;
+  color: var(--main-font);
 }
 
 .input-field {
@@ -74,8 +101,10 @@ export default {
   display: flex;
   align-items: center;
   border-radius: 10px;
-  padding: 16px 12px;
-  width: 400px;
+  padding: 0 15px;
+  width: 400px; /* normal */
+  border: 1px solid transparent;
+  transition: border-color 0.2s, background-color 0.2s;
 }
 
 .input-field.wide {
@@ -85,24 +114,18 @@ export default {
   width: 255px;
 }
 
-.input-field.invalid,
-.input-field.invalid:focus-within {
+.input-field.invalid {
   border: 1px solid var(--red);
-  background-color: #400000;
-}
-
-.input-field.invalid input {
-  background: #400000;
+  background-color: rgba(255, 0, 0, 0.1);
 }
 
 .input-field input {
   color: var(--main-font);
   border: none;
   width: 100%;
-  background-color: var(--secondary-bg);
-}
-
-input:focus-visible {
+  height: 100%;
+  background-color: transparent;
+  font-size: 16px;
   outline: none;
 }
 
@@ -111,6 +134,13 @@ input::placeholder {
 }
 
 .input-field:focus-within {
-  border: 1px solid var(--border);
+  border-color: var(--border);
+}
+
+/* Адаптивність для малих екранів */
+@media (max-width: 600px) {
+  .input-field, .input-field.wide, .input-field.narrow {
+    width: 100%;
+  }
 }
 </style>

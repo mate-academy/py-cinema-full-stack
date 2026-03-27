@@ -6,21 +6,23 @@
         label="Email"
         v-model="email"
         pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
-        :initialValue="user.email"
+        :initialValue="localUser.email"
       ></input-item>
       <password-input label="Password" v-model="password"></password-input>
       <action-button label="Submit" @click="changeUserData"></action-button>
+
       <div class="result success" v-if="success">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/success.svg#success"></use>
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <use href="#success"></use>
         </svg>
         <div>Updated</div>
       </div>
+
       <div class="result failure" v-if="error">
-        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/error.svg#error"></use>
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <use href="#error"></use>
         </svg>
-        <div>{{error[0]}}</div>
+        <div>{{ Array.isArray(error) ? error[0] : error }}</div>
       </div>
     </div>
   </div>
@@ -30,79 +32,92 @@
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
-import { getUserProfile } from '@/api/user/me';
+import { getUserProfile } from '@/api/user';
 import axios from 'axios';
 
 export default {
+  name: 'ProfileScreen',
   props: {
     user: {
       type: Object,
-      default: () => {}
+      default: () => ({})
     }
   },
   data: () => ({
     active: false,
     email: '',
     password: '',
-    success: null,
-    error: null
+    success: false,
+    error: null,
+    localUser: {} // Локальна копія для уникнення прямої мутації пропсів
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('my-profile$'));
+    hashHandler() {
+      this.active = Boolean(window.location.hash.match('my-profile$'));
     },
-    async changeUserData () {
+    async changeUserData() {
       const config = {
         headers: {
-          Authorization: `Bearer ${this.token}`,
-          'Content-Type': 'application/json'
+          Authorization: `Bearer ${this.token}`
         }
       };
+
       const body = {};
-      if (this.email && this.email !== this.user.email) body.email = this.email;
+      // Порівнюємо з localUser
+      if (this.email && this.email !== this.localUser.email) body.email = this.email;
       if (this.password) body.password = this.password;
+
+      if (Object.keys(body).length === 0) return;
+
       try {
-        const { data } = await axios.patch(`${import.meta.env.VITE_USER_API_URL}/me/`, body, config);
-        this.success = !!data;
+        // Виправлено URL: прибрано зайві префікси та додано слеш в кінці
+        const { data } = await axios.patch('user/me/', body, config);
+        this.success = true;
+        this.localUser = data; // Оновлюємо локальні дані
         this.email = '';
         this.password = '';
+        this.error = null;
       } catch (err) {
-        const { password = null, email = null } = err.response?.data || {};
-        this.error = password || email;
+        const errors = err.response?.data || {};
+        this.error = errors.password || errors.email || errors.detail || "Error updating profile";
       }
     },
-    async loadProfile () {
+    async loadProfile() {
+      if (!this.token) return;
       try {
         const { data } = await getUserProfile(this.token);
-        this.user = data;
+        this.localUser = data;
       } catch (err) {
-        console.error(err);
+        console.error("Failed to load profile:", err);
       }
     }
   },
   watch: {
-    error () {
-      setTimeout(() => {
-        this.error = null;
-      }, 15000);
+    error(val) {
+      if (val) setTimeout(() => { this.error = null; }, 5000);
     },
-    success () {
-      setTimeout(() => {
-        this.success = null;
-      }, 15000);
+    success(val) {
+      if (val) setTimeout(() => { this.success = false; }, 5000);
+    },
+    // Стежимо за зміною вхідного пропса
+    user: {
+      handler(newVal) { this.localUser = { ...newVal }; },
+      immediate: true,
+      deep: true
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
     this.loadProfile();
   },
-  beforeDestroy () {
+  // У Vue 3 використовується unmounted замість beforeDestroy
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -112,27 +127,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.profile, .profile > * {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-  width: 100%;
-}
-.action-button {
-  margin-top: 16px;
-}
-.header {
-  font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
-}
-.result {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-}
-</style>

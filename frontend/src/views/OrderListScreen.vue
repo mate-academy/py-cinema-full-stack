@@ -1,112 +1,116 @@
 <template>
-  <div v-if="active" class="orders-container">
-    <div class="header">My orders</div>
-    <div class="container">
-      <div v-for="order in response.results" class="order">
-        <div class="created-info">
-          <div>Id: {{order.id}}.</div>
-          <div>Created at {{createdAt(order.created_at)}}</div>
-        </div>
-        <div v-for="ticket in order.tickets" class="ticket">
-          <div
-            class="movie-card"
-            :style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"
-          ></div>
-          <div class="ticket-info">
-            <div><span class="label">Movie:</span> {{ticket.movie_session.movie_title}}</div>
-            <div><span class="label">Show time:</span> {{showTime(ticket.movie_session.show_time)}}</div>
-            <div><span class="label">Row:</span> {{ticket.row}}</div>
-            <div><span class="label">Seat:</span> {{ticket.seat}}</div>
+  <div class="order-list" v-if="active">
+    <div class="header">My Orders</div>
+    <div class="orders">
+      <div v-if="orders.length === 0" class="no-orders">
+        You don't have any orders yet.
+      </div>
+
+      <div
+        v-for="order in orders"
+        :key="order.id"
+        class="order-card"
+      >
+        <div class="order-info">
+          <div><strong>Movie:</strong> {{ order.movie_title || 'N/A' }}</div>
+          <div><strong>Session:</strong> {{ formatDateTime(order.session_time) }}</div>
+          <div><strong>Seats:</strong> {{ Array.isArray(order.seats) ? order.seats.join(', ') : order.seats }}</div>
+          <div :class="['status', order.status?.toLowerCase()]">
+            <strong>Status:</strong> {{ order.status }}
           </div>
         </div>
-      </div>
-    </div>
-    <div class="btn-container">
-      <div
-        @click="fetchPrevious"
-        :class="['move-btn previous', !response.previous && 'disabled']">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/left_arrow.svg#left"></use>
-        </svg>
-      </div>
-      <div
-        @click="fetchNext"
-        :class="['move-btn next', !response.next && 'disabled']">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/right_arrow.svg#right"></use>
-        </svg>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import moment from 'moment';
+// Перевірте шлях! Судячи з вашої структури папок, він може бути:
+// import { getOrders } from '@/api/cinema/orders';
 import { getOrders } from '@/api/cinema/orders';
-import axios from 'axios';
 
 export default {
+  name: 'OrderListScreen',
   data: () => ({
     active: false,
-    response: []
+    orders: []
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('my-orders$'));
+    hashHandler() {
+      this.active = Boolean(window.location.hash.match('my-orders$'));
     },
-    async fetchOrders () {
+    async fetchOrders() {
+      if (!this.token) return;
       try {
         const { data } = await getOrders(this.token);
-        this.response = data;
+        // Якщо Django повертає пагінацію, дані будуть у data.results
+        this.orders = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error('Fetch orders error:', err.response?.data || err);
       }
     },
-    async fetchPrevious () {
-      if (!this.response.previous) return;
-      try {
-        const { data } = await axios.get(this.response.previous, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.response = data;
-      } catch (err) {
-        console.error(err.response?.data || err);
-      }
-    },
-    async fetchNext () {
-      if (!this.response.next) return;
-      try {
-        const { data } = await axios.get(this.response.next, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.response = data;
-      } catch (err) {
-        console.error(err.response?.data || err);
-      }
-    },
-    createdAt (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
-    },
-    showTime (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
+    formatDateTime(value) {
+      if (!value) return 'N/A';
+      return new Date(value).toLocaleString();
     }
   },
   watch: {
-    active (value) {
-      if (value) this.fetchOrders();
+    // Якщо хеш змінився на "мої замовлення", оновлюємо список
+    active(newVal) {
+      if (newVal) this.fetchOrders();
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    this.fetchOrders();
   },
-  beforeDestroy () {
+  // У Vue 3 замість beforeDestroy використовуємо unmounted
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   }
 };
 </script>
+
+<style scoped>
+.order-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.header {
+  font-weight: 600;
+  font-size: 50px;
+  line-height: 61px;
+}
+.orders {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 80%;
+}
+.order-card {
+  border: 1px solid #ccc;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.no-orders {
+  font-style: italic;
+  color: #888;
+}
+.status.paid { color: #4caf50; }
+.status.pending { color: #ff9800; }
+</style>

@@ -4,10 +4,24 @@
     <div class="note">Please fill in the fields in details</div>
     <div class="container">
       <input-item label="Title" width="wide" v-model="title"></input-item>
-      <input-item label="Duration" width="wide" v-model="duration"></input-item>
-      <custom-multiselect label="Actors" :options="actors" @option-selected="handleActorSelection"></custom-multiselect>
-      <custom-multiselect label="Genres" :options="genres" @option-selected="handleGenreSelection"></custom-multiselect>
+      <input-item label="Duration (min)" width="wide" v-model="duration" type="number"></input-item>
+
+      <custom-multiselect
+        label="Actors"
+        :options="actors"
+        :selected="selectedActorIds"
+        @select="handleActorSelection"
+      ></custom-multiselect>
+
+      <custom-multiselect
+        label="Genres"
+        :options="genres"
+        :selected="selectedGenreIds"
+        @select="handleGenreSelection"
+      ></custom-multiselect>
+
       <image-uploader @upload="handleImageUpload"></image-uploader>
+
       <div class="description">
         <div class="label">Description</div>
         <div class="textarea-field">
@@ -15,6 +29,7 @@
         </div>
       </div>
     </div>
+
     <action-button
       label="Submit"
       @click="addMovie"
@@ -29,12 +44,14 @@ import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import InputItem from '../comps/InputItem.vue';
 import ImageUploader from '../comps/ImageUploader.vue';
 
+// Перевірте шляхи імпорту згідно з вашою структурою api/cinema/...
 import { getActors } from '@/api/cinema/actors';
 import { getGenres } from '@/api/cinema/genres';
 import { addMovie } from '@/api/cinema/movies';
 import axios from 'axios';
 
 export default {
+  name: 'AddMovieScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -53,35 +70,38 @@ export default {
     image: null
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('movies\\?add=true'));
+    hashHandler() {
+      this.active = Boolean(window.location.hash.match('movies\\?add=true'));
     },
-    async fetchActors () {
+    async fetchInitialData() {
+      if (!this.token) return;
       try {
-        const { data } = await getActors(this.token);
-        this.actors = data.map(({ id, first_name: firstName, last_name: lastName }) => ({
-          id,
-          name: `${firstName} ${lastName}`
+        const [actorsRes, genresRes] = await Promise.all([
+          getActors(this.token),
+          getGenres(this.token)
+        ]);
+
+        // Обробка результатів з урахуванням можливої пагінації Django
+        const actorsData = Array.isArray(actorsRes.data) ? actorsRes.data : (actorsRes.data.results || []);
+        const genresData = Array.isArray(genresRes.data) ? genresRes.data : (genresRes.data.results || []);
+
+        this.actors = actorsData.map(actor => ({
+          id: actor.id,
+          name: `${actor.first_name} ${actor.last_name}`
         }));
+        this.genres = genresData;
       } catch (err) {
-        console.error(err);
+        console.error('Error fetching actors/genres:', err);
       }
     },
-    async fetchGenres () {
+    async addMovie() {
       try {
-        const { data } = await getGenres(this.token);
-        this.genres = data;
-      } catch (err) {
-        console.error(err);
-      }
-    },
-    async addMovie () {
-      try {
+        // 1. Створення запису про фільм
         const { data: movie } = await addMovie(this.token, {
           title: this.title,
           duration: Number(this.duration),
@@ -90,12 +110,15 @@ export default {
           genres: this.selectedGenreIds
         });
 
-        if (this.image) {
-          const data = new FormData();
-          data.append('image', this.image);
+        // 2. Завантаження зображення, якщо воно обране
+        if (this.image && movie.id) {
+          const formData = new FormData();
+          formData.append('image', this.image);
+
+          // Використовуємо відносний шлях, оскільки baseURL вже вказано в main.js
           await axios.post(
-            `${import.meta.env.VITE_API_URL}/movies/${movie.id}/upload-image/`,
-            data,
+            `cinema/movies/${movie.id}/upload-image/`,
+            formData,
             {
               headers: {
                 Authorization: `Bearer ${this.token}`,
@@ -105,42 +128,45 @@ export default {
           );
         }
 
-        location.hash = '#/movies';
+        window.location.hash = '#/movies';
       } catch (err) {
-        console.error(err);
+        console.error('Failed to add movie:', err.response?.data || err);
+        alert('Помилка при додаванні фільму');
       }
     },
-    handleActorSelection (id) {
-      if (this.selectedActorIds.includes(id)) {
-        this.selectedActorIds = this.selectedActorIds.filter(actorId => actorId !== id);
+    handleActorSelection(id) {
+      const index = this.selectedActorIds.indexOf(id);
+      if (index > -1) {
+        this.selectedActorIds.splice(index, 1);
       } else {
         this.selectedActorIds.push(id);
       }
     },
-    handleGenreSelection (id) {
-      if (this.selectedGenreIds.includes(id)) {
-        this.selectedGenreIds = this.selectedGenreIds.filter(genreId => genreId !== id);
+    handleGenreSelection(id) {
+      const index = this.selectedGenreIds.indexOf(id);
+      if (index > -1) {
+        this.selectedGenreIds.splice(index, 1);
       } else {
         this.selectedGenreIds.push(id);
       }
     },
-    handleImageUpload (file) {
+    handleImageUpload(file) {
       this.image = file;
     }
   },
   watch: {
-    active () {
-      if (this.active) {
-        this.fetchActors();
-        this.fetchGenres();
+    active(newVal) {
+      if (newVal) {
+        this.fetchInitialData();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    if (this.active) this.fetchInitialData();
   },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -151,3 +177,31 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.movie-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.header {
+  font-weight: 600;
+  font-size: 40px;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.description textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: transparent;
+  color: inherit;
+}
+</style>

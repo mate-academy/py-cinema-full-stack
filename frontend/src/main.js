@@ -1,16 +1,18 @@
-import Vue from 'vue';
-import App from './App.vue';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
-import VCalendar from 'v-calendar';
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+import VCalendar from 'v-calendar'
+import 'v-calendar/dist/style.css'
+import './assets/main.css'
 
-import './assets/main.css';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL
 
-axios.defaults.baseURL = import.meta.env.VITE_USER_API_URL;
+const app = createApp(App)
 
-Vue.use(VueAxios, axios);
-Vue.use(VCalendar);
+app.use(router)
+app.use(VueAxios, axios)
+app.use(VCalendar, {})
 
-new Vue({
-  render: (h) => h(App)
-}).$mount('#app');
+app.mount('#app')

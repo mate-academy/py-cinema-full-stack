@@ -1,24 +1,42 @@
 <template>
-  <div class="modal">
+  <div class="modal-content">
     <div class="header">Movie Details</div>
+
     <div class="cross" @click="$emit('close-movie-details')">
-      <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <use href="/assets/icons/cross.svg#cross"></use>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
+
     <div class="info-container">
-      <img :src="movie.image" :class="[!movie.image && 'absent']"/>
+      <div class="image-wrapper" v-if="movie.image">
+        <img :src="movie.image" :alt="movie.title" />
+      </div>
+
       <div class="info">
-        <div class="movie-title">{{movie.title}}</div>
-        <div class="container">
-          <span class="label">Actors: </span>
-          <span v-for="(actor, index) in movie.actors" :key="index" class="item">{{actor.first_name}} {{actor.last_name}}</span>
+        <h2 class="movie-title">{{ movie.title || 'Loading...' }}</h2>
+
+        <div class="container" v-if="movie.actors?.length">
+          <span class="label">Actors:</span>
+          <div class="items-list">
+            <span v-for="actor in movie.actors" :key="actor.id" class="item">
+              {{ actor.first_name }} {{ actor.last_name }}
+            </span>
+          </div>
         </div>
-        <div class="container">
-          <span class="label">Genres: </span>
-          <span v-for="(genre, index) in movie.genres" :key="index" class="item">{{genre.name}}</span>
+
+        <div class="container" v-if="movie.genres?.length">
+          <span class="label">Genres:</span>
+          <div class="items-list">
+            <span v-for="genre in movie.genres" :key="genre.id" class="item">
+              {{ genre.name }}
+            </span>
+          </div>
         </div>
-        <div>{{movie.description}}</div>
+
+        <div class="description">
+          <p>{{ movie.description }}</p>
+        </div>
       </div>
     </div>
   </div>
@@ -26,89 +44,138 @@
 
 <script>
 export default {
+  name: 'MovieModal',
+  // Декларуємо еміти для Vue 3
+  emits: ['close-movie-details'],
   props: {
     movie: {
       type: Object,
-      default: () => {}
+      // Використовуємо функцію для дефолтного об'єкта
+      default: () => ({
+        title: '',
+        actors: [],
+        genres: [],
+        description: '',
+        image: null
+      })
     }
   }
 };
 </script>
 
 <style scoped>
-.modal {
+.modal-content {
   width: 100%;
-  height: 100%;
+  max-width: 1000px;
+  min-height: 600px;
   background: #111111;
-  padding: 65px 75px;
+  padding: 40px 60px;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 30px;
   position: relative;
+  border-radius: 12px;
+  color: var(--main-font);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .header {
   font-weight: 600;
-  font-size: 50px;
-  line-height: 60px;
-}
-
-.container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.label {
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 22px;
-}
-
-.item {
-  font-size: 14px;
-  background-color: rgba(102, 102, 102, 0.8);
-  padding: 3px 6px;
-  border-radius: 5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.description {
-  font-size: 14px;
+  font-size: 40px;
+  line-height: 1.2;
 }
 
 .info-container {
-  height: 100%;
   display: flex;
+  gap: 40px;
+  overflow-y: auto;
+}
+
+.image-wrapper {
+  flex-shrink: 0;
+}
+
+img {
+  width: 320px;
+  height: 480px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .info {
   display: flex;
   flex-direction: column;
-  gap: 25px;
-}
-
-img {
-  background-size: cover;
-  max-height: 510px;
-  max-width: 440px;
-  margin-right: 40px;
-}
-img.absent {
-  margin-right: 0;
+  gap: 20px;
+  flex-grow: 1;
 }
 
 .movie-title {
+  font-size: 32px;
+  margin: 0;
+  color: #fff;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.items-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.label {
   font-weight: 600;
-  font-size: 25px;
-  line-height: 30px;
+  font-size: 16px;
+  color: #888;
+}
+
+.item {
+  font-size: 13px;
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.description {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #ccc;
+  margin-top: 10px;
 }
 
 .cross {
   position: absolute;
-  top: 40px;
-  right: 40px;
+  top: 30px;
+  right: 30px;
   cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  color: #fff;
+}
+
+.cross:hover {
+  opacity: 1;
+}
+
+/* Адаптивність */
+@media (max-width: 850px) {
+  .info-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  img {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+  }
+  .modal-content {
+    padding: 30px;
+  }
 }
 </style>

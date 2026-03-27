@@ -1,25 +1,32 @@
 <template>
   <div
     :class="['multiselect', shownOptions && 'active']"
-    @click="showOptions"
-    @mousedown.prevent>
-    <div class="label">{{label}}</div>
+    @click="toggleOptions"
+  >
+    <div class="label">{{ label }}</div>
     <div class="selected">
       <div class="selected-container">
-        <span v-for="(option, index) in selectedOptions" :key="index">{{option.name}}</span>
+        <span v-for="option in selectedOptions" :key="option.id" class="selected-item">
+          {{ option.name }}
+        </span>
       </div>
-      <div :class="['arrow', shownOptions && 'toggled']" @click="showOptions" @mousedown.prevent>
-        <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/arrow.svg#arrow"></use>
+      <div :class="['arrow', shownOptions && 'toggled']">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 7l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
     </div>
-    <div v-if="shownOptions" class="options-container">
-      <div v-for="(option, index) in options" :key="index" class="option">
-        <span>{{option.name}}</span>
+    <div v-if="shownOptions" class="options-container" @click.stop>
+      <div
+        v-for="option in options"
+        :key="option.id"
+        class="option"
+        @click="handleOptionSelect(option)"
+      >
+        <span>{{ option.name }}</span>
         <checkbox-item
-          @input="handleOptionSelect(option)"
-          :checked="!!selectedOptions.find(selected => selected.id === option.id)"
+          :modelValue="!!selectedOptions.find(selected => selected.id === option.id)"
+          @update:modelValue="handleOptionSelect(option)"
         ></checkbox-item>
       </div>
     </div>
@@ -30,10 +37,8 @@
 import CheckboxItem from './CheckboxItem.vue';
 
 export default {
-  data: () => ({
-    selectedOptions: [],
-    shownOptions: false
-  }),
+  name: 'CustomMultiselect',
+  emits: ['option-selected', 'click'],
   props: {
     label: {
       type: String,
@@ -42,22 +47,47 @@ export default {
     options: {
       type: Array,
       default: () => []
+    },
+    modelValue: {
+      type: Array,
+      default: () => []
+    }
+  },
+  data: () => ({
+    selectedOptions: [],
+    shownOptions: false
+  }),
+  watch: {
+    modelValue: {
+      handler(val) {
+        if (!val || !val.length) {
+          this.selectedOptions = [];
+        } else {
+          // Синхронізація об'єктів на основі ID з пропса
+          this.selectedOptions = this.options.filter(opt =>
+            val.includes(opt.id) || val.some(v => v.id === opt.id)
+          );
+        }
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {
-    showOptions () {
+    toggleOptions() {
       this.$emit('click');
       this.shownOptions = !this.shownOptions;
     },
-    handleOptionSelect (option) {
-      const selected = this.selectedOptions.find(opt => opt.id === option.id);
-      if (selected) {
-        this.selectedOptions = [...this.selectedOptions.filter(opt => opt.id !== option.id)];
+    handleOptionSelect(option) {
+      const index = this.selectedOptions.findIndex(opt => opt.id === option.id);
+
+      if (index !== -1) {
+        this.selectedOptions.splice(index, 1);
       } else {
         this.selectedOptions.push(option);
       }
 
-      this.$emit('option-selected', option.id);
+      this.$emit('option-selected', this.selectedOptions.map(opt => opt.id));
     }
   },
   components: { CheckboxItem }
@@ -67,10 +97,12 @@ export default {
 <style scoped>
 .multiselect {
   width: 100%;
+  position: relative;
+  cursor: pointer;
   z-index: 1;
 }
 .active {
-  z-index: 2;
+  z-index: 10;
 }
 
 .label {
@@ -85,13 +117,14 @@ export default {
   min-height: 50px;
   background-color: var(--secondary-bg);
   border-radius: 10px;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 16px 12px;
-  position: relative;
+  padding: 10px 15px;
   border: 1px solid transparent;
+  transition: border-color 0.2s;
 }
+
 .active .selected {
   border-color: var(--border);
 }
@@ -102,17 +135,20 @@ export default {
   flex-wrap: wrap;
 }
 
-.selected-container > * {
+.selected-item {
   font-weight: 600;
   font-size: 14px;
-  line-height: 17px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 .arrow {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  transition: transform 0.2s;
+  margin-left: 10px;
 }
 
 .arrow.toggled {
@@ -121,31 +157,35 @@ export default {
 
 .options-container {
   width: 100%;
-  max-height: 190px;
+  max-height: 250px;
   overflow-y: auto;
   background-color: var(--secondary-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
-  margin-top: 12px;
+  margin-top: 5px;
   position: absolute;
+  left: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 .options-container::-webkit-scrollbar {
-  display: none;
+  width: 4px;
+}
+.options-container::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
 }
 
 .option {
-  height: 39px;
+  min-height: 45px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px 0 23px;
-  border-radius: 10px;
-  cursor: pointer;
+  padding: 8px 15px;
+  transition: background-color 0.2s;
 }
 
 .option:hover {
-  background-color: #400000;
+  background-color: rgba(255, 255, 255, 0.05);
 }
-
 </style>

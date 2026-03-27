@@ -5,8 +5,18 @@
     <div class="container">
       <input-item label="Name" v-model="name" width="wide"></input-item>
       <div class="info-container">
-        <input-item label="Number of rows" v-model="countRows" width="narrow"></input-item>
-        <input-item label="Number of seats in row" v-model="countSeatsInRow" width="narrow"></input-item>
+        <input-item
+          label="Number of rows"
+          v-model="countRows"
+          width="narrow"
+          type="number"
+        ></input-item>
+        <input-item
+          label="Number of seats in row"
+          v-model="countSeatsInRow"
+          width="narrow"
+          type="number"
+        ></input-item>
       </div>
     </div>
     <action-button
@@ -20,9 +30,11 @@
 <script>
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
-import { addCinemaHall } from '@/api/cinema/cinema_halls';
+// Перевірте шлях до API (імовірно @/api/cinema/cinemaHalls)
+import { addCinemaHall } from '@/api/cinema/cinemaHalls';
 
 export default {
+  name: 'AddCinemaHallScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -36,32 +48,41 @@ export default {
     countSeatsInRow: 1
   }),
   computed: {
-    token () {
+    token() {
       return localStorage.getItem('access');
     }
   },
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('cinema-halls\\?add=true'));
+    hashHandler() {
+      // Використовуємо подвійний backslash для коректного екранування в рядку
+      this.active = Boolean(window.location.hash.match('cinema-halls\\?add=true'));
     },
-    async addCinemaHall () {
+    async addCinemaHall() {
+      if (!this.token) return;
       try {
         await addCinemaHall(this.token, {
           name: this.name,
           rows: Number(this.countRows),
           seats_in_row: Number(this.countSeatsInRow)
         });
-        location.hash = '#/cinema-halls';
+        // Очищуємо поля перед переходом
+        this.name = '';
+        this.countRows = 1;
+        this.countSeatsInRow = 1;
+
+        window.location.hash = '#/cinema-halls';
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error('Failed to add hall:', err.response?.data || err);
+        alert('Помилка при створенні залу. Перевірте дані.');
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  // Vue 3 використовує unmounted замість beforeDestroy
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -78,15 +99,18 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 24px;
+  padding: 40px 20px;
 }
 .header {
   font-weight: 600;
   font-size: 50px;
   line-height: 61px;
+  text-align: center;
 }
 .note {
   font-size: 25px;
   line-height: 31px;
+  color: #888;
 }
 .container {
   width: 100%;
@@ -101,5 +125,17 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 60px;
+  width: 100%;
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 600px) {
+  .info-container {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .header {
+    font-size: 32px;
+  }
 }
 </style>
