@@ -4,17 +4,17 @@
 
     <div class="filters">
       <CustomMultiselect
+        label="Актори"
         :options="actors"
         :selected="selectedActorIds"
         @select="handleActorSelection"
-        label="Актори"
       />
 
       <CustomMultiselect
+        label="Жанри"
         :options="genres"
         :selected="selectedGenreIds"
         @select="handleGenreSelection"
-        label="Жанри"
       />
     </div>
 
@@ -33,10 +33,20 @@
 </template>
 
 <script>
-import debounce from 'lodash.debounce';
 import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
+
+// Проста реалізація debounce, щоб не залежати від lodash
+const debounce = (fn, delay) => {
+  let timeoutID = null;
+  return function (...args) {
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+};
 
 export default {
   name: 'MovieListScreen',
@@ -87,6 +97,7 @@ export default {
         console.error('Movies fetch error:', err);
       }
     },
+    // Створюємо дебаунс-версію методу
     debouncedFetchMovies: debounce(function() {
       this.fetchMovies();
     }, 500),
