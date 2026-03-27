@@ -3,7 +3,12 @@
     <app-header v-if="user" :user="user" @log-out="logOut" />
 
     <main class="main-content" :class="{ 'auth-page': !user }">
-      <router-view :user="user" @log-in="handleLogIn" />
+      <router-view
+        :user="user"
+        :isStaff="user?.is_staff"
+        @log-in="handleLogIn"
+        @refresh-user="fetchUser"
+      />
     </main>
 
     <app-footer v-if="user" />
@@ -27,12 +32,12 @@ export default {
     refreshInterval: null
   }),
   methods: {
-    async logIn() {
+    async checkAuth() {
       const accessToken = localStorage.getItem('access');
 
       if (!accessToken) {
-        // Якщо токена немає і ми не на сторінках реєстрації/входу — редирект
-        if (!['/sign-in', '/sign-up'].includes(this.$route.path)) {
+        // Якщо ми не на сторінці реєстрації — відправляємо на вхід
+        if (!this.$route.path.includes('sign')) {
           this.$router.push('/sign-in');
         }
         return;
@@ -42,21 +47,20 @@ export default {
         const { exp } = jwtDecode(accessToken);
         this.expiresAt = exp;
 
-        // Перевіряємо, чи токен ще дійсний (exp у секундах, тому * 1000)
-        if (this.expiresAt * 1e3 > Date.now()) {
+        // Якщо токен живий — отримуємо дані юзера
+        if (this.expiresAt * 1000 > Date.now()) {
           await this.fetchUser();
         } else {
           await this.refreshToken();
         }
       } catch (e) {
-        console.error("JWT Decode error or Expired:", e);
+        console.error("Auth check failed:", e);
         this.logOut();
       }
     },
 
     async handleLogIn() {
-      await this.logIn();
-      // Після успішного входу відправляємо на головну
+      await this.checkAuth();
       this.$router.push('/movies');
     },
 
@@ -65,19 +69,13 @@ export default {
       localStorage.removeItem('refresh');
       this.user = null;
       this.expiresAt = null;
-
-      if (this.$route.path !== '/sign-in') {
-        this.$router.push('/sign-in');
-      }
+      this.$router.push('/sign-in');
     },
 
     async fetchUser() {
-      const accessToken = localStorage.getItem('access');
       try {
-        // Використовуємо VITE_API_URL, який ми прописали в .env
-        const { data } = await this.axios.get('/user/me/', {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
+        // Axios перехоплювач сам додасть токен
+        const { data } = await this.axios.get('/user/me/');
         this.user = data;
       } catch (err) {
         console.error("Fetch user error:", err);
@@ -95,38 +93,33 @@ export default {
         });
 
         localStorage.setItem('access', data.access);
-        // Деякі конфігурації Django повертають новий refresh токен, деякі ні
         if (data.refresh) {
           localStorage.setItem('refresh', data.refresh);
         }
-
-        await this.logIn();
+        await this.checkAuth();
       } catch (err) {
-        console.error("Refresh token error:", err);
+        console.error("Token refresh failed:", err);
         this.logOut();
       }
     }
   },
   created() {
-    this.logIn();
+    this.checkAuth();
 
-    // Перевірка терміну дії токена кожну хвилину
+    // Кожну хвилину перевіряємо, чи не протух токен
     this.refreshInterval = setInterval(() => {
-      if (this.expiresAt && this.expiresAt * 1e3 < Date.now()) {
+      if (this.expiresAt && this.expiresAt * 1000 < Date.now()) {
         this.refreshToken();
       }
     }, 60000);
   },
   beforeUnmount() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
   }
 };
 </script>
 
 <style scoped>
-/* Стилі залишаємо без змін, вони у вас коректні */
 .main-content:not(.auth-page) {
   padding: 60px 100px;
   min-height: calc(100vh - 160px);
@@ -134,9 +127,15 @@ export default {
 
 .main-content.auth-page {
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
 }
 
-#app > *:last-child {
-  padding-bottom: 40px;
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 </style>
