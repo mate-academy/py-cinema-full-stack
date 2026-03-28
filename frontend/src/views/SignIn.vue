@@ -1,100 +1,58 @@
 <template>
-  <div class="sign-in" v-if="active">
-    <h1>Sign in to Cinema Shop</h1>
-    <h2>Please enter your sign in details.
-    <a href="#/sign-up">Sign up</a>
-    here if you are not registered yet.</h2>
-    <input-item
-      label="Login"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
-      placeholder="Email"
-      v-model="email"></input-item>
-    <password-input v-model="password"></password-input>
-    <action-button label="Sign in" @click="signIn"></action-button>
+  <div class="sign-in">
+    <div class="header">Sign In</div>
+    <div class="container">
+      <input-item label="Email" v-model="email" width="wide"></input-item>
+      <password-input label="Password" v-model="password"></password-input>
+    </div>
+    <action-button label="Submit" @click="signIn"></action-button>
   </div>
 </template>
 
 <script>
-import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
+import ActionButton from '../comps/ActionButton.vue';
+import axios from 'axios';
 
 export default {
+  name: 'SignIn',
+  components: {
+    InputItem,
+    PasswordInput,
+    ActionButton
+  },
   data: () => ({
-    active: false,
     email: '',
     password: ''
   }),
   methods: {
-    hashHandler () {
-      this.active = Boolean(!location.hash.match('sign-up$'));
-    },
-
-    async signIn () {
+    async signIn() {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        // Використовуємо відносний шлях, оскільки baseURL вже встановлено в main.js
+        // Додаємо '/' в кінці для відповідності стандартам Django
+        const { data } = await axios.post('user/token/', {
           email: this.email,
           password: this.password
         });
 
         const { access, refresh } = data;
 
+        // Зберігаємо токени
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
 
+        // Оновлюємо заголовок авторизації для наступних запитів
+        axios.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+
         this.$emit('log-in');
       } catch (err) {
-        console.error(err.response.data);
+        // Більш детальний вивід помилки для дебагу
+        const errorData = err.response?.data;
+        console.error('Login error:', errorData || err.message);
+        alert(errorData?.detail || "Невірний логін або пароль");
       }
     }
-  },
-  mounted () {
-    window.addEventListener('hashchange', this.hashHandler);
-    this.hashHandler();
-  },
-  beforeDestroy () {
-    window.removeEventListener('hashchange', this.hashHandler);
-  },
-  components: {
-    InputItem,
-    PasswordInput,
-    ActionButton
   }
 };
 </script>
-
-<style scoped>
-.sign-in {
-  position: fixed;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  left: 50%;
-  margin: auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 24px;
-}
-
-h1 {
-  font-size: 50px;
-  font-weight: 600;
-  text-align: center;
-  line-height: 60px;
-}
-
-h2 {
-  font-size: 25px;
-  text-align: center;
-  margin-bottom: 16px;
-  line-height: 30px;
-}
-
-a {
-  text-decoration: underline;
-  font-weight: 600;
-  cursor: pointer;
-  color: var(--main-font);
-}
-</style>

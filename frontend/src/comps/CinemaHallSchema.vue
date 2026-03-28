@@ -1,35 +1,39 @@
 <template>
   <div class="hall-schema">
-    <div class='border'></div>
-    <div class="screen">Screen</div>
+    <div class="border">
+      <div class="screen">Screen</div>
+    </div>
     <div class="schema">
-      <div>
-        <div v-for="index in numOfRows" :key="`row-${index}`" class="rows">{{index + 1}}</div>
+      <div class="row-numbers">
+        <div v-for="n in cinemaHall.rows" :key="`row-l-${n}`" class="row-number">{{ n }}</div>
       </div>
+
       <div class="container">
-        <div v-for="colIndex in numOfCols" class="col">
+        <div v-for="colIndex in cinemaHall.seats_in_row" :key="`col-${colIndex}`" class="col">
           <div
-          v-for="rowIndex in numOfRows"
-          :key="`seat-${colIndex}-${rowIndex}`"
-          :class="[
-          'seat',
-          takenSeats.find(seat => seat.row === rowIndex + 1 && seat.seat === colIndex + 1) && 'booked',
-          chosenSeats.find(seat => seat.row === rowIndex + 1 && seat.seat === colIndex +  1) && 'reserved'
-          ]"
-          @click="chooseSeat(colIndex, rowIndex)"></div>
+            v-for="rowIndex in cinemaHall.rows"
+            :key="`seat-${colIndex}-${rowIndex}`"
+            :class="[
+              'seat',
+              isSeatTaken(rowIndex, colIndex) && 'booked',
+              isSeatChosen(rowIndex, colIndex) && 'reserved'
+            ]"
+            @click="chooseSeat(colIndex, rowIndex)"
+          ></div>
         </div>
       </div>
-      <div>
-        <div v-for="index in numOfRows" :key="`row-${index}`" class="rows">{{index + 1}}</div>
+
+      <div class="row-numbers">
+        <div v-for="n in cinemaHall.rows" :key="`row-r-${n}`" class="row-number">{{ n }}</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import range from 'lodash.range';
-
 export default {
+  name: 'CinemaHallSchema',
+  emits: ['choose-seat'],
   props: {
     takenSeats: {
       type: Array,
@@ -37,41 +41,43 @@ export default {
     },
     cinemaHall: {
       type: Object,
-      default: () => {}
+      default: () => ({ rows: 0, seats_in_row: 0 })
     }
   },
   data: () => ({
     chosenSeats: []
   }),
-  computed: {
-    numOfRows () {
-      return range(this.cinemaHall.rows);
-    },
-
-    numOfCols () {
-      return range(this.cinemaHall.seats_in_row);
-    }
-  },
   methods: {
-    chooseSeat (colIndex, rowIndex) {
-      const seatIsChosen = this.chosenSeats.find(seat => seat.row === rowIndex + 1 && seat.seat === colIndex + 1);
-      if (seatIsChosen) {
-        this.chosenSeats = this.chosenSeats.filter(seat => seat.row !== rowIndex + 1 || seat.seat !== colIndex + 1);
+    isSeatTaken(row, seat) {
+      return this.takenSeats.some(s => s.row === row && s.seat === seat);
+    },
+    isSeatChosen(row, seat) {
+      return this.chosenSeats.some(s => s.row === row && s.seat === seat);
+    },
+    chooseSeat(colIndex, rowIndex) {
+      const row = rowIndex;
+      const seat = colIndex;
+
+      if (this.isSeatTaken(row, seat)) return;
+
+      const index = this.chosenSeats.findIndex(s => s.row === row && s.seat === seat);
+
+      if (index !== -1) {
+        this.chosenSeats.splice(index, 1);
       } else {
-        this.chosenSeats.push({
-          row: rowIndex + 1,
-          seat: colIndex + 1
-        });
+        this.chosenSeats.push({ row, seat });
       }
-      this.$emit('choose-seat', this.chosenSeats);
+
+      this.$emit('choose-seat', [...this.chosenSeats]);
     }
   },
   watch: {
     takenSeats: {
-      handler () {
+      handler() {
         this.chosenSeats = [];
       },
-      immediate: true
+      immediate: true,
+      deep: true
     }
   }
 };
@@ -81,73 +87,86 @@ export default {
 .hall-schema {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  width: 100%;
+  user-select: none;
+}
+
+.border {
+  width: 80%;
+  height: 40px;
+  border-top: 4px solid var(--main-font);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  margin-bottom: 40px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.screen {
+  position: absolute;
+  top: -15px;
+  background-color: var(--main-bg);
+  padding: 0 20px;
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--main-font);
 }
 
 .schema {
   display: flex;
-  justify-content: center;
-  gap: 40px;
-}
-
-.rows {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-  line-height: 25px;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 .container {
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  gap: 10px;
 }
 
 .col {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
 }
 
-.border {
-  grid-column: 1 / -1;
-  width: 100%;
-  height: 60px;
-  border: solid 2px var(--main-font);
-  border-color: var(--main-font) transparent transparent transparent;
-  border-radius: 90%/100px 100px 0 0;
+.row-numbers {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  position: relative;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.screen {
-  width: 200px;
+.row-number {
+  height: 25px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translate(-50%);
-  font-size: 25px;
-  line-height: 30px;
-  background-color: var(--main-bg);
+  font-size: 14px;
+  color: #666;
 }
 
 .seat {
   width: 25px;
   height: 25px;
-  border-radius: 5px;
-  background-color: #400;
+  border-radius: 6px;
+  background-color: #331a1a;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
+
+.seat:hover:not(.booked) {
+  transform: scale(1.1);
+  background-color: #552222;
+}
+
 .seat.booked {
-  background-color: var(--border);
-  pointer-events: none;
+  background-color: #222;
+  cursor: not-allowed;
+  opacity: 0.3;
 }
+
 .seat.reserved {
-  background-color: var(--main-font);
+  background-color: var(--red);
+  box-shadow: 0 0 10px var(--red);
 }
 </style>

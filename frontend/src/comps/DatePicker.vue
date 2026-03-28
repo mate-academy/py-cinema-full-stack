@@ -1,18 +1,27 @@
 <template>
   <div>
     <div class="label">Select date</div>
-    <v-date-picker class="picker" v-model="date" is-dark :min-date='new Date()' :max-date="maxDate">
-      <template v-slot="{ inputValue, togglePopover }">
+    <v-date-picker
+      v-model="internalDate"
+      class="picker"
+      is-dark
+      :min-date="new Date()"
+      :max-date="maxDate"
+    >
+      <template #default="{ inputValue, inputEvents }">
+        <div class="picker-container">
           <input
             :value="inputValue"
-            @click="togglePopover()"
+            v-on="inputEvents"
             readonly
           />
           <div class="btn-picker">
-            <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <use href="/assets/icons/calendar.svg#calendar"></use>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M3 8h14M7 3v2M13 3v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </div>
+        </div>
       </template>
     </v-date-picker>
   </div>
@@ -22,18 +31,27 @@
 import moment from 'moment';
 
 export default {
-  data: () => ({
-    date: new Date()
-  }),
-  computed: {
-    maxDate () {
-      const date = new Date();
-      return date.setDate(date.getDate() + 7);
+  name: 'DatePicker',
+  emits: ['update:modelValue'],
+  props: {
+    modelValue: {
+      type: [Date, String],
+      default: () => new Date()
     }
   },
-  watch: {
-    date (value) {
-      this.$emit('input', moment(value).format('YYYY-MM-DD'));
+  computed: {
+    maxDate() {
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      return date;
+    },
+    internalDate: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit('update:modelValue', moment(value).format('YYYY-MM-DD'));
+      }
     }
   }
 };
@@ -48,8 +66,17 @@ export default {
   padding: 0 10px;
   border: 1px solid transparent;
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
 }
+
+.picker-container {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
 .picker:focus-within {
   border-color: var(--border);
 }
@@ -64,11 +91,12 @@ export default {
 input {
   height: 100%;
   width: 100%;
-  background-color: var(--secondary-bg);
+  background-color: transparent;
   border: none;
   color: var(--main-font);
   outline: none;
   user-select: none;
+  cursor: pointer;
 }
 
 .btn-picker {
@@ -79,5 +107,6 @@ input {
   top: 15px;
   right: 15px;
   pointer-events: none;
+  color: var(--main-font);
 }
 </style>

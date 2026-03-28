@@ -1,17 +1,28 @@
 <template>
-  <div>
+  <div class="time-picker-wrapper">
     <div class="label">Select time range</div>
-    <v-date-picker mode="time" class="picker" v-model="time" is-dark is24hr :validHours="validHours" :minute-increment="5">
-      <template v-slot="{ inputValue, togglePopover }">
-        <input
-          :value="inputValue"
-          @click="togglePopover()"
-          readonly
-        />
-        <div class="btn-picker">
-          <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <use href="/assets/icons/clock.svg#clock"></use>
-          </svg>
+    <v-date-picker
+      v-model="internalTime"
+      mode="time"
+      is-dark
+      is24hr
+      :rules="timeRules"
+      :minute-increment="5"
+    >
+      <template #default="{ inputValue, inputEvents }">
+        <div class="picker-input-container">
+          <input
+            :value="inputValue"
+            v-on="inputEvents"
+            readonly
+            class="time-input"
+          />
+          <div class="btn-picker">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2"/>
+              <path d="M10 5V10L13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
         </div>
       </template>
     </v-date-picker>
@@ -20,34 +31,54 @@
 
 <script>
 export default {
-  data: () => ({
-    time: new Date()
-  }),
-  computed: {
-    validHours () {
-      return { min: 10, max: 22 };
+  name: 'TimePicker',
+  // Декларуємо еміти для Vue 3
+  emits: ['update:modelValue'],
+  props: {
+    // Vue 3 використовує modelValue замість value
+    modelValue: {
+      type: [Date, String],
+      default: () => new Date()
     }
   },
-  watch: {
-    time (value) {
-      this.$emit('input', value);
+  computed: {
+    // Синтаксис V-Calendar 3.x для обмеження годин
+    timeRules() {
+      return {
+        hours: { min: 10, max: 22 },
+      };
+    },
+    internalTime: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit('update:modelValue', value);
+      }
     }
   }
 };
 </script>
 
 <style scoped>
-.picker {
+.time-picker-wrapper {
+  width: 100%;
+}
+
+.picker-input-container {
   border-radius: 10px;
   height: 50px;
   background-color: var(--secondary-bg);
   width: 100%;
-  padding: 0 10px;
+  padding: 0 15px;
   border: 1px solid transparent;
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.2s;
 }
-.picker:focus-within {
+
+.picker-input-container:focus-within {
   border-color: var(--border);
 }
 
@@ -56,25 +87,25 @@ export default {
   font-size: 18px;
   line-height: 22px;
   margin-bottom: 8px;
+  color: var(--main-font);
 }
 
-input {
+.time-input {
   height: 100%;
   width: 100%;
-  background-color: var(--secondary-bg);
+  background: transparent;
   border: none;
   color: var(--main-font);
   outline: none;
-  user-select: none;
+  cursor: pointer;
+  font-size: 16px;
 }
 
 .btn-picker {
   display: flex;
   justify-content: center;
   align-items: center;
-  position: absolute;
-  top: 15px;
-  right: 15px;
+  color: var(--main-font);
   pointer-events: none;
 }
 </style>

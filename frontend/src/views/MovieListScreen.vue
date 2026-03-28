@@ -1,42 +1,55 @@
 <template>
-  <div v-if="active">
-    <div class="multiselections">
-      <custom-multiselect
-        label="Select actors"
+  <div v-if="active" class="movie-list-screen">
+    <AddBtn v-if="isStaff" @click="handleMovieCreate" />
+
+    <div class="filters">
+      <CustomMultiselect
+        label="Актори"
         :options="actors"
-        @option-selected="handleActorSelection"
-        @click="!actors.length && fetchActors()"
-      ></custom-multiselect>
-      <custom-multiselect
-        label="Select genres"
+        :selected="selectedActorIds"
+        @select="handleActorSelection"
+      />
+
+      <CustomMultiselect
+        label="Жанри"
         :options="genres"
-        @option-selected="handleGenreSelection"
-        @click="!genres.length && fetchGenres()"
-      ></custom-multiselect>
+        :selected="selectedGenreIds"
+        @select="handleGenreSelection"
+      />
     </div>
-    <div class="movie-container">
-      <movie-card
-        v-for="(movie, index) in movies"
-        :key="index"
-        v-bind="movie"
-        @click="handleMovieDetailsClick"
-      ></movie-card>
+
+    <div class="movies">
+      <MovieCard
+        v-for="movie in movies"
+        :key="movie.id"
+        :movie="movie"
+        @click="handleMovieDetailsClick(movie.id)"
+      />
+      <div v-if="movies.length === 0" class="no-movies">
+        Фільмів не знайдено за обраними параметрами.
+      </div>
     </div>
-    <add-btn
-      v-if="isStaff"
-      @click="handleMovieCreate">
-    </add-btn>
   </div>
 </template>
 
 <script>
-import debounce from 'lodash.debounce';
-
 import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
 
+// Проста реалізація debounce, щоб не залежати від lodash
+const debounce = (fn, delay) => {
+  let timeoutID = null;
+  return function (...args) {
+    clearTimeout(timeoutID);
+    timeoutID = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+};
+
 export default {
+  name: 'MovieListScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -51,110 +64,81 @@ export default {
     selectedActorIds: [],
     selectedGenreIds: []
   }),
-  computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
-    async fetchActors () {
+    async fetchActors() {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
-          return {
-            id,
-            name: `${firstName} ${lastName}`
-          };
-        }
-        ); ;
+        const { data } = await this.axios.get('/cinema/actors/');
+        const actorsData = Array.isArray(data) ? data : (data.results || []);
+        this.actors = actorsData.map(actor => ({
+          id: actor.id,
+          name: `${actor.first_name} ${actor.last_name}`
+        }));
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Actors fetch error:', err);
       }
     },
-
-    async fetchGenres () {
+    async fetchGenres() {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.genres = genres;
+        const { data } = await this.axios.get('/cinema/genres/');
+        this.genres = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Genres fetch error:', err);
       }
     },
-
-    async fetchMovies () {
+    async fetchMovies() {
       const params = {};
-      if (this.selectedActorIds.length) params.actors = this.selectedActorIds.join();
-      if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join();
+      if (this.selectedActorIds.length) params.actors = this.selectedActorIds.join(',');
+      if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join(',');
 
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
-          headers: { Authorization: `Bearer ${this.token}` },
-          params
-        });
-
-        this.movies = movies;
+        const { data } = await this.axios.get('/cinema/movies/', { params });
+        this.movies = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Movies fetch error:', err);
       }
     },
-
-    dispatchActorSelection: debounce(function () {
+    // Створюємо дебаунс-версію методу
+    debouncedFetchMovies: debounce(function() {
       this.fetchMovies();
-    }, 1000),
+    }, 500),
 
-    dispatchGenreSelection: debounce(function () {
-      this.fetchMovies();
-    }, 1000),
-
-    handleActorSelection (id) {
-      if (this.selectedActorIds.includes(id)) {
-        this.selectedActorIds = [...this.selectedActorIds.filter(actorId => actorId !== id)];
+    handleActorSelection(id) {
+      const index = this.selectedActorIds.indexOf(id);
+      if (index > -1) {
+        this.selectedActorIds.splice(index, 1);
       } else {
         this.selectedActorIds.push(id);
       }
-
-      this.dispatchActorSelection();
+      this.debouncedFetchMovies();
     },
-
-    handleGenreSelection (id) {
-      if (this.selectedGenreIds.includes(id)) {
-        this.selectedGenreIds = [...this.selectedGenreIds.filter(genreId => genreId !== id)];
+    handleGenreSelection(id) {
+      const index = this.selectedGenreIds.indexOf(id);
+      if (index > -1) {
+        this.selectedGenreIds.splice(index, 1);
       } else {
         this.selectedGenreIds.push(id);
       }
-      this.dispatchGenreSelection();
+      this.debouncedFetchMovies();
     },
-
-    hashHandler () {
-      this.active = Boolean(
-        !location.hash || location.hash.match('movies$') ||
-         location.hash.match(/#\/movies\/(\d+)/) || location.hash.match('/$'));
+    hashHandler() {
+      const hash = window.location.hash;
+      this.active = Boolean(!hash || hash === '#/' || hash.includes('movies'));
     },
-
-    handleMovieDetailsClick (id) {
-      location.hash = `#/movies/${id}`;
+    handleMovieDetailsClick(id) {
+      this.$router.push(`/movies/${id}`);
     },
-
-    handleMovieCreate () {
-      location.hash = '#/movies?add=true';
+    handleMovieCreate() {
+      this.$router.push('/movies/add');
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    this.fetchActors();
+    this.fetchGenres();
+    if (this.active) this.fetchMovies();
   },
-  watch: {
-    active () {
-      if (this.active) {
-        this.fetchMovies();
-      }
-    }
-  },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -166,16 +150,26 @@ export default {
 </script>
 
 <style scoped>
-.multiselections {
+.movie-list-screen {
   display: flex;
-  gap: 100px;
+  flex-direction: column;
+  gap: 30px;
+  padding: 20px;
 }
-
-.movie-container {
+.filters {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.movies {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  column-gap: 40px;
-  row-gap: 60px;
-  margin-top: 60px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 30px;
+}
+.no-movies {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 18px;
+  color: #888;
 }
 </style>

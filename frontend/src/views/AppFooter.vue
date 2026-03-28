@@ -1,11 +1,17 @@
 <template>
-  <div class="footer">Cinema Shop © 2023 Created by Mate Academy</div>
-
+  <footer class="footer">
+    <p>Cinema Shop © {{ currentYear }} Created by Mate Academy</p>
+  </footer>
 </template>
 
 <script>
 export default {
-
+  name: 'AppFooter',
+  computed: {
+    currentYear() {
+      return new Date().getFullYear();
+    }
+  }
 };
 </script>
 
@@ -16,7 +22,14 @@ export default {
   text-align: center;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
-  grid-row: 3;
+  align-items: center; /* Центрування по вертикалі всередині рядка */
+  padding: 20px 0;
+  color: var(--main-font);
+  opacity: 0.6;
+  grid-row: 3; /* Відповідає вашій сітці в App.vue */
+}
+
+p {
+  margin: 0;
 }
 </style>

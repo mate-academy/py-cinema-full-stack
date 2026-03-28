@@ -1,11 +1,9 @@
 import os
 import uuid
-
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
-
 
 class CinemaHall(models.Model):
     name = models.CharField(max_length=255)
@@ -19,32 +17,27 @@ class CinemaHall(models.Model):
     def __str__(self):
         return self.name
 
-
 class Genre(models.Model):
     name = models.CharField(max_length=255, unique=True)
 
     def __str__(self):
         return self.name
 
-
 class Actor(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return f"{self.first_name} {self.last_name}"
 
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"
 
-
 def movie_image_file_path(instance, filename):
     _, extension = os.path.splitext(filename)
     filename = f"{slugify(instance.title)}-{uuid.uuid4()}{extension}"
-
     return os.path.join("uploads/movies/", filename)
-
 
 class Movie(models.Model):
     title = models.CharField(max_length=255)
@@ -60,7 +53,6 @@ class Movie(models.Model):
     def __str__(self):
         return self.title
 
-
 class MovieSession(models.Model):
     show_time = models.DateTimeField()
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
@@ -68,10 +60,12 @@ class MovieSession(models.Model):
 
     class Meta:
         ordering = ["-show_time"]
+        indexes = [
+            models.Index(fields=["show_time"]),
+        ]
 
     def __str__(self):
-        return self.movie.title + " " + str(self.show_time)
-
+        return f"{self.movie.title} {self.show_time}"
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -79,12 +73,11 @@ class Order(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE
     )
 
-    def __str__(self):
-        return str(self.created_at)
-
     class Meta:
         ordering = ["-created_at"]
 
+    def __str__(self):
+        return str(self.created_at)
 
 class Ticket(models.Model):
     movie_session = models.ForeignKey(
@@ -108,7 +101,6 @@ class Ticket(models.Model):
                     {
                         ticket_attr_name: f"{ticket_attr_name} "
                         f"number must be in available range: "
-                        f"(1, {cinema_hall_attr_name}): "
                         f"(1, {count_attrs})"
                     }
                 )
@@ -121,23 +113,13 @@ class Ticket(models.Model):
             ValidationError,
         )
 
-    def save(
-        self,
-        force_insert=False,
-        force_update=False,
-        using=None,
-        update_fields=None,
-    ):
+    def save(self, *args, **kwargs):
         self.full_clean()
-        return super(Ticket, self).save(
-            force_insert, force_update, using, update_fields
-        )
-
-    def __str__(self):
-        return (
-            f"{str(self.movie_session)} (row: {self.row}, seat: {self.seat})"
-        )
+        return super(Ticket, self).save(*args, **kwargs)
 
     class Meta:
         unique_together = ("movie_session", "row", "seat")
         ordering = ["row", "seat"]
+
+    def __str__(self):
+        return f"{self.movie_session} (row: {self.row}, seat: {self.seat})"

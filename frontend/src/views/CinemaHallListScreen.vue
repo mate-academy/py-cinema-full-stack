@@ -2,10 +2,14 @@
   <div v-if="active && isStaff" class="cinema-halls">
     <div class="label">Cinema Halls</div>
     <div class="hall-container">
+      <div v-if="halls.length === 0" class="no-data">
+        No cinema halls found.
+      </div>
+
       <div v-for="hall in halls" class="hall" :key="hall.id">
-        <div class="name">{{hall.name}}</div>
-        <div class="size">Size: {{hall.rows}} x {{hall.seats_in_row}}</div>
-        <div>Capacity: {{hall.capacity}}</div>
+        <div class="name">{{ hall.name }}</div>
+        <div class="size">Rows: {{ hall.rows }} | Seats in row: {{ hall.seats_in_row }}</div>
+        <div class="capacity">Total Capacity: {{ hall.capacity }}</div>
       </div>
     </div>
     <add-btn @click="handleHallCreate"></add-btn>
@@ -15,8 +19,8 @@
 <script>
 import AddBtn from '../comps/AddBtn.vue';
 
-import axios from 'axios';
 export default {
+  name: 'CinemaHallListScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -27,43 +31,35 @@ export default {
     active: false,
     halls: []
   }),
-  computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
-    async fetchHalls () {
+    async fetchHalls() {
       try {
-        const { data: halls } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.halls = halls;
+        const { data } = await this.axios.get('/cinema/cinema-halls/');
+        this.halls = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Fetch halls error:', err);
       }
     },
-
-    handleHallCreate () {
-      location.hash = '#/cinema-halls?add=true';
+    handleHallCreate() {
+      this.$router.push('/cinema-halls/add');
     },
-
-    hashHandler () {
-      this.active = Boolean(location.hash.match('cinema-halls$'));
+    hashHandler() {
+      this.active = window.location.hash.endsWith('cinema-halls');
     }
   },
   watch: {
-    active () {
-      if (this.active) {
+    active(newVal) {
+      if (newVal) {
         this.fetchHalls();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    if (this.active) this.fetchHalls();
   },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -76,43 +72,36 @@ export default {
 .cinema-halls {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 24px;
+  padding: 20px;
 }
-
 .label {
   font-weight: 600;
-  font-size: 50px;
-  line-height: 60px;
-  margin-bottom: 60px;
+  font-size: 40px;
 }
-
 .hall-container {
   display: flex;
-  gap: 65px;
-  flex-wrap: wrap;
-}
-
-.name {
-  font-weight: 700;
-  font-size: 25px;
-  line-height: 30px;
-  margin-bottom: 24px;
-}
-
-.size {
-  margin-bottom: 12px;
-}
-
-.hall {
-  width: 196px;
-  height: 190px;
-  background-color: var(--secondary-bg);
-  border-radius: 10px;
-  display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  line-height: 22px;
+  gap: 16px;
+  max-width: 600px;
+}
+.hall {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 16px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.name {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.size, .capacity {
+  font-size: 16px;
+  color: #ccc;
+}
+.no-data {
+  font-style: italic;
+  color: #888;
 }
 </style>

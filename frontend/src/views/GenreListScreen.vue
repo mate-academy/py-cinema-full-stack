@@ -4,13 +4,20 @@
       <div class="header">Add Genre</div>
       <div class="note">Please fill in the fields in details</div>
       <input-item label="Genre" width="wide" v-model="name"></input-item>
-      <action-button label="Submit" @click="addGenre"></action-button>
+      <action-button label="Submit" @click="addGenre" :disabled="!name"></action-button>
     </div>
+
     <div class="genres">
       <div class="header">All Genres</div>
       <div class="container">
-        <div v-for="(genre, index) in genres" :key="genre.id" :class="index % 2 === 0 ? 'odd' : ''">
-          {{genre.name}}
+        <div v-if="genres.length === 0" class="no-data">No genres found.</div>
+
+        <div
+          v-for="(genre, index) in genres"
+          :key="genre.id"
+          :class="['genre-item', index % 2 === 0 ? 'odd' : '']"
+        >
+          {{ genre.name }}
         </div>
       </div>
       <add-btn @click="createMode = !createMode"></add-btn>
@@ -19,12 +26,12 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+
 export default {
+  name: 'GenreListScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -37,65 +44,44 @@ export default {
     createMode: false,
     name: ''
   }),
-  computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
-    async fetchGenres () {
+    hashHandler() {
+      this.active = Boolean(window.location.hash.match('genres$'));
+    },
+    async fetchGenres() {
       try {
-        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.genres = genres;
+        const { data } = await this.axios.get('/cinema/genres/');
+        this.genres = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Fetch genres error:', err);
       }
     },
-
-    async addGenre () {
+    async addGenre() {
+      if (!this.name.trim()) return;
       try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres`,
-          {
-            name: this.name
-          },
-          config
-        );
-
-        this.createMode = !this.createMode;
-        this.fetchGenres();
-
+        await this.axios.post('/cinema/genres/', { name: this.name });
+        this.createMode = false;
         this.name = '';
+        await this.fetchGenres();
       } catch (err) {
-        console.error(err);
+        console.error('Add genre error:', err);
+        alert('Помилка при додаванні жанру');
       }
-    },
-
-    hashHandler () {
-      this.active = Boolean(location.hash.match('genres$'));
     }
   },
   watch: {
-    active () {
-      if (this.active) {
+    active(newVal) {
+      if (newVal) {
         this.fetchGenres();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    if (this.active) this.fetchGenres();
   },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -103,54 +89,58 @@ export default {
     InputItem,
     ActionButton
   }
-
 };
 </script>
 
 <style scoped>
-.genres-container, .genres-container > * {
+.genres-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
   width: 100%;
+  padding: 20px;
 }
-
+.add-genre, .genres {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 600px;
+}
 .add-genre {
   margin-bottom: 36px;
+  padding: 20px;
+  border: 1px dashed #ccc;
+  border-radius: 10px;
 }
-
-.action-button {
-  margin-top: 36px;
-}
-
 .header {
   font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
+  font-size: 40px;
+  line-height: 1.2;
 }
-
 .note {
-  font-size: 25px;
-  line-height: 31px;
+  font-size: 18px;
+  color: #888;
 }
-
 .container {
   width: 100%;
-  font-size: 25px;
-  line-height: 30px;
+  font-size: 20px;
 }
-
-.container > div {
+.genre-item {
   height: 50px;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 15px;
   border-radius: 10px;
 }
-
-.container > .odd {
-  background-color: var(--secondary-bg);
+.odd {
+  background-color: rgba(255, 255, 255, 0.05);
 }
-
+.no-data {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
 </style>

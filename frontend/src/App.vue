@@ -1,145 +1,141 @@
 <template>
   <div id="app">
-    <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
-    <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
-    <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
-    <movie-list-screen v-if="user" :isStaff="user.is_staff"></movie-list-screen>
-    <movie-session-list-screen v-if="user" :isStaff="user.is_staff"></movie-session-list-screen>
-    <cinema-hall-list-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-list-screen>
-    <genre-list-screen v-if="user" :isStaff="user.is_staff"></genre-list-screen>
-    <actor-list-screen v-if="user" :isStaff="user.is_staff"></actor-list-screen>
-    <movie-details-screen v-if="user"></movie-details-screen>
-    <movie-session-details-screen v-if="user" :user="user" ></movie-session-details-screen>
-    <movie-add-screen v-if="user" :isStaff="user.is_staff"></movie-add-screen>
-    <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
-    <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
-    <order-list-screen v-if="user"></order-list-screen>
-    <profile-screen v-if="user" :user="user"></profile-screen>
-    <app-footer v-if="user"></app-footer>
+    <app-header v-if="user" :user="user" @log-out="logOut" />
+
+    <main class="main-content" :class="{ 'auth-page': !user }">
+      <router-view
+        :user="user"
+        :isStaff="user?.is_staff"
+        @log-in="handleLogIn"
+        @refresh-user="fetchUser"
+      />
+    </main>
+
+    <app-footer v-if="user" />
   </div>
 </template>
 
 <script>
-import jwtDecode from 'jwt-decode';
-
-import SignIn from './views/SignIn.vue';
-import MovieListScreen from './views/MovieListScreen.vue';
+import { jwtDecode } from 'jwt-decode';
 import AppHeader from './views/AppHeader.vue';
 import AppFooter from './views/AppFooter.vue';
-import MovieDetailsScreen from './views/MovieDetailsScreen.vue';
-import MovieAddScreen from './views/MovieAddScreen.vue';
-import MovieSessionListScreen from './views/MovieSessionListScreen.vue';
-import MovieSessionAddScreen from './views/MovieSessionAddScreen.vue';
-import CinemaHallListScreen from './views/CinemaHallListScreen.vue';
-import CinemaHallAddScreen from './views/CinemaHallAddScreen.vue';
-import GenreListScreen from './views/GenreListScreen.vue';
-import ActorListScreen from './views/ActorListScreen.vue';
-import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
-import OrderListScreen from './views/OrderListScreen.vue';
-import ProfileScreen from './views/ProfileScreen.vue';
-import SignUp from './views/SignUp.vue';
 
 export default {
+  name: 'App',
+  components: {
+    AppHeader,
+    AppFooter
+  },
   data: () => ({
-    expiresAt: null,
     user: null,
-    type: 'password'
+    expiresAt: null,
+    refreshInterval: null
   }),
   methods: {
-    async logIn () {
+    async checkAuth() {
       const accessToken = localStorage.getItem('access');
-      if (!accessToken) return;
 
-      const { exp } = jwtDecode(accessToken);
-      this.expiresAt = exp;
-
-      if (this.expiresAt * 1e3 > Date.now()) {
-        await this.fetchUser();
+      if (!accessToken) {
+        // Якщо ми не на сторінці реєстрації — відправляємо на вхід
+        if (!this.$route.path.includes('sign')) {
+          this.$router.push('/sign-in');
+        }
         return;
       }
 
-      this.refreshToken();
-    },
-
-    async handleLogIn () {
-      await this.logIn();
-      location.hash = '#/';
-    },
-
-    logOut () {
-      localStorage.removeItem('access');
-      localStorage.removeItem('refresh');
-
-      this.user = null;
-    },
-
-    async fetchUser () {
-      const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
-          { headers: { Authorization: `Bearer ${accessToken}` } });
+        const { exp } = jwtDecode(accessToken);
+        this.expiresAt = exp;
 
-        this.user = user;
-      } catch (err) {
-        console.error(err.response.data);
+        // Якщо токен живий — отримуємо дані юзера
+        if (this.expiresAt * 1000 > Date.now()) {
+          await this.fetchUser();
+        } else {
+          await this.refreshToken();
+        }
+      } catch (e) {
+        console.error("Auth check failed:", e);
+        this.logOut();
       }
     },
 
-    async refreshToken () {
+    async handleLogIn() {
+      await this.checkAuth();
+      this.$router.push('/movies');
+    },
+
+    logOut() {
+      localStorage.removeItem('access');
+      localStorage.removeItem('refresh');
+      this.user = null;
+      this.expiresAt = null;
+      this.$router.push('/sign-in');
+    },
+
+    async fetchUser() {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
+        // Axios перехоплювач сам додасть токен
+        const { data } = await this.axios.get('/user/me/');
+        this.user = data;
+      } catch (err) {
+        console.error("Fetch user error:", err);
+        this.logOut();
+      }
+    },
+
+    async refreshToken() {
+      const refresh = localStorage.getItem('refresh');
+      if (!refresh) return this.logOut();
+
+      try {
+        const { data } = await this.axios.post('/user/token/refresh/', {
+          refresh: refresh
         });
 
-        const { access, refresh } = data;
-
-        localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
-        this.logIn();
+        localStorage.setItem('access', data.access);
+        if (data.refresh) {
+          localStorage.setItem('refresh', data.refresh);
+        }
+        await this.checkAuth();
       } catch (err) {
-        console.error(err.response.data);
+        console.error("Token refresh failed:", err);
+        this.logOut();
       }
     }
   },
-  created () {
-    this.logIn();
+  created() {
+    this.checkAuth();
 
-    setInterval(() => {
-      if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
-      this.refreshToken();
-    }, 60 * 1e3);
+    // Кожну хвилину перевіряємо, чи не протух токен
+    this.refreshInterval = setInterval(() => {
+      if (this.expiresAt && this.expiresAt * 1000 < Date.now()) {
+        this.refreshToken();
+      }
+    }, 60000);
   },
-  components: {
-    SignIn,
-    MovieListScreen,
-    AppHeader,
-    AppFooter,
-    MovieDetailsScreen,
-    MovieAddScreen,
-    MovieSessionListScreen,
-    MovieSessionAddScreen,
-    CinemaHallListScreen,
-    CinemaHallAddScreen,
-    GenreListScreen,
-    ActorListScreen,
-    MovieSessionDetailsScreen,
-    OrderListScreen,
-    ProfileScreen,
-    SignUp
+  beforeUnmount() {
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
   }
 };
 </script>
 
 <style scoped>
-#app > *:not(:last-child):not(:first-child) {
+.main-content:not(.auth-page) {
   padding: 60px 100px;
+  min-height: calc(100vh - 160px);
 }
 
-#app > *:last-child{
-  padding-bottom: 40px;
-}
-
-#app .sign-in {
+.main-content.auth-page {
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 </style>

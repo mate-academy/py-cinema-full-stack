@@ -6,21 +6,23 @@
         label="Email"
         v-model="email"
         pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
-        :initialValue="user.email"
+        :placeholder="user?.email"
       ></input-item>
-      <password-input label="Password" v-model="password"></password-input>
-      <action-button label="Submit" @click="changeUserData"></action-button>
+      <password-input label="New Password" v-model="password"></password-input>
+      <action-button label="Submit" @click="changeUserData" :disabled="!email && !password"></action-button>
+
       <div class="result success" v-if="success">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/success.svg#success"></use>
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <use href="#success"></use>
         </svg>
         <div>Updated</div>
       </div>
+
       <div class="result failure" v-if="error">
-        <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <use href="/assets/icons/error.svg#error"></use>
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <use href="#error"></use>
         </svg>
-        <div>{{error[0]}}</div>
+        <div>{{ Array.isArray(error) ? error[0] : error }}</div>
       </div>
     </div>
   </div>
@@ -32,71 +34,58 @@ import ActionButton from '../comps/ActionButton.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
 
 export default {
+  name: 'ProfileScreen',
   props: {
     user: {
       type: Object,
-      default: () => {}
+      default: () => ({})
     }
   },
   data: () => ({
     active: false,
     email: '',
     password: '',
-    success: null,
+    success: false,
     error: null
   }),
-  computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('my-profile$'));
+    hashHandler() {
+      this.active = Boolean(window.location.hash.match('my-profile$'));
     },
-
-    async changeUserData () {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          'Content-Type': 'application/json'
-        }
-      };
-
+    async changeUserData() {
       const body = {};
       if (this.email && this.email !== this.user.email) body.email = this.email;
       if (this.password) body.password = this.password;
 
-      try {
-        const { data } = await this.axios.patch(`${import.meta.env.VITE_API_URL}/api/user/me`, body, config);
-        this.success = !!data;
+      if (Object.keys(body).length === 0) return;
 
+      try {
+        await this.axios.patch('/user/me/', body);
+        this.success = true;
         this.email = '';
         this.password = '';
+        this.error = null;
+        // Оновлюємо дані користувача в App.vue через подію
+        this.$emit('refresh-user');
       } catch (err) {
-        console.error(err);
-        const { password = null, email = null } = err.response.data;
-        this.error = password || email;
+        const errors = err.response?.data || {};
+        this.error = errors.password || errors.email || errors.detail || "Error updating profile";
       }
     }
   },
   watch: {
-    error () {
-      setTimeout(() => {
-        this.error = null;
-      }, 15 * 1e3);
+    error(val) {
+      if (val) setTimeout(() => { this.error = null; }, 5000);
     },
-    success () {
-      setTimeout(() => {
-        this.success = null;
-      }, 15 * 1e3);
+    success(val) {
+      if (val) setTimeout(() => { this.success = false; }, 5000);
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
   },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -108,28 +97,31 @@ export default {
 </script>
 
 <style scoped>
-.profile, .profile > * {
+.profile {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  width: 100%;
+  gap: 30px;
+  padding: 40px;
 }
-
-.action-button {
-  margin-top: 16px;
-}
-
 .header {
+  font-size: 40px;
   font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
 }
-
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 400px;
+}
 .result {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 16px;
+  padding: 10px;
+  border-radius: 8px;
 }
+.success { color: #4caf50; }
+.failure { color: #f44336; }
 </style>

@@ -1,28 +1,41 @@
 <template>
-    <div v-if="active && isStaff" class="movie-session-container">
+  <div v-if="active && isStaff" class="movie-session-container">
     <div class="header">Add a movie session</div>
     <div class="note">Please fill in the fields in details</div>
     <div class="container">
-      <custom-select label="Movie" :options="movieOptions" @option-selected="handleMovieSelection"></custom-select>
-      <custom-select label="Cinema Hall" :options="cinemaHalls" @option-selected="handleHallSelection"></custom-select>
+      <custom-select
+        label="Movie"
+        :options="movieOptions"
+        @option-selected="handleMovieSelection"
+      ></custom-select>
+
+      <custom-select
+        label="Cinema Hall"
+        :options="cinemaHallOptions"
+        @option-selected="handleHallSelection"
+      ></custom-select>
+
       <div class="date-container">
         <date-picker v-model="date"></date-picker>
         <time-picker v-model="time"></time-picker>
       </div>
     </div>
-    <action-button label="Submit" @click="addMovieSession" :disabled="!selectedHallId || !selectedMovieId"></action-button>
+    <action-button
+      label="Submit"
+      @click="addMovieSession"
+      :disabled="!selectedHallId || !selectedMovieId"
+    ></action-button>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
-
 import DatePicker from '../comps/DatePicker.vue';
 import ActionButton from '../comps/ActionButton.vue';
 import TimePicker from '../comps/TimePicker.vue';
 import CustomSelect from '../comps/CustomSelect.vue';
 
 export default {
+  name: 'AddMovieSessionScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -39,99 +52,75 @@ export default {
     selectedHallId: null
   }),
   computed: {
-    movieOptions () {
+    movieOptions() {
       return this.movies.map(movie => ({
         name: movie.title,
         id: movie.id
       }));
     },
-
-    token () {
-      return localStorage.getItem('access');
+    cinemaHallOptions() {
+      return this.cinemaHalls.map(hall => ({
+        name: hall.name,
+        id: hall.id
+      }));
     }
   },
   methods: {
-    hashHandler () {
-      this.active = Boolean(location.hash.match('movie-sessions\\?add=true'));
+    hashHandler() {
+      this.active = Boolean(window.location.hash.includes('movie-sessions') && window.location.hash.includes('add=true'));
     },
-
-    async fetchMovies () {
+    async fetchData() {
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
-          headers: { Authorization: `Bearer ${this.token}` },
-          params: {}
+        const [moviesRes, hallsRes] = await Promise.all([
+          this.axios.get('/cinema/movies/'),
+          this.axios.get('/cinema/cinema-halls/')
+        ]);
+
+        this.movies = Array.isArray(moviesRes.data) ? moviesRes.data : (moviesRes.data.results || []);
+        this.cinemaHalls = Array.isArray(hallsRes.data) ? hallsRes.data : (hallsRes.data.results || []);
+      } catch (err) {
+        console.error('Error fetching data for session:', err);
+      }
+    },
+    async addMovieSession() {
+      const finalDateTime = new Date(this.date);
+      const timeObj = new Date(this.time);
+
+      finalDateTime.setHours(timeObj.getHours());
+      finalDateTime.setMinutes(timeObj.getMinutes());
+      finalDateTime.setSeconds(0);
+
+      try {
+        await this.axios.post('/cinema/movie-sessions/', {
+          movie: this.selectedMovieId,
+          cinema_hall: this.selectedHallId,
+          show_time: finalDateTime.toISOString()
         });
 
-        this.movies = movies;
+        this.$router.push('/movie-sessions');
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Failed to create session:', err);
+        alert('Помилка при створенні сеансу');
       }
     },
-
-    async fetchCinemaHalls () {
-      try {
-        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
-          headers: { Authorization: `Bearer ${this.token}` },
-          params: {}
-        });
-
-        this.cinemaHalls = cinemaHalls;
-      } catch (err) {
-        console.error(err.response.data);
-      }
-    },
-
-    async addMovieSession () {
-      const showTime = new Date(this.date);
-      showTime.setHours(this.time.getHours());
-      showTime.setMinutes(this.time.getMinutes());
-
-      try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`,
-          {
-            movie: this.selectedMovieId,
-            cinema_hall: this.selectedHallId,
-            show_time: showTime.toISOString()
-          },
-          config
-        );
-
-        location.hash = '#/movie-sessions';
-      } catch (err) {
-        console.error(err);
-      }
-    },
-
-    handleMovieSelection (movieId) {
+    handleMovieSelection(movieId) {
       this.selectedMovieId = movieId;
     },
-
-    handleHallSelection (hallId) {
+    handleHallSelection(hallId) {
       this.selectedHallId = hallId;
     }
-
   },
   watch: {
-    active () {
-      if (this.active) {
-        this.fetchMovies();
-        this.fetchCinemaHalls();
-      }
+    active(newVal) {
+      if (newVal) this.fetchData();
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    if (this.active) this.fetchData();
   },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
   components: {
@@ -147,39 +136,26 @@ export default {
 .movie-session-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 24px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
-
 .header {
   font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
+  font-size: 40px;
 }
-
 .note {
-  font-size: 25px;
-  line-height: 31px;
+  font-size: 18px;
+  color: #666;
 }
-
 .container {
-  width: 100%;
-  max-width: 570px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  row-gap: 24px;
-  margin-bottom: 60px;
+  gap: 20px;
 }
-
 .date-container {
   display: flex;
-  gap: 60px;
-  width: 100%;
+  gap: 20px;
 }
-
-.date-container > * {
-  width: 255px;
-}
-
 </style>

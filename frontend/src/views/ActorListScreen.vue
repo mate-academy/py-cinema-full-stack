@@ -7,13 +7,24 @@
         <input-item label="First name" width="wide" v-model="firstName"></input-item>
         <input-item label="Last name" width="wide" v-model="lastName"></input-item>
       </div>
-      <action-button label="Submit" @click="addActor"></action-button>
+      <action-button
+        label="Submit"
+        @click="addActor"
+        :disabled="!firstName || !lastName"
+      ></action-button>
     </div>
+
     <div class="actors">
       <div class="header">All Actors</div>
       <div class="container">
-        <div v-for="(actor, index) in actors" :key="actor.id" :class="index % 2 === 0 ? 'odd' : ''">
-          {{actor.first_name}} {{actor.last_name}}
+        <div v-if="actors.length === 0" class="no-data">No actors found.</div>
+
+        <div
+          v-for="(actor, index) in actors"
+          :key="actor.id"
+          :class="['actor-item', index % 2 === 0 ? 'odd' : '']"
+        >
+          {{ actor.first_name }} {{ actor.last_name }}
         </div>
       </div>
       <add-btn @click="createMode = !createMode"></add-btn>
@@ -22,12 +33,12 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+
 export default {
+  name: 'ActorListScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -41,128 +52,106 @@ export default {
     firstName: '',
     lastName: ''
   }),
-  computed: {
-    token () {
-      return localStorage.getItem('access');
-    }
-  },
   methods: {
-    async fetchActors () {
+    hashHandler() {
+      this.active = window.location.hash.endsWith('actors');
+    },
+    async fetchActors() {
       try {
-        const { data: actors } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
-          headers: { Authorization: `Bearer ${this.token}` }
-        });
-        this.actors = actors;
+        const { data } = await this.axios.get('/cinema/actors/');
+        this.actors = Array.isArray(data) ? data : (data.results || []);
       } catch (err) {
-        console.error(err.response.data);
+        console.error('Fetch actors error:', err);
       }
     },
-
-    async addActor () {
+    async addActor() {
+      if (!this.firstName.trim() || !this.lastName.trim()) return;
       try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            'Content-Type': 'application/json'
-          }
-        };
-
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
-          {
-            first_name: this.firstName,
-            last_name: this.lastName
-          },
-          config
-        );
-
-        this.createMode = !this.createMode;
-        this.fetchActors();
-
+        await this.axios.post('/cinema/actors/', {
+          first_name: this.firstName,
+          last_name: this.lastName
+        });
+        this.createMode = false;
         this.firstName = '';
         this.lastName = '';
+        await this.fetchActors();
       } catch (err) {
-        console.error(err);
+        console.error('Add actor error:', err);
+        alert('Failed to add actor.');
       }
-    },
-
-    hashHandler () {
-      this.active = Boolean(location.hash.match('actors$'));
     }
   },
   watch: {
-    active () {
-      if (this.active) {
+    active(newVal) {
+      if (newVal) {
         this.fetchActors();
       }
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+    if (this.active) this.fetchActors();
   },
-  beforeDestroy () {
+  unmounted() {
     window.removeEventListener('hashchange', this.hashHandler);
   },
-
   components: {
     AddBtn,
     InputItem,
     ActionButton
   }
-
 };
 </script>
 
 <style scoped>
-.actor-container, .actor-container > * {
+.actor-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 24px;
   width: 100%;
+  padding: 20px;
 }
-
-.add-actor {
-  margin-bottom: 36px;
+.add-actor, .actors {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 700px;
 }
-
-.action-button {
-  margin-top: 36px;
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
 }
-
 .header {
   font-weight: 600;
-  font-size: 50px;
-  line-height: 61px;
+  font-size: 40px;
 }
-
 .note {
-  font-size: 25px;
-  line-height: 31px;
+  font-size: 18px;
+  color: #888;
 }
-
 .container {
   width: 100%;
-  font-size: 25px;
-  line-height: 30px;
+  font-size: 20px;
 }
-
-.container > div {
+.actor-item {
   height: 50px;
   display: flex;
   align-items: center;
-  padding: 0 10px;
+  padding: 0 15px;
   border-radius: 10px;
 }
-
-.container > .odd {
-  background-color: var(--secondary-bg);
+.odd {
+  background-color: rgba(255, 255, 255, 0.05);
 }
-
-.input-container {
-  width: 100%;
-  display: flex;
-  gap: 100px;
+.no-data {
+  text-align: center;
+  color: #666;
+  font-style: italic;
 }
 </style>
