@@ -10,3 +10,4 @@ flake8-variables-names~=0.0.6
 pep8-naming~=0.14.1
 psycopg2-binary~=2.9.10
 python-dotenv==1.2.2
+django-cors-headers==4.9.0
