@@ -40,7 +40,7 @@ export default {
     genres: [],
     selectedActorIds: [],
     selectedGenreIds: [],
-    date: ''
+    date: moment(new Date()).format('YYYY-MM-DD')
   }),
   computed: {
     movieSessionsGroupedByTime () {
