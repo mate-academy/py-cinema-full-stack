@@ -4,7 +4,7 @@
     <div class="menu">
       <a href='#/movie-sessions' :class="activeTab === 'movie-sessions' && 'active'">Movie Sessions</a>
       <a href='#/cinema-halls' v-if="user.is_staff" :class="activeTab === 'cinema-halls' && 'active'">Cinema Halls</a>
-      <a href='#/movies' :class="activeTab.match(/(movies|^$)/) && 'active'">Movies</a>
+      <a href='#/movies' :class="activeTab === 'movies' && 'active'">Movies</a>
       <a href='#/genres' v-if="user.is_staff" :class="activeTab === 'genres' && 'active'">Genres</a>
       <a href='#/actors' v-if="user.is_staff" :class="activeTab === 'actors' && 'active'">Actors</a>
     </div>
@@ -43,8 +43,8 @@ export default {
   },
   methods: {
     hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
-      this.activeTab = active;
+      const hash = location.hash.replace('#/', '');
+      this.activeTab = hash || 'movies';
     },
 
     openProfile () {

@@ -1,5 +1,4 @@
 FROM --platform=linux/amd64 python:3.13-slim
-LABEL maintainer="danylo.t@mate.academy"
 
 WORKDIR /app
 
