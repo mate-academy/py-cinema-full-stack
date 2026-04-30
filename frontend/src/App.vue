@@ -75,6 +75,12 @@ export default {
 
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
+
+      if (!accessToken) {
+        this.user = null;
+        return;
+        }
+
       try {
         const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/`,
           { headers: { Authorization: `Bearer ${accessToken}` } });
