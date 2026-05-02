@@ -30,7 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-APPEND_SLASH = False
 
 INTERNAL_IPS = [
     "127.0.0.1",
@@ -180,4 +179,8 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
 }
 
-CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
