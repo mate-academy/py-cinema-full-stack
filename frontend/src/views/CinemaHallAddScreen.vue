@@ -61,7 +61,7 @@ export default {
           config
         );
 
-        location.hash = '#/cinema-halls';
+        location.hash = '#/cinema-halls/';
       } catch (err) {
         console.error(err);
       }

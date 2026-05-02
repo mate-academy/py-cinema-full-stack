@@ -18,7 +18,6 @@
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
-import { setTokens, setAuthHeader } from '../utils/auth.js';
 
 export default {
   data: () => ({
@@ -38,18 +37,14 @@ export default {
           password: this.password
         });
 
-        const access = data.access || data.accessToken || data.token;
-        const refresh = data.refresh || data.refreshToken;
+        const { access, refresh } = data;
 
-        console.log('TOKEN RESPONSE:', JSON.stringify(data));
-        console.log('ACCESS EXTRACTED:', access);
-        setTokens(access, refresh);
-        setAuthHeader(access);
-        console.log('localStorage after setTokens:', localStorage.getItem('access'));
+        localStorage.setItem('access', access);
+        localStorage.setItem('refresh', refresh);
 
         this.$emit('log-in');
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error(err.response.data);
       }
     }
   },

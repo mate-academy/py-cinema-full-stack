@@ -21,7 +21,6 @@
 
 <script>
 import jwtDecode from 'jwt-decode';
-import { getAccessToken, getRefreshToken, setTokens, clearTokens, setAuthHeader } from './utils/auth.js';
 
 import SignIn from './views/SignIn.vue';
 import MovieListScreen from './views/MovieListScreen.vue';
@@ -48,10 +47,8 @@ export default {
   }),
   methods: {
     async logIn () {
-      const accessToken = getAccessToken();
+      const accessToken = localStorage.getItem('access');
       if (!accessToken) return;
-
-      setAuthHeader(accessToken);
 
       const { exp } = jwtDecode(accessToken);
       this.expiresAt = exp;
@@ -70,45 +67,37 @@ export default {
     },
 
     logOut () {
-      clearTokens();
-      setAuthHeader(null);
+      localStorage.removeItem('access');
+      localStorage.removeItem('refresh');
 
       this.user = null;
     },
 
     async fetchUser () {
-      const accessToken = getAccessToken();
-
-      if (!accessToken) {
-        this.user = null;
-        return;
-      }
-
+      const accessToken = localStorage.getItem('access');
       try {
         const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/`,
           { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error(err.response.data);
       }
     },
 
     async refreshToken () {
       try {
         const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh/`, {
-          refresh: getRefreshToken()
+          refresh: localStorage.getItem('refresh')
         });
 
-        const access = data.access || data.accessToken || data.token;
-        const refresh = data.refresh || data.refreshToken;
+        const { access, refresh } = data;
 
-        setTokens(access, refresh);
-        setAuthHeader(access);
-
+        localStorage.setItem('access', access);
+        localStorage.setItem('refresh', refresh);
         this.logIn();
       } catch (err) {
-        console.error(err.response?.data || err);
+        console.error(err.response.data);
       }
     }
   },
@@ -116,7 +105,6 @@ export default {
     this.logIn();
 
     setInterval(() => {
-      if (!this.user) return;
       if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
       this.refreshToken();
     }, 60 * 1e3);

@@ -104,7 +104,7 @@ export default {
           config
         );
 
-        location.hash = '#/movie-sessions';
+        location.hash = '#/movie-sessions/';
       } catch (err) {
         console.error(err);
       }
