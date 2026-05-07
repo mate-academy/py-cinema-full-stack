@@ -22,6 +22,7 @@ pathspec==1.0.4
 platformdirs==4.9.4
 psycopg==3.3.3
 psycopg-binary==3.3.3
+Pillow
 PyAutoGUI==0.9.54
 PyGetWindow==0.0.9
 PyJWT==2.12.1
