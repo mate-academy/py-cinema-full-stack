@@ -1,10 +1,8 @@
-version: "3"
-
 services:
   app:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ..
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     volumes:
@@ -15,7 +13,7 @@ services:
              python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8080"
     env_file:
-      - .env
+      - ../.env
     depends_on:
       - db
 
@@ -24,4 +22,4 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env
+      - ../.env
