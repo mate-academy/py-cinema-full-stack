@@ -28,8 +28,27 @@ SECRET_KEY = (
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# 1. Make sure this is NOT empty
+ALLOWED_HOSTS = ["*"]
 
+# 2. Add these to allow the Frontend (port 5173) to talk to Backend (port 8000)
+CORS_ALLOW_CREDENTIALS = True
+
+# For local verification, authorize all incoming origins
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Define authorized headers explicitly to prevent preflight rejection
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
@@ -47,10 +66,12 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "debug_toolbar",
     "cinema",
+    'corsheaders',
     "user",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -139,6 +160,7 @@ STATIC_URL = "static/"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = "/vol/web/media"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
