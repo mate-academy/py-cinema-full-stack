@@ -14,5 +14,8 @@ class ManageUserView(generics.RetrieveUpdateAPIView):
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+
     def get_object(self):
         return self.request.user
