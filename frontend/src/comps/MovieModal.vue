@@ -7,7 +7,11 @@
       </svg>
     </div>
     <div class="info-container">
-      <img :src="movie.image" :class="[!movie.image && 'absent']"/>
+      <img
+        :src="imageUrl"
+        :class="[!movie.image && 'absent']"
+        @error="showPlaceholder"
+      />
       <div class="info">
         <div class="movie-title">{{movie.title}}</div>
         <div class="container">
@@ -25,11 +29,24 @@
 </template>
 
 <script>
+import { moviePlaceholder, resolveMediaUrl } from '../utils/media';
+
 export default {
   props: {
     movie: {
       type: Object,
       default: () => {}
+    }
+  },
+  computed: {
+    imageUrl () {
+      return resolveMediaUrl(this.movie.image);
+    }
+  },
+  methods: {
+    showPlaceholder (event) {
+      if (event.target.src.endsWith(moviePlaceholder)) return;
+      event.target.src = moviePlaceholder;
     }
   }
 };

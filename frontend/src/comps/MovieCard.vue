@@ -1,5 +1,5 @@
 <template>
-  <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + image + ')' }" @click="$emit('click', id)">
+  <div class="movie-card" :style="{ backgroundImage }" @click="$emit('click', id)">
     <div class="main-info">
       <span class="title">{{title}}</span>
       <div class="detail" @click="$emit('click', id)" v-if="!times.length">
@@ -27,6 +27,7 @@
 
 <script>
 import moment from 'moment';
+import { moviePlaceholder, resolveMediaUrl } from '../utils/media';
 
 export default {
   props: {
@@ -55,6 +56,14 @@ export default {
     }
   },
   computed: {
+    backgroundImage () {
+      return [
+        'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%)',
+        `url("${resolveMediaUrl(this.image)}")`,
+        `url("${moviePlaceholder}")`
+      ].join(', ');
+    },
+
     formattedTime () {
       return this.times.map(time => moment(time).format('HH:mm'));
     }
