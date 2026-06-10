@@ -1,6 +1,6 @@
 <template>
   <div v-if="active && !loading" class="session-details">
-    <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + movieSession.movie.image + ')' }"></div>
+    <div class="movie-card" :style="{ backgroundImage }"></div>
     <div class="container">
       <div class="info">
         <span>{{movieSession.movie.title}}</span>
@@ -22,6 +22,7 @@ import moment from 'moment';
 
 import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
 import ActionButton from '../comps/ActionButton.vue';
+import { moviePlaceholder, resolveMediaUrl } from '../utils/media';
 export default {
   props: {
     user: {
@@ -36,6 +37,16 @@ export default {
     chosenSeats: []
   }),
   computed: {
+    backgroundImage () {
+      const image = this.movieSession.movie?.image;
+
+      return [
+        'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%)',
+        `url("${resolveMediaUrl(image)}")`,
+        `url("${moviePlaceholder}")`
+      ].join(', ');
+    },
+
     formattedTime () {
       return moment(this.movieSession.show_time).format('HH:mm');
     },
@@ -68,7 +79,7 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
@@ -95,7 +106,7 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
+      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets },
         config
       );
       this.fetchMovieSession(this.movieSession.id);
