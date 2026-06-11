@@ -1,3 +1,5 @@
-venv/
-python-version
-.env
+.git
+.gitignore
+.venv
+venv
+__pycache__
