@@ -9,7 +9,7 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
-      - ./backend/media:/vol/web/media
+      - ./backend/media:/app/media
     command: >
       sh -c "python manage.py wait_for_db &&
              python manage.py migrate &&
@@ -18,6 +18,16 @@ services:
       - .env
     depends_on:
       - db
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - app
 
   db:
     image: postgres:14-alpine
