@@ -6,8 +6,7 @@
       v-model="value"
       @input="$emit('input', value)"
       :placeholder="placeholder"
-      type="text"
-      :pattern="pattern"
+      type="email"
       ref="inputEl"/>
     </div>
   </div>
