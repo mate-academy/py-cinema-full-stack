@@ -185,5 +185,5 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    str(os.getenv("VITE_API_URL"))
+    "http://localhost:5173",
 ]
