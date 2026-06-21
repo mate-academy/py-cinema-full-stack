@@ -6,6 +6,8 @@ import VCalendar from 'v-calendar';
 
 import './assets/main.css';
 
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+
 Vue.use(VueAxios, axios);
 Vue.use(VCalendar);
 
