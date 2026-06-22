@@ -23,6 +23,7 @@
 
 <script>
 import axios from 'axios';
+import { API_URL } from '../env.js';
 
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
@@ -49,7 +50,7 @@ export default {
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await axios.get(`${API_URL}/api/cinema/actors`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors;
@@ -68,7 +69,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
+                  `${API_URL}/api/cinema/actors`,
           {
             first_name: this.firstName,
             last_name: this.lastName
