@@ -16,6 +16,7 @@
 
 <script>
 import axios from 'axios';
+import { API_URL } from '../env.js';
 
 import DatePicker from '../comps/DatePicker.vue';
 import ActionButton from '../comps/ActionButton.vue';
@@ -57,7 +58,7 @@ export default {
 
     async fetchMovies () {
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get(`${API_URL}/api/cinema/movies`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
@@ -70,7 +71,7 @@ export default {
 
     async fetchCinemaHalls () {
       try {
-        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
+        const { data: cinemaHalls } = await this.axios.get(`${API_URL}/api/cinema/cinema_halls`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
@@ -95,7 +96,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`,
+                  `${API_URL}/api/cinema/movie_sessions`,
           {
             movie: this.selectedMovieId,
             cinema_hall: this.selectedHallId,

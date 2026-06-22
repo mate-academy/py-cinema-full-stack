@@ -30,6 +30,7 @@ import InputItem from '../comps/InputItem.vue';
 import ImageUploader from '../comps/ImageUploader.vue';
 
 import axios from 'axios';
+import { API_URL } from '../env.js';
 
 export default {
   props: {
@@ -61,7 +62,7 @@ export default {
 
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await this.axios.get(`${API_URL}/api/cinema/actors`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
@@ -78,7 +79,7 @@ export default {
 
     async fetchGenres () {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await this.axios.get(`${API_URL}/api/cinema/genres`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
@@ -107,7 +108,7 @@ export default {
         };
 
         const { data: movie } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movies`,
+                  `${API_URL}/api/cinema/movies`,
           {
             title: this.title,
             duration: Number(this.duration),
