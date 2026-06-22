@@ -30,6 +30,7 @@
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
 import PasswordInput from '../comps/PasswordInput.vue';
+import { apiUrl } from '../api';
 
 export default {
   props: {
@@ -68,7 +69,7 @@ export default {
       if (this.password) body.password = this.password;
 
       try {
-        const { data } = await this.axios.patch(`${import.meta.env.VITE_API_URL}/api/user/me`, body, config);
+        const { data } = await this.axios.patch(apiUrl('/api/user/me/'), body, config);
         this.success = !!data;
 
         this.email = '';

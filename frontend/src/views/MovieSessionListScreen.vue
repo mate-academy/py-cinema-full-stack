@@ -23,6 +23,7 @@
 import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
 import DatePicker from '../comps/DatePicker.vue';
+import { apiUrl } from '../api';
 
 import moment from 'moment';
 
@@ -46,14 +47,17 @@ export default {
     movieSessionsGroupedByTime () {
       return this.movieSessions.reduce((modifiedArr, item) => {
         const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
+        const sessionTime = {
+          id: item.id,
+          show_time: item.show_time
+        };
+
         if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
+          modifiedArr[movieIndex].times.push(sessionTime);
         } else {
-          const showTime = item.show_time;
-          delete item.show_time;
           const modifiedItem = {
             ...item,
-            times: [showTime]
+            times: [sessionTime]
           };
           modifiedArr.push(modifiedItem);
         }
@@ -85,7 +89,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(apiUrl('/api/cinema/movie_sessions/'), {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date

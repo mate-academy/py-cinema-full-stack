@@ -27,6 +27,7 @@ import axios from 'axios';
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+import { apiUrl } from '../api';
 export default {
   props: {
     isStaff: {
@@ -49,7 +50,7 @@ export default {
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await axios.get(apiUrl('/api/cinema/actors/'), {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors;
@@ -68,7 +69,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
+          apiUrl('/api/cinema/actors/'),
           {
             first_name: this.firstName,
             last_name: this.lastName

@@ -38,6 +38,7 @@ import MovieSessionDetailsScreen from './views/MovieSessionDetailsScreen.vue';
 import OrderListScreen from './views/OrderListScreen.vue';
 import ProfileScreen from './views/ProfileScreen.vue';
 import SignUp from './views/SignUp.vue';
+import { apiUrl } from './api';
 
 export default {
   data: () => ({
@@ -76,7 +77,7 @@ export default {
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
+        const { data: user } = await this.axios.get(apiUrl('/api/user/me/'),
           { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
@@ -87,7 +88,7 @@ export default {
 
     async refreshToken () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
+        const { data } = await this.axios.post(apiUrl('/api/user/token/refresh/'), {
           refresh: localStorage.getItem('refresh')
         });
 
