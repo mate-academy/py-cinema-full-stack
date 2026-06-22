@@ -39,6 +39,7 @@
 
 <script>
 import moment from 'moment';
+import { apiUrl } from '../api';
 
 export default {
   data: () => ({
@@ -57,7 +58,7 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(apiUrl('/api/cinema/orders/'), {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
@@ -68,7 +69,7 @@ export default {
 
     async fetchPrevious () {
       try {
-        const { data: response } = await this.axios.get(this.response.previous, {
+        const { data: response } = await this.axios.get(apiUrl(this.response.previous), {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
@@ -79,7 +80,7 @@ export default {
 
     async fetchNext () {
       try {
-        const { data: response } = await this.axios.get(this.response.next, {
+        const { data: response } = await this.axios.get(apiUrl(this.response.next), {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
