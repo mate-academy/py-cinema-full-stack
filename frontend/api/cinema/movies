@@ -8,7 +8,7 @@
         "actors": [
             "Jim Carrey"
         ],
-        "image": "media/uploads/movies/ace-ventura.jpg"
+        "image": "http://127.0.0.1:8000/media/uploads/movies/ace-ventura-1fb4191a-15ee-4280-bb8e-252b56345675.jpeg"
     },
     {
         "id": 2,
