@@ -71,7 +71,7 @@ export default {
     },
 
     handleMovieSessionDetails (sessionId) {
-      location.hash = `#/movie-sessions/${sessionId}`;
+      location.hash = `#/movie-sessions/${sessionId}/`;
     },
 
     handleMovieCreate () {

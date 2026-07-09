@@ -56,7 +56,7 @@ export default {
   },
   computed: {
     formattedTime () {
-      return this.times.map(time => moment(time).format('HH:mm'));
+      return this.times.map(time => moment.utc(time).local().format('HH:mm'));
     }
   }
 
