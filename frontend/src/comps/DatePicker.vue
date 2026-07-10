@@ -25,15 +25,24 @@ export default {
   data: () => ({
     date: new Date()
   }),
+
   computed: {
     maxDate () {
       const date = new Date();
-      return date.setDate(date.getDate() + 7);
+      date.setDate(date.getDate() + 7);
+      return date;
     }
   },
+
   watch: {
     date (value) {
-      this.$emit('input', moment(value).format('YYYY-MM-DD'));
+      const selectedDate = moment(value);
+
+      if (!selectedDate.isValid()) {
+        return;
+      }
+
+      this.$emit('input', selectedDate.format('YYYY-MM-DD'));
     }
   }
 };
