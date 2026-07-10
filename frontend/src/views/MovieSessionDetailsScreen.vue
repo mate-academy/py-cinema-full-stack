@@ -37,10 +37,10 @@ export default {
   }),
   computed: {
     formattedTime () {
-      return moment(this.movieSession.show_time).format('HH:mm');
+      return moment.utc(this.movieSession.show_time).local().format('HH:mm');
     },
     formattedDate () {
-      return moment(this.movieSession.show_time).format('YYYY/MM/DD');
+      return moment.utc(this.movieSession.show_time).local().format('YYYY/MM/DD');
     },
     token () {
       return localStorage.getItem('access');
@@ -68,7 +68,7 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
@@ -95,7 +95,7 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
+      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets },
         config
       );
       this.fetchMovieSession(this.movieSession.id);
