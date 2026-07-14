@@ -171,5 +171,3 @@ View and update the current user's data.
 
 - `GET /api/user/me/`
 - `PATCH /api/user/me/`
-
-![Profile](screenshots/profile.png)
