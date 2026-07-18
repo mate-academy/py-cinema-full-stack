@@ -32,14 +32,14 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
 
         const { access, refresh } = data;
 
-        localStorage.setItem('access', access);
+        localStorage.setItem('access', access); 
         localStorage.setItem('refresh', refresh);
 
         this.$emit('log-in');
