@@ -6,6 +6,14 @@ import VCalendar from 'v-calendar';
 
 import './assets/main.css';
 
+axios.defaults.baseURL = 'http://localhost:8000';
+axios.interceptors.request.use((config) => {
+  if (!config.url.endsWith('/')) {
+    config.url += '/';
+  }
+  return config;
+});
+
 Vue.use(VueAxios, axios);
 Vue.use(VCalendar);
 

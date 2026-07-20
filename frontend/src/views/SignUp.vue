@@ -6,7 +6,7 @@
     here if you are registered yet.</h2>
     <input-item
       label="Email"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+      pattern="\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+"
       placeholder="Email"
       v-model="email"></input-item>
     <password-input v-model="password"></password-input>

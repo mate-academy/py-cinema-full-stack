@@ -7,8 +7,11 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
+from django.views.generic import RedirectView
+
 
 urlpatterns = [
+    path("", RedirectView.as_view(url="/api/cinema/", permanent=False), name="index"),
     path("admin/", admin.site.urls),
     path("api/cinema/", include("cinema.urls", namespace="cinema")),
     path("api/user/", include("user.urls", namespace="user")),
