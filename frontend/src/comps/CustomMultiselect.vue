@@ -1,25 +1,41 @@
 <template>
   <div
-    :class="['multiselect', shownOptions && 'active']"
-    @click="showOptions"
-    @mousedown.prevent>
-    <div class="label">{{label}}</div>
+    ref="multiselectRef"
+    :class="['multiselect', { active: shownOptions }]"
+    @click="toggleOptions"
+    @mousedown.prevent
+  >
+    <div class="label">{{ label }}</div>
     <div class="selected">
       <div class="selected-container">
-        <span v-for="(option, index) in selectedOptions" :key="index">{{option.name}}</span>
+        <span
+          v-for="option in selectedOptions"
+          :key="option.id"
+        >{{ option.name }}</span>
       </div>
-      <div :class="['arrow', shownOptions && 'toggled']" @click="showOptions" @mousedown.prevent>
-        <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <div :class="['arrow', { toggled: shownOptions }]">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <use href="/assets/icons/arrow.svg#arrow"></use>
         </svg>
       </div>
     </div>
-    <div v-if="shownOptions" class="options-container">
-      <div v-for="(option, index) in options" :key="index" class="option">
-        <span>{{option.name}}</span>
+    <div v-if="shownOptions" class="options-container" @click.stop>
+      <div
+        v-for="option in options"
+        :key="option.id"
+        class="option"
+        @click="handleOptionSelect(option)"
+      >
+        <span>{{ option.name }}</span>
         <checkbox-item
-          @input="handleOptionSelect(option)"
-          :checked="!!selectedOptions.find(selected => selected.id === option.id)"
+          class="checkbox-disabled-events"
+          :checked="isOptionSelected(option.id)"
         ></checkbox-item>
       </div>
     </div>
@@ -30,10 +46,8 @@
 import CheckboxItem from './CheckboxItem.vue';
 
 export default {
-  data: () => ({
-    selectedOptions: [],
-    shownOptions: false
-  }),
+  name: 'CustomMultiselect',
+  components: { CheckboxItem },
   props: {
     label: {
       type: String,
@@ -44,33 +58,56 @@ export default {
       default: () => []
     }
   },
+  data: () => ({
+    selectedOptions: [],
+    shownOptions: false
+  }),
   methods: {
-    showOptions () {
-      this.$emit('click');
+    toggleOptions () {
       this.shownOptions = !this.shownOptions;
     },
+
+    isOptionSelected (id) {
+      return this.selectedOptions.some(opt => opt.id === id);
+    },
+
     handleOptionSelect (option) {
-      const selected = this.selectedOptions.find(opt => opt.id === option.id);
-      if (selected) {
-        this.selectedOptions = [...this.selectedOptions.filter(opt => opt.id !== option.id)];
+      const isSelected = this.isOptionSelected(option.id);
+
+      if (isSelected) {
+        this.selectedOptions = this.selectedOptions.filter(opt => opt.id !== option.id);
       } else {
         this.selectedOptions.push(option);
       }
 
       this.$emit('option-selected', option.id);
+    },
+
+    clickOutsideHandler (evt) {
+      if (this.shownOptions && this.$refs.multiselectRef && !this.$refs.multiselectRef.contains(evt.target)) {
+        this.shownOptions = false;
+      }
     }
   },
-  components: { CheckboxItem }
+  mounted () {
+    document.addEventListener('click', this.clickOutsideHandler);
+  },
+  beforeDestroy () {
+    document.removeEventListener('click', this.clickOutsideHandler);
+  }
 };
 </script>
 
 <style scoped>
 .multiselect {
   width: 100%;
+  position: relative;
   z-index: 1;
+  cursor: pointer;
 }
+
 .active {
-  z-index: 2;
+  z-index: 10;
 }
 
 .label {
@@ -92,6 +129,7 @@ export default {
   position: relative;
   border: 1px solid transparent;
 }
+
 .active .selected {
   border-color: var(--border);
 }
@@ -112,7 +150,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .arrow.toggled {
@@ -128,6 +166,9 @@ export default {
   border-radius: 10px;
   margin-top: 12px;
   position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 20;
 }
 
 .options-container::-webkit-scrollbar {
@@ -148,4 +189,8 @@ export default {
   background-color: #400000;
 }
 
+/* Вимикаємо обробку подій миші на чекбоксі, щоб подію обробляв тільки .option */
+.checkbox-disabled-events {
+  pointer-events: none;
+}
 </style>
