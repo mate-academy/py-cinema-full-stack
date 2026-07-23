@@ -10,7 +10,9 @@ from cinema.views import (
     OrderViewSet,
 )
 
-router = routers.DefaultRouter()
+# Додаємо trailing_slash=False
+router = routers.DefaultRouter(trailing_slash=False)
+
 router.register("genres", GenreViewSet)
 router.register("actors", ActorViewSet)
 router.register("cinema_halls", CinemaHallViewSet)
