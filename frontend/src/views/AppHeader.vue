@@ -2,19 +2,37 @@
   <div class="header">
     <a class="app-title" href="/">Cinema Shop</a>
     <div class="menu">
-      <a href='#/movie-sessions' :class="activeTab === 'movie-sessions' && 'active'">Movie Sessions</a>
-      <a href='#/cinema-halls' v-if="user.is_staff" :class="activeTab === 'cinema-halls' && 'active'">Cinema Halls</a>
-      <a href='#/movies' :class="activeTab.match(/(movies|^$)/) && 'active'">Movies</a>
-      <a href='#/genres' v-if="user.is_staff" :class="activeTab === 'genres' && 'active'">Genres</a>
-      <a href='#/actors' v-if="user.is_staff" :class="activeTab === 'actors' && 'active'">Actors</a>
+      <a
+        href="#/movie-sessions"
+        :class="{ active: activeTab === 'movie-sessions' }"
+      >Movie Sessions</a>
+      <a
+        href="#/cinema-halls"
+        v-if="user && user.is_staff"
+        :class="{ active: activeTab === 'cinema-halls' }"
+      >Cinema Halls</a>
+      <a
+        href="#/movies"
+        :class="{ active: isMoviesActive }"
+      >Movies</a>
+      <a
+        href="#/genres"
+        v-if="user && user.is_staff"
+        :class="{ active: activeTab === 'genres' }"
+      >Genres</a>
+      <a
+        href="#/actors"
+        v-if="user && user.is_staff"
+        :class="{ active: activeTab === 'actors' }"
+      >Actors</a>
     </div>
     <div class="action-section">
       <div class="profile-section">
-        <a class="username" @click="showPopup = !showPopup">{{user.email}}</a>
+        <a class="username" @click="showPopup = !showPopup">{{ user ? user.email : '' }}</a>
         <header-popup
+          v-if="showPopup"
           @openProfile="openProfile"
           @openOrders="openOrders"
-          :class="!showPopup && 'hidden'"
         ></header-popup>
       </div>
       <action-button
@@ -30,6 +48,7 @@
 <script>
 import ActionButton from '../comps/ActionButton.vue';
 import HeaderPopup from '../comps/HeaderPopup.vue';
+
 export default {
   data: () => ({
     activeTab: 'movies',
@@ -38,13 +57,26 @@ export default {
   props: {
     user: {
       type: Object,
-      default: () => {}
+      default: () => ({
+        is_staff: false,
+        email: ''
+      })
+    }
+  },
+  computed: {
+    isMoviesActive () {
+      return Boolean(this.activeTab && this.activeTab.match(/(movies|^$)/));
     }
   },
   methods: {
     hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
-      this.activeTab = active;
+      const match = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
+
+      if (match && match[1]) {
+        this.activeTab = match[1];
+      } else {
+        this.activeTab = 'movies';
+      }
     },
 
     openProfile () {
@@ -53,26 +85,29 @@ export default {
 
     openOrders () {
       location.hash = '#/my-orders';
-    }
+    },
 
+    clickOutsideHandler (evt) {
+      const profileSectionEl = document.querySelector('.profile-section');
+      if (this.showPopup && profileSectionEl && !profileSectionEl.contains(evt.target)) {
+        this.showPopup = false;
+      }
+    }
   },
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
 
-    const profileSectionEl = document.querySelector('.profile-section');
-    document.addEventListener('click', evt => {
-      if (this.showPopup && !profileSectionEl.contains(evt.target)) this.showPopup = false;
-    });
+    document.addEventListener('click', this.clickOutsideHandler);
   },
   beforeDestroy () {
     window.removeEventListener('hashchange', this.hashHandler);
+    document.removeEventListener('click', this.clickOutsideHandler);
   },
   components: {
     ActionButton,
     HeaderPopup
   }
-
 };
 </script>
 
@@ -90,6 +125,7 @@ export default {
   font-size: 25px;
   line-height: 30px;
   margin-right: 20px;
+  cursor: pointer;
 }
 
 .menu > * {
@@ -98,6 +134,7 @@ export default {
   padding: 10px 22px;
   border-right: 1px solid var(--border);
 }
+
 .menu > *:last-of-type {
   border-right: none;
 }
@@ -117,11 +154,6 @@ a.active,
   justify-content: right;
 }
 
-.app-title,
-.cart {
-  cursor: pointer;
-}
-
 a {
   color: var(--main-font);
   text-decoration: none;
@@ -130,12 +162,10 @@ a {
 a.username {
   padding-bottom: 2px;
   border-bottom: 1px solid transparent;
-}
-a.username:hover {
-  border-color: var(--main-font);
+  cursor: pointer;
 }
 
-.hidden {
-  display: none;
+a.username:hover {
+  border-color: var(--main-font);
 }
 </style>
