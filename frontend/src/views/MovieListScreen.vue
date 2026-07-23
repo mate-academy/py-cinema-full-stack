@@ -1,31 +1,29 @@
 <template>
   <div v-if="active">
-    <div class="multiselections">
+    <div class="multi-selections">
       <custom-multiselect
         label="Select actors"
         :options="actors"
         @option-selected="handleActorSelection"
-        @click="!actors.length && fetchActors()"
       ></custom-multiselect>
       <custom-multiselect
         label="Select genres"
         :options="genres"
         @option-selected="handleGenreSelection"
-        @click="!genres.length && fetchGenres()"
       ></custom-multiselect>
     </div>
     <div class="movie-container">
       <movie-card
-        v-for="(movie, index) in movies"
-        :key="index"
+        v-for="movie in movies"
+        :key="movie.id"
         v-bind="movie"
         @click="handleMovieDetailsClick"
       ></movie-card>
     </div>
     <add-btn
       v-if="isStaff"
-      @click="handleMovieCreate">
-    </add-btn>
+      @click.native="handleMovieCreate"
+    ></add-btn>
   </div>
 </template>
 
@@ -37,6 +35,7 @@ import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
 
 export default {
+  name: 'MovieListScreen',
   props: {
     isStaff: {
       type: Boolean,
@@ -62,15 +61,23 @@ export default {
         const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
-        this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
-          return {
-            id,
-            name: `${firstName} ${lastName}`
-          };
+
+        if (Array.isArray(actors)) {
+          this.actors = actors
+            .filter(actor => actor && typeof actor === 'object')
+            .map(actor => {
+              const firstName = actor.first_name || actor.firstName || '';
+              const lastName = actor.last_name || actor.lastName || '';
+              const fullName = `${firstName} ${lastName}`.trim();
+
+              return {
+                id: actor.id,
+                name: fullName || 'Unknown Actor'
+              };
+            });
         }
-        ); ;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err?.response?.data || err);
       }
     },
 
@@ -79,9 +86,9 @@ export default {
         const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
-        this.genres = genres;
+        this.genres = Array.isArray(genres) ? genres : [];
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err?.response?.data || err);
       }
     },
 
@@ -96,23 +103,23 @@ export default {
           params
         });
 
-        this.movies = movies;
+        this.movies = Array.isArray(movies) ? movies : [];
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err?.response?.data || err);
       }
     },
 
     dispatchActorSelection: debounce(function () {
       this.fetchMovies();
-    }, 1000),
+    }, 300),
 
     dispatchGenreSelection: debounce(function () {
       this.fetchMovies();
-    }, 1000),
+    }, 300),
 
     handleActorSelection (id) {
       if (this.selectedActorIds.includes(id)) {
-        this.selectedActorIds = [...this.selectedActorIds.filter(actorId => actorId !== id)];
+        this.selectedActorIds = this.selectedActorIds.filter(actorId => actorId !== id);
       } else {
         this.selectedActorIds.push(id);
       }
@@ -122,7 +129,7 @@ export default {
 
     handleGenreSelection (id) {
       if (this.selectedGenreIds.includes(id)) {
-        this.selectedGenreIds = [...this.selectedGenreIds.filter(genreId => genreId !== id)];
+        this.selectedGenreIds = this.selectedGenreIds.filter(genreId => genreId !== id);
       } else {
         this.selectedGenreIds.push(id);
       }
@@ -130,9 +137,10 @@ export default {
     },
 
     hashHandler () {
-      this.active = Boolean(
-        !location.hash || location.hash.match('movies$') ||
-         location.hash.match(/#\/movies\/(\d+)/) || location.hash.match('/$'));
+      const isAdding = location.hash.includes('add=true');
+      const isDetails = Boolean(location.hash.match(/#\/movies\/\d+/));
+      const isMoviePage = !location.hash || location.hash.includes('#/movies') || location.hash === '#/';
+      this.active = isMoviePage && !isAdding && !isDetails;
     },
 
     handleMovieDetailsClick (id) {
@@ -146,6 +154,10 @@ export default {
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
+
+    this.fetchActors();
+    this.fetchGenres();
+    this.fetchMovies();
   },
   watch: {
     active () {
@@ -166,7 +178,7 @@ export default {
 </script>
 
 <style scoped>
-.multiselections {
+.multi-selections {
   display: flex;
   gap: 100px;
 }
