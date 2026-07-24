@@ -32,7 +32,7 @@ import ActionButton from '../comps/ActionButton.vue';
 import HeaderPopup from '../comps/HeaderPopup.vue';
 export default {
   data: () => ({
-    activeTab: 'movies',
+    activeTab: '',
     showPopup: false
   }),
   props: {
@@ -42,11 +42,13 @@ export default {
     }
   },
   methods: {
-    hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
-      this.activeTab = active;
-    },
 
+    hashHandler () {
+      const match = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
+      const [, active] = match ? ['', ''] : [];
+      this.activeTab = active || '';
+    },
+    
     openProfile () {
       location.hash = '#/my-profile';
     },
