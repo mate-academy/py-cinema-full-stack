@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -67,7 +67,14 @@ class MovieViewSet(
 ):
     queryset = Movie.objects.prefetch_related("genres", "actors")
     serializer_class = MovieSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_permissions(self):
+        """Allows anyone to view movies, but enforces restrictions for actions"""
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+        if self.action == "upload_image":
+            return [IsAdminUser()]
+        return [IsAdminOrIfAuthenticatedReadOnly()]
 
     @staticmethod
     def _params_to_ints(qs):
@@ -111,7 +118,6 @@ class MovieViewSet(
         methods=["POST"],
         detail=True,
         url_path="upload-image",
-        permission_classes=[IsAdminUser],
     )
     def upload_image(self, request, pk=None):
         """Endpoint for uploading image to specific movie"""
@@ -150,13 +156,6 @@ class MovieViewSet(
 class MovieSessionViewSet(viewsets.ModelViewSet):
     queryset = (
         MovieSession.objects.all()
-        .select_related("movie", "cinema_hall")
-        .annotate(
-            tickets_available=(
-                F("cinema_hall__rows") * F("cinema_hall__seats_in_row")
-                - Count("tickets")
-            )
-        )
     )
     serializer_class = MovieSessionSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -166,6 +165,18 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         movie_id_str = self.request.query_params.get("movie")
 
         queryset = self.queryset
+
+        # Apply specific performance optimizations based on the action
+        if self.action in ("list", "retrieve"):
+            queryset = (
+                queryset.select_related("movie", "cinema_hall")
+                .annotate(
+                    tickets_available=(
+                        F("cinema_hall__rows") * F("cinema_hall__seats_in_row")
+                        - Count("tickets")
+                    )
+                )
+            )
 
         if date:
             date = datetime.strptime(date, "%Y-%m-%d").date()
@@ -224,7 +235,8 @@ class OrderViewSet(
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        # Fix: Now correctly filters self.queryset to retain prefetch optimization
+        return self.queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "list":
