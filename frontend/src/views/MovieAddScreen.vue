@@ -125,6 +125,7 @@ export default {
           `${import.meta.env.VITE_API_URL}/api/cinema/movies/${movie.id}/upload-image`,
           data,
           imageConfig
+        );
         }
 
         location.hash = '#/movies';
