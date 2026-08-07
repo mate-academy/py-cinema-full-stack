@@ -1,10 +1,18 @@
-# Cinema Fullstack
-
-- Read [the guideline](https://github.com/mate-academy/py-task-guideline/blob/main/README.md) before start
-
-## Task:
-
-You already have Backend and Frontend implemented.
-You need to connect them together, and make sure all functionality of Cinema Shop works.
-
-NOTE: Attach screenshots of all pages from the correctly connected frontend. Better to make them with opened developer tool, where will be shown requests to the API.
+![Знімок екрана 2026-08-07 172855.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20172855.png)
+![Знімок екрана 2026-08-07 172925.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20172925.png)
+![Знімок екрана 2026-08-07 173120.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173120.png)
+![Знімок екрана 2026-08-07 173126.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173126.png)
+![Знімок екрана 2026-08-07 173632.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173632.png)
+![Знімок екрана 2026-08-07 173640.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173640.png)
+![Знімок екрана 2026-08-07 173747.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173747.png)
+![Знімок екрана 2026-08-07 173824.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173824.png)
+![Знімок екрана 2026-08-07 173829.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173829.png)
+![Знімок екрана 2026-08-07 173834.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173834.png)
+![Знімок екрана 2026-08-07 173841.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173841.png)
+![Знімок екрана 2026-08-07 173846.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173846.png)
+![Знімок екрана 2026-08-07 173852.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173852.png)
+![Знімок екрана 2026-08-07 173859.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20173859.png)
+![Знімок екрана 2026-08-07 174108.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20174108.png)
+![Знімок екрана 2026-08-07 174112.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20174112.png)
+![Знімок екрана 2026-08-07 174131.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20174131.png)
+![Знімок екрана 2026-08-07 174136.png](file-media/%D0%97%D0%BD%D1%96%D0%BC%D0%BE%D0%BA%20%D0%B5%D0%BA%D1%80%D0%B0%D0%BD%D0%B0%202026-08-07%20174136.png)
