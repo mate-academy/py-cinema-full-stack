@@ -17,4 +17,28 @@ NOTE: Attach screenshots of all pages from the correctly connected frontend. Bet
 
 ![Actors list](solution/image3.png)
 
+![Add a movie](solution/image4.png)
+
+![Add a movie](solution/image5.png)
+
+![Add a movie](solution/image6.png)
+
+![Add a movie](solution/image7.png)
+
+![Add a movie](solution/image8.png)
+
+![Add a movie](solution/image9.png)
+
+![Add a movie](solution/image10.png)
+
+![Add a movie](solution/image11.png)
+
+![Add a movie](solution/image12.png)
+
+![Add a movie](solution/image13.png)
+
+![Add a movie](solution/image14.png)
+
+![Add a movie](solution/image15.png)
+
 ![Add a movie](solution/image.png)
