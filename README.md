@@ -26,21 +26,3 @@ pip install -r requirements.txt
 python backend/manage.py migrate
 python backend/manage.py runserver 8080
 ```
-
-## Connected frontend screenshots
-
-| Page | Screenshot |
-| --- | --- |
-| Sign in | ![Sign in](screenshots/sign-in.png) |
-| Sign up | ![Sign up](screenshots/sign-up.png) |
-| Movies | ![Movies](screenshots/movies.png) |
-| Movie details | ![Movie details](screenshots/movie-details.png) |
-| Movie sessions | ![Movie sessions](screenshots/movie-sessions.png) |
-| Cinema halls | ![Cinema halls](screenshots/cinema-halls.png) |
-| Genres | ![Genres](screenshots/genres.png) |
-| Actors | ![Actors](screenshots/actors.png) |
-| Profile | ![Profile](screenshots/profile.png) |
-| Orders | ![Orders](screenshots/orders.png) |
-| Add movie | ![Add movie](screenshots/add-movie.png) |
-| Add movie session | ![Add movie session](screenshots/add-session.png) |
-| Add cinema hall | ![Add cinema hall](screenshots/add-hall.png) |
