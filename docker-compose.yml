@@ -19,6 +19,17 @@ services:
     depends_on:
       - db
 
+  frontend:
+    image: node:22-alpine
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - app
+
   db:
     image: postgres:14-alpine
     ports:
