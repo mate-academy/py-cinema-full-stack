@@ -30,8 +30,4 @@
     "terser": "^5.14.2",
     "vite": "^3.0.2"
   },
-  "allowScripts": {
-    "core-js@3.26.0": true,
-    "esbuild@0.15.13": true
-  }
 }
