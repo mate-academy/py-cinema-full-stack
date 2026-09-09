@@ -10,6 +10,7 @@ export default defineConfig({
     vue2(),
     legacy({
       targets: ['ie >= 11'],
+      target: 'esnext',
       additionalLegacyPolyfills: ['regenerator-runtime/runtime']
     })
   ],
