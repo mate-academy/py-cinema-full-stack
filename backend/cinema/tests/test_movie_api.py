@@ -315,6 +315,16 @@ class MovieImageUploadTests(TestCase):
 
         self.assertIn("movie_image", res.data[0].keys())
 
+    def test_missing_movie_image_is_returned_as_null(self):
+        self.movie.image.name = "uploads/movies/missing-image.jpg"
+        self.movie.save(update_fields=["image"])
+
+        detail_res = self.client.get(detail_url(self.movie.id))
+        list_res = self.client.get(MOVIE_URL)
+
+        self.assertIsNone(detail_res.data["image"])
+        self.assertIsNone(list_res.data[0]["image"])
+
     def test_put_movie_not_allowed(self):
         payload = {
             "title": "New movie",

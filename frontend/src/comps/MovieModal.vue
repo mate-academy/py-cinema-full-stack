@@ -7,7 +7,7 @@
       </svg>
     </div>
     <div class="info-container">
-      <img :src="movie.image" :class="[!movie.image && 'absent']"/>
+      <img :src="movie.image || '/assets/movie-placeholder.svg'" :class="[!movie.image && 'absent']"/>
       <div class="info">
         <div class="movie-title">{{movie.title}}</div>
         <div class="container">
