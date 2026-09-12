@@ -25,6 +25,7 @@ import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
 import DatePicker from '../comps/DatePicker.vue';
 import { groupSessionsByMovie } from '../utils/sessionGrouping';
+import { getErrorMessage } from '../utils/errorMessage';
 
 import moment from 'moment';
 
@@ -83,16 +84,9 @@ export default {
 
         this.movieSessions = movieSessions;
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to load movie sessions.');
+        this.error = getErrorMessage(err, 'Unable to load movie sessions.');
       }
     },
-
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
-    }
 
   },
   async mounted () {

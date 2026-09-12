@@ -19,6 +19,7 @@ import axios from 'axios';
 
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 
 export default {
   props: {
@@ -74,16 +75,9 @@ export default {
 
         location.hash = '#/cinema-halls';
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to create the cinema hall.');
+        this.error = getErrorMessage(err, 'Unable to create the cinema hall.');
       }
     },
-
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
-    }
 
   },
   mounted () {

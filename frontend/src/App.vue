@@ -22,6 +22,7 @@
 
 <script>
 import jwtDecode from 'jwt-decode';
+import { getErrorMessage } from './utils/errorMessage';
 
 import SignIn from './views/SignIn.vue';
 import MovieListScreen from './views/MovieListScreen.vue';
@@ -84,7 +85,7 @@ export default {
 
         this.user = user;
       } catch (err) {
-        this.authError = this.getErrorMessage(err, 'Unable to load your profile.');
+        this.authError = getErrorMessage(err, 'Unable to load your profile.');
         this.logOut();
       }
     },
@@ -101,17 +102,11 @@ export default {
         localStorage.setItem('refresh', refresh);
         this.logIn();
       } catch (err) {
-        this.authError = this.getErrorMessage(err, 'Your session has expired. Please sign in again.');
+        this.authError = getErrorMessage(err, 'Your session has expired. Please sign in again.');
         this.logOut();
       }
     },
 
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
-    }
   },
   created () {
     this.logIn();

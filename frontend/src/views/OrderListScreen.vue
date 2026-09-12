@@ -42,6 +42,7 @@
 
 <script>
 import moment from 'moment';
+import { getErrorMessage } from '../utils/errorMessage';
 
 export default {
   data: () => ({
@@ -76,7 +77,7 @@ export default {
         });
         this.response = response;
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to load orders.');
+        this.error = getErrorMessage(err, 'Unable to load orders.');
       } finally {
         this.loading = false;
       }
@@ -90,7 +91,7 @@ export default {
         });
         this.response = response;
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to load previous orders.');
+        this.error = getErrorMessage(err, 'Unable to load previous orders.');
       }
     },
 
@@ -102,7 +103,7 @@ export default {
         });
         this.response = response;
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to load more orders.');
+        this.error = getErrorMessage(err, 'Unable to load more orders.');
       }
     },
 
@@ -114,12 +115,6 @@ export default {
       return moment(time).format('YYYY/MM/DD h:mm');
     },
 
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
-    }
   },
   watch: {
     active (value) {

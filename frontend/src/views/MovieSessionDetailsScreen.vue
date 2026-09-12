@@ -26,6 +26,7 @@ import moment from 'moment';
 
 import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
 import ActionButton from '../comps/ActionButton.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 export default {
   props: {
     user: {
@@ -87,7 +88,7 @@ export default {
         this.movieSession = session;
         this.loading = false;
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to load this session.');
+        this.error = getErrorMessage(err, 'Unable to load this session.');
         this.loading = false;
       }
     },
@@ -114,16 +115,10 @@ export default {
         await this.fetchMovieSession(this.movieSession.id);
         this.chosenSeats = [];
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to create the order. The seats may have just been booked.');
+        this.error = getErrorMessage(err, 'Unable to create the order. The seats may have just been booked.');
       }
     },
 
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
-    }
   },
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);

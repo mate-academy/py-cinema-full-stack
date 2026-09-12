@@ -22,6 +22,7 @@ import DatePicker from '../comps/DatePicker.vue';
 import ActionButton from '../comps/ActionButton.vue';
 import TimePicker from '../comps/TimePicker.vue';
 import CustomSelect from '../comps/CustomSelect.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 
 export default {
   props: {
@@ -114,7 +115,7 @@ export default {
 
         location.hash = '#/movie-sessions';
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to create the movie session.');
+        this.error = getErrorMessage(err, 'Unable to create the movie session.');
       }
     },
 
@@ -125,13 +126,6 @@ export default {
     handleHallSelection (hallId) {
       this.selectedHallId = hallId;
     },
-
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
-    }
 
   },
   watch: {

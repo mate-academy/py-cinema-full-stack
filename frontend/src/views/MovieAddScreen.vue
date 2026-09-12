@@ -29,6 +29,7 @@ import ActionButton from '../comps/ActionButton.vue';
 import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import InputItem from '../comps/InputItem.vue';
 import ImageUploader from '../comps/ImageUploader.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 
 import axios from 'axios';
 
@@ -129,15 +130,8 @@ export default {
 
         location.hash = '#/movies';
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to create the movie.');
+        this.error = getErrorMessage(err, 'Unable to create the movie.');
       }
-    },
-
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
     },
 
     handleActorSelection (id) {
