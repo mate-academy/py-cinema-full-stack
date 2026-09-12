@@ -6,7 +6,7 @@
     width === 'normal' && 'normal',
     disabled && 'disabled'
   ]"
-  @click="$emit('click')"
+  @click="!disabled && $emit('click')"
   >{{label}}</div>
 </template>
 

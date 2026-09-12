@@ -9,7 +9,8 @@
         <input-item label="Number of seats in row" v-model="countSeatsInRow" width="narrow"></input-item>
       </div>
     </div>
-    <action-button label="Submit" @click="addCinemaHall" :disabled="!name || !countRows || !countSeatsInRow"></action-button>
+    <div v-if="error" class="error">{{ error }}</div>
+    <action-button label="Submit" @click="addCinemaHall" :disabled="!isValid"></action-button>
   </div>
 </template>
 
@@ -30,11 +31,20 @@ export default {
     active: false,
     name: '',
     countRows: 1,
-    countSeatsInRow: 1
+    countSeatsInRow: 1,
+    error: ''
   }),
   computed: {
     token () {
       return localStorage.getItem('access');
+    },
+
+    isValid () {
+      return Boolean(
+        this.name.trim() &&
+        Number.isInteger(Number(this.countRows)) && Number(this.countRows) > 0 &&
+        Number.isInteger(Number(this.countSeatsInRow)) && Number(this.countSeatsInRow) > 0
+      );
     }
   },
   methods: {
@@ -43,6 +53,7 @@ export default {
     },
 
     async addCinemaHall () {
+      this.error = '';
       try {
         const config = {
           headers: {
@@ -63,8 +74,15 @@ export default {
 
         location.hash = '#/cinema-halls';
       } catch (err) {
-        console.error(err);
+        this.error = this.getErrorMessage(err, 'Unable to create the cinema hall.');
       }
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     }
 
   },
@@ -116,5 +134,9 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 60px;
+}
+
+.error {
+  color: var(--red);
 }
 </style>

@@ -10,7 +10,8 @@
         <time-picker v-model="time"></time-picker>
       </div>
     </div>
-    <action-button label="Submit" @click="addMovieSession" :disabled="!selectedHallId || !selectedMovieId"></action-button>
+    <div v-if="error" class="error">{{ error }}</div>
+    <action-button label="Submit" @click="addMovieSession" :disabled="!selectedHallId || !selectedMovieId || !isValidSchedule"></action-button>
   </div>
 </template>
 
@@ -36,7 +37,8 @@ export default {
     date: new Date(),
     time: new Date(),
     selectedMovieId: null,
-    selectedHallId: null
+    selectedHallId: null,
+    error: ''
   }),
   computed: {
     movieOptions () {
@@ -48,6 +50,12 @@ export default {
 
     token () {
       return localStorage.getItem('access');
+    },
+
+    isValidSchedule () {
+      const date = new Date(this.date);
+      date.setHours(this.time.getHours(), this.time.getMinutes(), 0, 0);
+      return date.getTime() > Date.now();
     }
   },
   methods: {
@@ -106,7 +114,7 @@ export default {
 
         location.hash = '#/movie-sessions';
       } catch (err) {
-        console.error(err);
+        this.error = this.getErrorMessage(err, 'Unable to create the movie session.');
       }
     },
 
@@ -116,6 +124,13 @@ export default {
 
     handleHallSelection (hallId) {
       this.selectedHallId = hallId;
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     }
 
   },
@@ -180,6 +195,10 @@ export default {
 
 .date-container > * {
   width: 255px;
+}
+
+.error {
+  color: var(--red);
 }
 
 </style>

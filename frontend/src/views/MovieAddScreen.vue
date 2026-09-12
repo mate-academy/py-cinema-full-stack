@@ -15,6 +15,7 @@
         </div>
       </div>
     </div>
+    <div v-if="error" class="error">{{ error }}</div>
     <action-button
     label="Submit"
     @click="addMovie"
@@ -47,7 +48,8 @@ export default {
     genres: [],
     selectedActorIds: [],
     selectedGenreIds: [],
-    image: null
+    image: null,
+    error: ''
   }),
   computed: {
     token () {
@@ -88,6 +90,7 @@ export default {
     },
 
     async addMovie () {
+      this.error = '';
       try {
         const headers = {
           Authorization: `Bearer ${this.token}`
@@ -126,8 +129,15 @@ export default {
 
         location.hash = '#/movies';
       } catch (err) {
-        console.error(err);
+        this.error = this.getErrorMessage(err, 'Unable to create the movie.');
       }
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     },
 
     handleActorSelection (id) {
@@ -215,6 +225,10 @@ export default {
   display: flex;
   flex-direction: column;
 }
+.error {
+  color: var(--red);
+}
+
 .description .label {
   font-weight: 600;
   font-size: 18px;
