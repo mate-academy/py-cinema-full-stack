@@ -28,6 +28,7 @@ import axios from 'axios';
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 export default {
   props: {
     isStaff: {
@@ -84,15 +85,8 @@ export default {
         this.firstName = '';
         this.lastName = '';
       } catch (err) {
-        this.error = this.getErrorMessage(err, 'Unable to create the actor.');
+        this.error = getErrorMessage(err, 'Unable to create the actor.');
       }
-    },
-
-    getErrorMessage (err, fallback) {
-      const data = err.response && err.response.data;
-      if (!data) return fallback;
-      if (typeof data === 'string') return data;
-      return Object.values(data).flat().join(' ') || fallback;
     },
 
     hashHandler () {

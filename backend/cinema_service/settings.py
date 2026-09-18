@@ -100,12 +100,10 @@ WSGI_APPLICATION = "cinema_service.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        # Use Docker service settings when provided, otherwise connect to the
-        # PostgreSQL container through its published localhost port.
-        "HOST": os.getenv("POSTGRES_HOST", "127.0.0.1"),
-        "NAME": os.getenv("POSTGRES_DB", "cinema"),
-        "USER": os.getenv("POSTGRES_USER", "cinema"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "cinema"),
+        "HOST": os.environ["POSTGRES_HOST"],
+        "NAME": os.environ["POSTGRES_DB"],
+        "USER": os.environ["POSTGRES_USER"],
+        "PASSWORD": os.environ["POSTGRES_PASSWORD"],
     }
 }
 
