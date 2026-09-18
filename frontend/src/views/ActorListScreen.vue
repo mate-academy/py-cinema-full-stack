@@ -10,14 +10,14 @@
       <div v-if="error" class="error">{{ error }}</div>
       <action-button label="Submit" @click="addActor" :disabled="!firstName.trim() || !lastName.trim()"></action-button>
     </div>
-    <div class="actors">
+    <div class="actors" v-if="!createMode">
       <div class="header">All Actors</div>
       <div class="container">
         <div v-for="(actor, index) in actors" :key="actor.id" :class="index % 2 === 0 ? 'odd' : ''">
           {{actor.first_name}} {{actor.last_name}}
         </div>
       </div>
-      <add-btn @click="createMode = !createMode"></add-btn>
+      <add-btn @click="handleActorCreate"></add-btn>
     </div>
   </div>
 </template>
@@ -79,8 +79,7 @@ export default {
           config
         );
 
-        this.createMode = !this.createMode;
-        this.fetchActors();
+        location.hash = '#/actors';
 
         this.firstName = '';
         this.lastName = '';
@@ -97,7 +96,12 @@ export default {
     },
 
     hashHandler () {
-      this.active = Boolean(location.hash.match('actors$'));
+      this.active = Boolean(location.hash.match(/actors(?:\?add=true)?$/));
+      this.createMode = Boolean(location.hash.match('actors\\?add=true$'));
+    },
+
+    handleActorCreate () {
+      location.hash = '#/actors?add=true';
     }
   },
   watch: {
