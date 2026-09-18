@@ -10,6 +10,7 @@
       placeholder="Email"
       v-model="email"></input-item>
     <password-input v-model="password"></password-input>
+    <div v-if="error" class="error">{{error}}</div>
     <action-button label="Sign up" @click="signUp"></action-button>
   </div>
 </template>
@@ -23,7 +24,8 @@ export default {
   data: () => ({
     active: false,
     email: '',
-    password: ''
+    password: '',
+    error: ''
   }),
   methods: {
     hashHandler () {
@@ -31,6 +33,7 @@ export default {
     },
 
     async signUp () {
+      this.error = '';
       try {
         await this.axios.post('/api/user/register/', {
           email: this.email,
@@ -49,7 +52,8 @@ export default {
 
         this.$emit('log-in');
       } catch (err) {
-        console.error(err.response.data);
+        const data = err.response && err.response.data;
+        this.error = (data && Object.values(data).flat().join(' ')) || 'Unable to create the account.';
       }
     }
   },
@@ -101,5 +105,9 @@ a {
   font-weight: 600;
   cursor: pointer;
   color: var(--main-font);
+}
+
+.error {
+  color: var(--red);
 }
 </style>

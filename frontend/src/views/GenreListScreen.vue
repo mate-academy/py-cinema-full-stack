@@ -4,7 +4,8 @@
       <div class="header">Add Genre</div>
       <div class="note">Please fill in the fields in details</div>
       <input-item label="Genre" width="wide" v-model="name"></input-item>
-      <action-button label="Submit" @click="addGenre"></action-button>
+      <div v-if="error" class="error">{{ error }}</div>
+      <action-button label="Submit" @click="addGenre" :disabled="!name.trim()"></action-button>
     </div>
     <div class="genres">
       <div class="header">All Genres</div>
@@ -35,7 +36,8 @@ export default {
     active: false,
     genres: [],
     createMode: false,
-    name: ''
+    name: '',
+    error: ''
   }),
   computed: {
     token () {
@@ -55,6 +57,7 @@ export default {
     },
 
     async addGenre () {
+      this.error = '';
       try {
         const config = {
           headers: {
@@ -76,8 +79,15 @@ export default {
 
         this.name = '';
       } catch (err) {
-        console.error(err);
+        this.error = this.getErrorMessage(err, 'Unable to create the genre.');
       }
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     },
 
     hashHandler () {
@@ -151,6 +161,10 @@ export default {
 
 .container > .odd {
   background-color: var(--secondary-bg);
+}
+
+.error {
+  color: var(--red);
 }
 
 </style>

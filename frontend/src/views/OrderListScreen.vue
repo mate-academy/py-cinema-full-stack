@@ -2,6 +2,9 @@
   <div v-if="active" class="orders-container">
     <div class="header">My orders</div>
     <div class="container">
+      <div v-if="loading" class="state">Loading orders…</div>
+      <div v-else-if="error" class="state error">{{error}}</div>
+      <div v-else-if="!response.results.length" class="state">No orders yet. Choose a session to book seats.</div>
       <div v-for="order in response.results" :key="order.id" class="order">
         <div class="created-info">
           <div>Id: {{order.id}}.</div>
@@ -43,7 +46,9 @@ import moment from 'moment';
 export default {
   data: () => ({
     active: false,
-    response: []
+    response: { results: [], previous: null, next: null },
+    loading: false,
+    error: ''
   }),
   computed: {
     token () {
@@ -64,34 +69,40 @@ export default {
 
     async fetchOrders () {
       try {
+        this.loading = true;
+        this.error = '';
         const { data: response } = await this.axios.get('/api/cinema/orders/', {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        this.error = this.getErrorMessage(err, 'Unable to load orders.');
+      } finally {
+        this.loading = false;
       }
     },
 
     async fetchPrevious () {
+      if (!this.response.previous) return;
       try {
         const { data: response } = await this.axios.get(this.response.previous, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        this.error = this.getErrorMessage(err, 'Unable to load previous orders.');
       }
     },
 
     async fetchNext () {
+      if (!this.response.next) return;
       try {
         const { data: response } = await this.axios.get(this.response.next, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        this.error = this.getErrorMessage(err, 'Unable to load more orders.');
       }
     },
 
@@ -101,6 +112,13 @@ export default {
 
     showTime (time) {
       return moment(time).format('YYYY/MM/DD h:mm');
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     }
   },
   watch: {
@@ -198,5 +216,13 @@ export default {
 .move-btn.disabled {
   pointer-events: none;
   opacity: 0.7;
+}
+
+.state {
+  font-size: 18px;
+}
+
+.state.error {
+  color: var(--red);
 }
 </style>

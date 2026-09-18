@@ -12,6 +12,10 @@
       :takenSeats="movieSession.taken_places"
       :cinemaHall="movieSession.cinema_hall"
       @choose-seat="chooseSeat"></cinema-hall-schema>
+      <div v-if="chosenSeats.length" class="selection-summary">
+        Selected seats: {{ chosenSeats.map(seat => `row ${seat.row}, seat ${seat.seat}`).join('; ') }}
+      </div>
+      <div v-if="error" class="error">{{ error }}</div>
       <action-button label="Make order" @click="makeOrder" :disabled="!chosenSeats.length || !user"></action-button>
     </div>
   </div>
@@ -33,7 +37,8 @@ export default {
     active: false,
     movieSession: {},
     loading: false,
-    chosenSeats: []
+    chosenSeats: [],
+    error: ''
   }),
   computed: {
     movieCardStyle () {
@@ -82,7 +87,8 @@ export default {
         this.movieSession = session;
         this.loading = false;
       } catch (err) {
-        console.error(err.response.data);
+        this.error = this.getErrorMessage(err, 'Unable to load this session.');
+        this.loading = false;
       }
     },
 
@@ -91,6 +97,7 @@ export default {
     },
 
     async makeOrder () {
+      this.error = '';
       const tickets = this.chosenSeats.map(seat => ({
         ...seat,
         movie_session: this.movieSession.id
@@ -102,11 +109,20 @@ export default {
         }
       };
 
-      await this.axios.post('/api/cinema/orders/', { tickets },
-        config
-      );
-      this.fetchMovieSession(this.movieSession.id);
-      this.chosenSeats = [];
+      try {
+        await this.axios.post('/api/cinema/orders/', { tickets }, config);
+        await this.fetchMovieSession(this.movieSession.id);
+        this.chosenSeats = [];
+      } catch (err) {
+        this.error = this.getErrorMessage(err, 'Unable to create the order. The seats may have just been booked.');
+      }
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     }
   },
   mounted () {
@@ -158,5 +174,15 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 50px;
+}
+
+.selection-summary {
+  font-size: 18px;
+  color: var(--main-font);
+}
+
+.error {
+  color: var(--red);
+  text-align: center;
 }
 </style>

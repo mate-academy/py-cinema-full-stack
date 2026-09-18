@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
+    <div v-if="authError" class="auth-error">{{authError}}</div>
     <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
     <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
     <movie-list-screen v-if="user" :isStaff="user.is_staff"></movie-list-screen>
@@ -43,7 +44,8 @@ export default {
   data: () => ({
     expiresAt: null,
     user: null,
-    type: 'password'
+    type: 'password',
+    authError: ''
   }),
   methods: {
     async logIn () {
@@ -71,6 +73,7 @@ export default {
       localStorage.removeItem('refresh');
 
       this.user = null;
+      this.expiresAt = null;
     },
 
     async fetchUser () {
@@ -81,7 +84,8 @@ export default {
 
         this.user = user;
       } catch (err) {
-        console.error(err.response.data);
+        this.authError = this.getErrorMessage(err, 'Unable to load your profile.');
+        this.logOut();
       }
     },
 
@@ -97,8 +101,16 @@ export default {
         localStorage.setItem('refresh', refresh);
         this.logIn();
       } catch (err) {
-        console.error(err.response.data);
+        this.authError = this.getErrorMessage(err, 'Your session has expired. Please sign in again.');
+        this.logOut();
       }
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     }
   },
   created () {
@@ -141,5 +153,14 @@ export default {
 
 #app .sign-in {
   padding: 0;
+}
+
+.auth-error {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: var(--red);
 }
 </style>

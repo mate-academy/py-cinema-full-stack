@@ -19,7 +19,7 @@
       </div>
       <div class="container" v-if="times.length">
         <span class="label">Time: </span>
-        <span v-for="(time, index) in formattedTime" :key="index" class="item time" @click="$emit('open-details', id)">{{time}}</span>
+        <span v-for="time in formattedTime" :key="time.id" class="item time" @click.stop="$emit('open-details', time.id)">{{time.value}}</span>
       </div>
     </div>
   </div>
@@ -61,7 +61,10 @@ export default {
     },
 
     formattedTime () {
-      return this.times.map(time => moment(time).format('HH:mm'));
+      return this.times.map(time => ({
+        id: time.id || this.id,
+        value: moment(time.show_time || time).format('HH:mm')
+      }));
     }
   }
 

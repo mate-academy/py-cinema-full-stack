@@ -12,6 +12,7 @@
       @open-details="handleMovieSessionDetails"></movie-card>
     </div>
     <div v-else class="no-sessions">No movie sessions for selected date.</div>
+    <div v-if="error" class="error">{{ error }}</div>
     <add-btn
       v-if="isStaff"
       @click="handleMovieCreate">
@@ -23,6 +24,7 @@
 import MovieCard from '../comps/MovieCard.vue';
 import AddBtn from '../comps/AddBtn.vue';
 import DatePicker from '../comps/DatePicker.vue';
+import { groupSessionsByMovie } from '../utils/sessionGrouping';
 
 import moment from 'moment';
 
@@ -40,25 +42,12 @@ export default {
     genres: [],
     selectedActorIds: [],
     selectedGenreIds: [],
-    date: moment(new Date()).format('YYYY-MM-DD')
+    date: moment(new Date()).format('YYYY-MM-DD'),
+    error: ''
   }),
   computed: {
     movieSessionsGroupedByTime () {
-      return this.movieSessions.reduce((modifiedArr, item) => {
-        const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
-        if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
-        } else {
-          const showTime = item.show_time;
-          delete item.show_time;
-          const modifiedItem = {
-            ...item,
-            times: [showTime]
-          };
-          modifiedArr.push(modifiedItem);
-        }
-        return modifiedArr;
-      }, []);
+      return groupSessionsByMovie(this.movieSessions);
     },
 
     token () {
@@ -94,8 +83,15 @@ export default {
 
         this.movieSessions = movieSessions;
       } catch (err) {
-        console.error(err.response.data);
+        this.error = this.getErrorMessage(err, 'Unable to load movie sessions.');
       }
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     }
 
   },
@@ -146,5 +142,9 @@ export default {
 .no-sessions {
   font-size: 18px;
   line-height: 22px;
+}
+
+.error {
+  color: var(--red);
 }
 </style>

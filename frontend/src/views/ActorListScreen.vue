@@ -7,7 +7,8 @@
         <input-item label="First name" width="wide" v-model="firstName"></input-item>
         <input-item label="Last name" width="wide" v-model="lastName"></input-item>
       </div>
-      <action-button label="Submit" @click="addActor"></action-button>
+      <div v-if="error" class="error">{{ error }}</div>
+      <action-button label="Submit" @click="addActor" :disabled="!firstName.trim() || !lastName.trim()"></action-button>
     </div>
     <div class="actors">
       <div class="header">All Actors</div>
@@ -39,7 +40,8 @@ export default {
     actors: [],
     createMode: false,
     firstName: '',
-    lastName: ''
+    lastName: '',
+    error: ''
   }),
   computed: {
     token () {
@@ -59,6 +61,7 @@ export default {
     },
 
     async addActor () {
+      this.error = '';
       try {
         const config = {
           headers: {
@@ -82,8 +85,15 @@ export default {
         this.firstName = '';
         this.lastName = '';
       } catch (err) {
-        console.error(err);
+        this.error = this.getErrorMessage(err, 'Unable to create the actor.');
       }
+    },
+
+    getErrorMessage (err, fallback) {
+      const data = err.response && err.response.data;
+      if (!data) return fallback;
+      if (typeof data === 'string') return data;
+      return Object.values(data).flat().join(' ') || fallback;
     },
 
     hashHandler () {
@@ -164,5 +174,9 @@ export default {
   width: 100%;
   display: flex;
   gap: 100px;
+}
+
+.error {
+  color: var(--red);
 }
 </style>
