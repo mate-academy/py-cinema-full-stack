@@ -7,14 +7,14 @@
       <div v-if="error" class="error">{{ error }}</div>
       <action-button label="Submit" @click="addGenre" :disabled="!name.trim()"></action-button>
     </div>
-    <div class="genres">
+    <div class="genres" v-if="!createMode">
       <div class="header">All Genres</div>
       <div class="container">
         <div v-for="(genre, index) in genres" :key="genre.id" :class="index % 2 === 0 ? 'odd' : ''">
           {{genre.name}}
         </div>
       </div>
-      <add-btn @click="createMode = !createMode"></add-btn>
+      <add-btn @click="handleGenreCreate"></add-btn>
     </div>
   </div>
 </template>
@@ -74,8 +74,7 @@ export default {
           config
         );
 
-        this.createMode = !this.createMode;
-        this.fetchGenres();
+        location.hash = '#/genres';
 
         this.name = '';
       } catch (err) {
@@ -91,7 +90,12 @@ export default {
     },
 
     hashHandler () {
-      this.active = Boolean(location.hash.match('genres$'));
+      this.active = Boolean(location.hash.match(/genres(?:\?add=true)?$/));
+      this.createMode = Boolean(location.hash.match('genres\\?add=true$'));
+    },
+
+    handleGenreCreate () {
+      location.hash = '#/genres?add=true';
     }
   },
   watch: {
