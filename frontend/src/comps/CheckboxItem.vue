@@ -1,8 +1,7 @@
 <template>
   <div
     :class="['checkbox-item', checked && 'checked']"
-    @click="toggleInput"
-    @mousedown.prevent>
+    @click="toggleInput">
       <svg v-if="checked" width="19" height="9" viewbox="0 0 12 9" fill="none" xmlns="http://www.w3.org/2000/svg">
         <use href="/assets/icons/check.svg#check"></use>
       </svg>

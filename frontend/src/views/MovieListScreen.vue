@@ -5,13 +5,13 @@
         label="Select actors"
         :options="actors"
         @option-selected="handleActorSelection"
-        @click="!actors.length && fetchActors()"
+        @open="fetchActors"
       ></custom-multiselect>
       <custom-multiselect
         label="Select genres"
         :options="genres"
         @option-selected="handleGenreSelection"
-        @click="!genres.length && fetchGenres()"
+        @open="fetchGenres"
       ></custom-multiselect>
     </div>
     <div class="movie-container">
@@ -167,7 +167,8 @@ export default {
 
 <style scoped>
 .multiselections {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 100px;
 }
 
@@ -177,5 +178,22 @@ export default {
   column-gap: 40px;
   row-gap: 60px;
   margin-top: 60px;
+}
+
+@media (max-width: 900px) {
+  .multiselections {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .movie-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .movie-container {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
