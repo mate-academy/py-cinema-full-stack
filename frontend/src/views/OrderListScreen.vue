@@ -2,13 +2,13 @@
   <div v-if="active" class="orders-container">
     <div class="header">My orders</div>
     <div class="container">
-      <div v-for="order in response.results" class="order">
+      <div v-for="order in response.results" :key="order.id" class="order">
         <div class="created-info">
           <div>Id: {{order.id}}.</div>
           <div>Created at {{createdAt(order.created_at)}}</div>
         </div>
-        <div  v-for="ticket in order.tickets" class="ticket">
-          <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"></div>
+        <div  v-for="ticket in order.tickets" :key="ticket.id" class="ticket">
+          <div class="movie-card" :style="movieCardStyle(ticket.movie_session.movie_image)"></div>
           <div class="ticket-info">
             <div><span class="label">Movie:</span> {{ticket.movie_session.movie_title}}</div>
             <div><span class="label">Show time:</span> {{showTime(ticket.movie_session.show_time)}}</div>
@@ -51,13 +51,20 @@ export default {
     }
   },
   methods: {
+    movieCardStyle (image) {
+      image = image || '/assets/movie-placeholder.svg';
+      return {
+        'background-image': `linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url("${image}")`
+      };
+    },
+
     hashHandler () {
       this.active = Boolean(location.hash.match('my-orders$'));
     },
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
