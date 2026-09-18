@@ -10,6 +10,7 @@
       placeholder="Email"
       v-model="email"></input-item>
     <password-input v-model="password"></password-input>
+    <div v-if="error" class="error">{{error}}</div>
     <action-button label="Sign in" @click="signIn"></action-button>
   </div>
 </template>
@@ -23,7 +24,8 @@ export default {
   data: () => ({
     active: false,
     email: '',
-    password: ''
+    password: '',
+    error: ''
   }),
   methods: {
     hashHandler () {
@@ -31,8 +33,9 @@ export default {
     },
 
     async signIn () {
+      this.error = '';
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post('/api/user/token/', {
           email: this.email,
           password: this.password
         });
@@ -44,7 +47,8 @@ export default {
 
         this.$emit('log-in');
       } catch (err) {
-        console.error(err.response.data);
+        const data = err.response && err.response.data;
+        this.error = (data && Object.values(data).flat().join(' ')) || 'Invalid email or password.';
       }
     }
   },
@@ -96,5 +100,9 @@ a {
   font-weight: 600;
   cursor: pointer;
   color: var(--main-font);
+}
+
+.error {
+  color: var(--red);
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + image + ')' }" @click="$emit('click', id)">
+  <div class="movie-card" v-bind:style="{ 'background-image': backgroundImage }" @click="$emit('click', id)">
     <div class="main-info">
       <span class="title">{{title}}</span>
       <div class="detail" @click="$emit('click', id)" v-if="!times.length">
@@ -19,7 +19,7 @@
       </div>
       <div class="container" v-if="times.length">
         <span class="label">Time: </span>
-        <span v-for="(time, index) in formattedTime" :key="index" class="item time" @click="$emit('open-details', id)">{{time}}</span>
+        <span v-for="time in formattedTime" :key="time.id" class="item time" @click.stop="$emit('open-details', time.id)">{{time.value}}</span>
       </div>
     </div>
   </div>
@@ -55,8 +55,16 @@ export default {
     }
   },
   computed: {
+    backgroundImage () {
+      const image = this.image || '/assets/movie-placeholder.svg';
+      return `linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url("${image}")`;
+    },
+
     formattedTime () {
-      return this.times.map(time => moment(time).format('HH:mm'));
+      return this.times.map(time => ({
+        id: time.id || this.id,
+        value: moment(time.show_time || time).format('HH:mm')
+      }));
     }
   }
 

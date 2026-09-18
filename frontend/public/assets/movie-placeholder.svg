@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="title">
+  <title id="title">Movie image unavailable</title>
+  <rect width="800" height="500" fill="#222"/>
+  <g fill="none" stroke="#666" stroke-width="18" stroke-linejoin="round">
+    <rect x="235" y="145" width="330" height="210" rx="24"/>
+    <path d="M235 205h330M235 295h330M310 145v210M490 145v210"/>
+    <path d="M170 190l65 35M170 310l65-35M630 190l-65 35M630 310l-65-35"/>
+  </g>
+  <circle cx="400" cy="250" r="42" fill="#ff2b2b"/>
+  <path d="M390 226l34 24-34 24z" fill="#111"/>
+</svg>

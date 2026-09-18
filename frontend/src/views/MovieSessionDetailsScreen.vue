@@ -1,6 +1,6 @@
 <template>
   <div v-if="active && !loading" class="session-details">
-    <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + movieSession.movie.image + ')' }"></div>
+    <div class="movie-card" :style="movieCardStyle"></div>
     <div class="container">
       <div class="info">
         <span>{{movieSession.movie.title}}</span>
@@ -12,6 +12,10 @@
       :takenSeats="movieSession.taken_places"
       :cinemaHall="movieSession.cinema_hall"
       @choose-seat="chooseSeat"></cinema-hall-schema>
+      <div v-if="chosenSeats.length" class="selection-summary">
+        Selected seats: {{ chosenSeats.map(seat => `row ${seat.row}, seat ${seat.seat}`).join('; ') }}
+      </div>
+      <div v-if="error" class="error">{{ error }}</div>
       <action-button label="Make order" @click="makeOrder" :disabled="!chosenSeats.length || !user"></action-button>
     </div>
   </div>
@@ -22,6 +26,7 @@ import moment from 'moment';
 
 import CinemaHallSchema from '../comps/CinemaHallSchema.vue';
 import ActionButton from '../comps/ActionButton.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 export default {
   props: {
     user: {
@@ -33,9 +38,17 @@ export default {
     active: false,
     movieSession: {},
     loading: false,
-    chosenSeats: []
+    chosenSeats: [],
+    error: ''
   }),
   computed: {
+    movieCardStyle () {
+      const image = this.movieSession.movie.image || '/assets/movie-placeholder.svg';
+      return {
+        'background-image': `linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url("${image}")`
+      };
+    },
+
     formattedTime () {
       return moment(this.movieSession.show_time).format('HH:mm');
     },
@@ -68,14 +81,15 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+        const { data: session } = await this.axios.get(`/api/cinema/movie_sessions/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
         this.movieSession = session;
         this.loading = false;
       } catch (err) {
-        console.error(err.response.data);
+        this.error = getErrorMessage(err, 'Unable to load this session.');
+        this.loading = false;
       }
     },
 
@@ -84,6 +98,7 @@ export default {
     },
 
     async makeOrder () {
+      this.error = '';
       const tickets = this.chosenSeats.map(seat => ({
         ...seat,
         movie_session: this.movieSession.id
@@ -95,12 +110,15 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
-        config
-      );
-      this.fetchMovieSession(this.movieSession.id);
-      this.chosenSeats = [];
-    }
+      try {
+        await this.axios.post('/api/cinema/orders/', { tickets }, config);
+        await this.fetchMovieSession(this.movieSession.id);
+        this.chosenSeats = [];
+      } catch (err) {
+        this.error = getErrorMessage(err, 'Unable to create the order. The seats may have just been booked.');
+      }
+    },
+
   },
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
@@ -151,5 +169,15 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 50px;
+}
+
+.selection-summary {
+  font-size: 18px;
+  color: var(--main-font);
+}
+
+.error {
+  color: var(--red);
+  text-align: center;
 }
 </style>

@@ -1,8 +1,7 @@
 <template>
   <div
     :class="['multiselect', shownOptions && 'active']"
-    @click="toggleOptions"
-    @mousedown.prevent>
+    @click="toggleOptions">
     <div class="label">{{label}}</div>
     <div class="selected">
       <div class="selected-container">
@@ -15,11 +14,12 @@
       </div>
     </div>
     <div v-if="shownOptions" class="options-container">
-      <div v-for="(option, index) in options" :key="index" class="option">
+      <div v-for="(option, index) in options" :key="index" class="option" @click.stop="handleOptionSelect(option)">
         <span>{{option.name}}</span>
         <checkbox-item
           :checked="selectedOption.id === option.id"
           @input="handleOptionSelect(option)"
+          @click.native.stop
           :key="`e-checkbox-${option.id}`"
           :ref="`e-checkbox-${option.id}`"></checkbox-item>
       </div>
@@ -58,7 +58,7 @@ export default {
         valueToEmit = option.id;
       }
 
-      this.toggleOptions();
+      this.shownOptions = false;
       this.$emit('option-selected', valueToEmit);
     }
   },

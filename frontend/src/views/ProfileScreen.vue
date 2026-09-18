@@ -9,7 +9,8 @@
         :initialValue="user.email"
       ></input-item>
       <password-input label="Password" v-model="password"></password-input>
-      <action-button label="Submit" @click="changeUserData"></action-button>
+      <div v-if="error && typeof error === 'string'" class="result failure">{{error}}</div>
+      <action-button label="Submit" @click="changeUserData" :disabled="!hasChanges"></action-button>
       <div class="result success" v-if="success">
         <svg  width="36" height="36" viewbox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
           <use href="/assets/icons/success.svg#success"></use>
@@ -48,6 +49,12 @@ export default {
   computed: {
     token () {
       return localStorage.getItem('access');
+    },
+
+    hasChanges () {
+      return Boolean(
+        (this.email && this.email !== this.user.email) || this.password
+      );
     }
   },
   methods: {
@@ -68,15 +75,16 @@ export default {
       if (this.password) body.password = this.password;
 
       try {
-        const { data } = await this.axios.patch(`${import.meta.env.VITE_API_URL}/api/user/me`, body, config);
+        const { data } = await this.axios.patch('/api/user/me/', body, config);
         this.success = !!data;
 
         this.email = '';
         this.password = '';
       } catch (err) {
         console.error(err);
-        const { password = null, email = null } = err.response.data;
-        this.error = password || email;
+        const data = err.response && err.response.data;
+        const messages = data && Object.values(data).flat();
+        this.error = messages && messages.length ? messages : ['Unable to update profile.'];
       }
     }
   },

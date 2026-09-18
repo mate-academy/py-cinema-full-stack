@@ -7,7 +7,7 @@
         <div v-for="index in numOfRows" :key="`row-${index}`" class="rows">{{index + 1}}</div>
       </div>
       <div class="container">
-        <div v-for="colIndex in numOfCols" class="col">
+        <div v-for="colIndex in numOfCols" :key="`col-${colIndex}`" class="col">
           <div
           v-for="rowIndex in numOfRows"
           :key="`seat-${colIndex}-${rowIndex}`"
@@ -54,13 +54,18 @@ export default {
   },
   methods: {
     chooseSeat (colIndex, rowIndex) {
-      const seatIsChosen = this.chosenSeats.find(seat => seat.row === rowIndex + 1 && seat.seat === colIndex + 1);
+      const row = rowIndex + 1;
+      const seat = colIndex + 1;
+      const isTaken = this.takenSeats.some(item => item.row === row && item.seat === seat);
+      if (isTaken) return;
+
+      const seatIsChosen = this.chosenSeats.find(item => item.row === row && item.seat === seat);
       if (seatIsChosen) {
-        this.chosenSeats = this.chosenSeats.filter(seat => seat.row !== rowIndex + 1 || seat.seat !== colIndex + 1);
+        this.chosenSeats = this.chosenSeats.filter(item => item.row !== row || item.seat !== seat);
       } else {
         this.chosenSeats.push({
-          row: rowIndex + 1,
-          seat: colIndex + 1
+          row,
+          seat
         });
       }
       this.$emit('choose-seat', this.chosenSeats);

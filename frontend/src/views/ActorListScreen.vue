@@ -7,16 +7,17 @@
         <input-item label="First name" width="wide" v-model="firstName"></input-item>
         <input-item label="Last name" width="wide" v-model="lastName"></input-item>
       </div>
-      <action-button label="Submit" @click="addActor"></action-button>
+      <div v-if="error" class="error">{{ error }}</div>
+      <action-button label="Submit" @click="addActor" :disabled="!firstName.trim() || !lastName.trim()"></action-button>
     </div>
-    <div class="actors">
+    <div class="actors" v-if="!createMode">
       <div class="header">All Actors</div>
       <div class="container">
         <div v-for="(actor, index) in actors" :key="actor.id" :class="index % 2 === 0 ? 'odd' : ''">
           {{actor.first_name}} {{actor.last_name}}
         </div>
       </div>
-      <add-btn @click="createMode = !createMode"></add-btn>
+      <add-btn @click="handleActorCreate"></add-btn>
     </div>
   </div>
 </template>
@@ -27,6 +28,7 @@ import axios from 'axios';
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 export default {
   props: {
     isStaff: {
@@ -39,7 +41,8 @@ export default {
     actors: [],
     createMode: false,
     firstName: '',
-    lastName: ''
+    lastName: '',
+    error: ''
   }),
   computed: {
     token () {
@@ -49,7 +52,7 @@ export default {
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await axios.get('/api/cinema/actors/', {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors;
@@ -59,6 +62,7 @@ export default {
     },
 
     async addActor () {
+      this.error = '';
       try {
         const config = {
           headers: {
@@ -68,7 +72,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
+          '/api/cinema/actors/',
           {
             first_name: this.firstName,
             last_name: this.lastName
@@ -76,18 +80,22 @@ export default {
           config
         );
 
-        this.createMode = !this.createMode;
-        this.fetchActors();
+        location.hash = '#/actors';
 
         this.firstName = '';
         this.lastName = '';
       } catch (err) {
-        console.error(err);
+        this.error = getErrorMessage(err, 'Unable to create the actor.');
       }
     },
 
     hashHandler () {
-      this.active = Boolean(location.hash.match('actors$'));
+      this.active = Boolean(location.hash.match(/actors(?:\?add=true)?$/));
+      this.createMode = Boolean(location.hash.match('actors\\?add=true$'));
+    },
+
+    handleActorCreate () {
+      location.hash = '#/actors?add=true';
     }
   },
   watch: {
@@ -164,5 +172,9 @@ export default {
   width: 100%;
   display: flex;
   gap: 100px;
+}
+
+.error {
+  color: var(--red);
 }
 </style>

@@ -1,24 +1,27 @@
 <template>
   <div
-    :class="['multiselect', shownOptions && 'active']"
-    @click="showOptions"
-    @mousedown.prevent>
+    :class="['multiselect', shownOptions && 'active']">
     <div class="label">{{label}}</div>
-    <div class="selected">
+    <div class="selected" @click="toggleOptions">
       <div class="selected-container">
         <span v-for="(option, index) in selectedOptions" :key="index">{{option.name}}</span>
       </div>
-      <div :class="['arrow', shownOptions && 'toggled']" @click="showOptions" @mousedown.prevent>
+      <div
+        :class="['arrow', shownOptions && 'toggled']"
+        @click.stop="toggleOptions">
         <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <use href="/assets/icons/arrow.svg#arrow"></use>
         </svg>
       </div>
     </div>
     <div v-if="shownOptions" class="options-container">
-      <div v-for="(option, index) in options" :key="index" class="option">
+      <div
+        v-for="(option, index) in options"
+        :key="index"
+        class="option"
+        @click="handleOptionSelect(option)">
         <span>{{option.name}}</span>
         <checkbox-item
-          @input="handleOptionSelect(option)"
           :checked="!!selectedOptions.find(selected => selected.id === option.id)"
         ></checkbox-item>
       </div>
@@ -45,19 +48,22 @@ export default {
     }
   },
   methods: {
-    showOptions () {
-      this.$emit('click');
+    toggleOptions () {
       this.shownOptions = !this.shownOptions;
+      if (this.shownOptions) this.$emit('open');
     },
     handleOptionSelect (option) {
       const selected = this.selectedOptions.find(opt => opt.id === option.id);
       if (selected) {
         this.selectedOptions = [...this.selectedOptions.filter(opt => opt.id !== option.id)];
       } else {
-        this.selectedOptions.push(option);
+        this.selectedOptions = [...this.selectedOptions, option];
       }
 
       this.$emit('option-selected', option.id);
+    },
+    clearSelection () {
+      this.selectedOptions = [];
     }
   },
   components: { CheckboxItem }
@@ -106,6 +112,9 @@ export default {
   font-weight: 600;
   font-size: 14px;
   line-height: 17px;
+  background-color: var(--red);
+  border-radius: 5px;
+  padding: 3px 8px;
 }
 
 .arrow {

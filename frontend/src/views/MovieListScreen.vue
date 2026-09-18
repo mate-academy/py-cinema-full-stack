@@ -5,13 +5,13 @@
         label="Select actors"
         :options="actors"
         @option-selected="handleActorSelection"
-        @click="!actors.length && fetchActors()"
+        @open="fetchActors"
       ></custom-multiselect>
       <custom-multiselect
         label="Select genres"
         :options="genres"
         @option-selected="handleGenreSelection"
-        @click="!genres.length && fetchGenres()"
+        @open="fetchGenres"
       ></custom-multiselect>
     </div>
     <div class="movie-container">
@@ -59,7 +59,7 @@ export default {
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await this.axios.get('/api/cinema/actors/', {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
@@ -76,7 +76,7 @@ export default {
 
     async fetchGenres () {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await this.axios.get('/api/cinema/genres/', {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
@@ -91,7 +91,7 @@ export default {
       if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join();
 
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get('/api/cinema/movies/', {
           headers: { Authorization: `Bearer ${this.token}` },
           params
         });
@@ -167,7 +167,8 @@ export default {
 
 <style scoped>
 .multiselections {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 100px;
 }
 
@@ -177,5 +178,22 @@ export default {
   column-gap: 40px;
   row-gap: 60px;
   margin-top: 60px;
+}
+
+@media (max-width: 900px) {
+  .multiselections {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .movie-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .movie-container {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

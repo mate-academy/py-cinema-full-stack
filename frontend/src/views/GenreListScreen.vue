@@ -4,16 +4,17 @@
       <div class="header">Add Genre</div>
       <div class="note">Please fill in the fields in details</div>
       <input-item label="Genre" width="wide" v-model="name"></input-item>
-      <action-button label="Submit" @click="addGenre"></action-button>
+      <div v-if="error" class="error">{{ error }}</div>
+      <action-button label="Submit" @click="addGenre" :disabled="!name.trim()"></action-button>
     </div>
-    <div class="genres">
+    <div class="genres" v-if="!createMode">
       <div class="header">All Genres</div>
       <div class="container">
         <div v-for="(genre, index) in genres" :key="genre.id" :class="index % 2 === 0 ? 'odd' : ''">
           {{genre.name}}
         </div>
       </div>
-      <add-btn @click="createMode = !createMode"></add-btn>
+      <add-btn @click="handleGenreCreate"></add-btn>
     </div>
   </div>
 </template>
@@ -24,6 +25,7 @@ import axios from 'axios';
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
 import ActionButton from '../comps/ActionButton.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 export default {
   props: {
     isStaff: {
@@ -35,7 +37,8 @@ export default {
     active: false,
     genres: [],
     createMode: false,
-    name: ''
+    name: '',
+    error: ''
   }),
   computed: {
     token () {
@@ -45,7 +48,7 @@ export default {
   methods: {
     async fetchGenres () {
       try {
-        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await axios.get('/api/cinema/genres/', {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
@@ -55,6 +58,7 @@ export default {
     },
 
     async addGenre () {
+      this.error = '';
       try {
         const config = {
           headers: {
@@ -64,24 +68,28 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres`,
+          '/api/cinema/genres/',
           {
             name: this.name
           },
           config
         );
 
-        this.createMode = !this.createMode;
-        this.fetchGenres();
+        location.hash = '#/genres';
 
         this.name = '';
       } catch (err) {
-        console.error(err);
+        this.error = getErrorMessage(err, 'Unable to create the genre.');
       }
     },
 
     hashHandler () {
-      this.active = Boolean(location.hash.match('genres$'));
+      this.active = Boolean(location.hash.match(/genres(?:\?add=true)?$/));
+      this.createMode = Boolean(location.hash.match('genres\\?add=true$'));
+    },
+
+    handleGenreCreate () {
+      location.hash = '#/genres?add=true';
     }
   },
   watch: {
@@ -151,6 +159,10 @@ export default {
 
 .container > .odd {
   background-color: var(--secondary-bg);
+}
+
+.error {
+  color: var(--red);
 }
 
 </style>

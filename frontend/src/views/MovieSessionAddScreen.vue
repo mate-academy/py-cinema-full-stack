@@ -10,7 +10,8 @@
         <time-picker v-model="time"></time-picker>
       </div>
     </div>
-    <action-button label="Submit" @click="addMovieSession" :disabled="!selectedHallId || !selectedMovieId"></action-button>
+    <div v-if="error" class="error">{{ error }}</div>
+    <action-button label="Submit" @click="addMovieSession" :disabled="!selectedHallId || !selectedMovieId || !isValidSchedule"></action-button>
   </div>
 </template>
 
@@ -21,6 +22,7 @@ import DatePicker from '../comps/DatePicker.vue';
 import ActionButton from '../comps/ActionButton.vue';
 import TimePicker from '../comps/TimePicker.vue';
 import CustomSelect from '../comps/CustomSelect.vue';
+import { getErrorMessage } from '../utils/errorMessage';
 
 export default {
   props: {
@@ -36,7 +38,8 @@ export default {
     date: new Date(),
     time: new Date(),
     selectedMovieId: null,
-    selectedHallId: null
+    selectedHallId: null,
+    error: ''
   }),
   computed: {
     movieOptions () {
@@ -48,6 +51,12 @@ export default {
 
     token () {
       return localStorage.getItem('access');
+    },
+
+    isValidSchedule () {
+      const date = new Date(this.date);
+      date.setHours(this.time.getHours(), this.time.getMinutes(), 0, 0);
+      return date.getTime() > Date.now();
     }
   },
   methods: {
@@ -57,7 +66,7 @@ export default {
 
     async fetchMovies () {
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get('/api/cinema/movies/', {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
@@ -70,7 +79,7 @@ export default {
 
     async fetchCinemaHalls () {
       try {
-        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
+        const { data: cinemaHalls } = await this.axios.get('/api/cinema/cinema_halls/', {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
@@ -95,7 +104,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`,
+          '/api/cinema/movie_sessions/',
           {
             movie: this.selectedMovieId,
             cinema_hall: this.selectedHallId,
@@ -106,7 +115,7 @@ export default {
 
         location.hash = '#/movie-sessions';
       } catch (err) {
-        console.error(err);
+        this.error = getErrorMessage(err, 'Unable to create the movie session.');
       }
     },
 
@@ -116,7 +125,7 @@ export default {
 
     handleHallSelection (hallId) {
       this.selectedHallId = hallId;
-    }
+    },
 
   },
   watch: {
@@ -180,6 +189,10 @@ export default {
 
 .date-container > * {
   width: 255px;
+}
+
+.error {
+  color: var(--red);
 }
 
 </style>

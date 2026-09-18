@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
+    <div v-if="authError" class="auth-error">{{authError}}</div>
     <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
     <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
     <movie-list-screen v-if="user" :isStaff="user.is_staff"></movie-list-screen>
@@ -21,6 +22,7 @@
 
 <script>
 import jwtDecode from 'jwt-decode';
+import { getErrorMessage } from './utils/errorMessage';
 
 import SignIn from './views/SignIn.vue';
 import MovieListScreen from './views/MovieListScreen.vue';
@@ -43,7 +45,8 @@ export default {
   data: () => ({
     expiresAt: null,
     user: null,
-    type: 'password'
+    type: 'password',
+    authError: ''
   }),
   methods: {
     async logIn () {
@@ -71,23 +74,25 @@ export default {
       localStorage.removeItem('refresh');
 
       this.user = null;
+      this.expiresAt = null;
     },
 
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
+        const { data: user } = await this.axios.get('/api/user/me/',
           { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
       } catch (err) {
-        console.error(err.response.data);
+        this.authError = getErrorMessage(err, 'Unable to load your profile.');
+        this.logOut();
       }
     },
 
     async refreshToken () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
+        const { data } = await this.axios.post('/api/user/token/refresh/', {
           refresh: localStorage.getItem('refresh')
         });
 
@@ -97,9 +102,11 @@ export default {
         localStorage.setItem('refresh', refresh);
         this.logIn();
       } catch (err) {
-        console.error(err.response.data);
+        this.authError = getErrorMessage(err, 'Your session has expired. Please sign in again.');
+        this.logOut();
       }
-    }
+    },
+
   },
   created () {
     this.logIn();
@@ -141,5 +148,14 @@ export default {
 
 #app .sign-in {
   padding: 0;
+}
+
+.auth-error {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  color: var(--red);
 }
 </style>
