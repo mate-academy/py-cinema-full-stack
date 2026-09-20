@@ -1,27 +1,35 @@
-version: "3"
+version: '3.8'
 
 services:
   app:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
-    ports:
-      - "8080:8080"
+      context: ./backend
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8080
     volumes:
       - ./backend:/app
-      - ./backend/media:/vol/web/media
-    command: >
-      sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
-    env_file:
-      - .env
+    ports:
+      - "8080:8080"
+    environment:
+      - SECRET_KEY=django-insecure-your-secret-key-here
+      - POSTGRES_DB=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
     depends_on:
       - db
 
   db:
     image: postgres:14-alpine
     ports:
-      - "5432:5432"
-    env_file:
-      - .env
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

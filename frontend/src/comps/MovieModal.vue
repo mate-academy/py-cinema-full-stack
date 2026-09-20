@@ -7,7 +7,7 @@
       </svg>
     </div>
     <div class="info-container">
-      <img :src="movie.image" :class="[!movie.image && 'absent']"/>
+      <img :src="imageUrl" :class="[!movie.image && 'absent']"/>
       <div class="info">
         <div class="movie-title">{{movie.title}}</div>
         <div class="container">
@@ -29,7 +29,17 @@ export default {
   props: {
     movie: {
       type: Object,
-      default: () => {}
+      default: () => ({})
+    }
+  },
+  computed: {
+    imageUrl () {
+      if (!this.movie.image) return '';
+      // Якщо шлях вже містить повний URL, повертаємо як є, інакше додаємо бекенд
+      if (this.movie.image.startsWith('http')) {
+        return this.movie.image;
+      }
+      return `${import.meta.env.VITE_API_URL}${this.movie.image}`;
     }
   }
 };
