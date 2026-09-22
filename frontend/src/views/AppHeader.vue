@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <a class="app-title" href="/">Cinema Shop</a>
+    <a class="app-title" href="#/">Cinema Shop</a>
     <div class="menu">
       <a href='#/movie-sessions' :class="activeTab === 'movie-sessions' && 'active'">Movie Sessions</a>
       <a href='#/cinema-halls' v-if="user.is_staff" :class="activeTab === 'cinema-halls' && 'active'">Cinema Halls</a>
