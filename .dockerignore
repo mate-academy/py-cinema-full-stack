@@ -1,3 +1,11 @@
 venv/
 python-version
 .env
+.venv/
+.git/
+**/node_modules/
+**/dist/
+**/__pycache__/
+backend/media/
+backend/db.sqlite3
+**/.env
