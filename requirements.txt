@@ -10,3 +10,4 @@ pep8-naming~=0.14.1
 psycopg2-binary~=2.9.10
 django-cors-headers~=4.9.0
 pillow~=11.3.0
+python-dotenv~=1.0.1
