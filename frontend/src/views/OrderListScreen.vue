@@ -1,6 +1,9 @@
 <template>
   <div v-if="active" class="orders-container">
     <div class="header">My orders</div>
+    <div v-if="loading" class="status">Loading orders…</div>
+    <div v-else-if="errorMessage" class="status error">{{errorMessage}}</div>
+    <div v-else-if="response.results.length === 0" class="status">No orders yet.</div>
     <div class="container">
       <div v-for="order in response.results" class="order">
         <div class="created-info">
@@ -43,7 +46,9 @@ import moment from 'moment';
 export default {
   data: () => ({
     active: false,
-    response: []
+    response: { results: [], previous: null, next: null },
+    loading: false,
+    errorMessage: ''
   }),
   computed: {
     token () {
@@ -53,16 +58,24 @@ export default {
   methods: {
     hashHandler () {
       this.active = Boolean(location.hash.match('my-orders$'));
+      if (this.active) this.fetchOrders();
     },
 
     async fetchOrders () {
+      this.loading = true;
+      this.errorMessage = '';
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get('/api/cinema/orders/', {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
+        this.errorMessage = err.response?.status === 401
+          ? 'Your session has expired. Please sign in again.'
+          : 'Could not load your orders. Please refresh the page and try again.';
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -96,12 +109,6 @@ export default {
       return moment(time).format('YYYY/MM/DD h:mm');
     }
   },
-  watch: {
-    active (value) {
-      if (!value) return;
-      this.fetchOrders();
-    }
-  },
   mounted () {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
@@ -126,6 +133,15 @@ export default {
   font-weight: 600;
   font-size: 50px;
   line-height: 61px;
+}
+
+.status {
+  font-size: 18px;
+  text-align: center;
+}
+
+.status.error {
+  color: var(--red);
 }
 
 .order {
