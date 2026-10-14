@@ -2,12 +2,12 @@
   <div v-if="active" class="orders-container">
     <div class="header">My orders</div>
     <div class="container">
-      <div v-for="order in response.results" class="order">
+      <div v-for="order in response.results" :key="order.id" class="order">
         <div class="created-info">
           <div>Id: {{order.id}}.</div>
           <div>Created at {{createdAt(order.created_at)}}</div>
         </div>
-        <div  v-for="ticket in order.tickets" class="ticket">
+        <div  v-for="ticket in order.tickets" :key="ticket.id" class="ticket">
           <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"></div>
           <div class="ticket-info">
             <div><span class="label">Movie:</span> {{ticket.movie_session.movie_title}}</div>
@@ -21,7 +21,7 @@
     <div class="btn-container">
       <div
         @click="fetchPrevious"
-        :class="['move-btn previous', !response.previous && 'disabled']">
+        :class="['move-btn previous', !response.prev && 'disabled']">
         <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <use href="/assets/icons/left_arrow.svg#left"></use>
         </svg>
@@ -57,7 +57,7 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
