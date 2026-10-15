@@ -48,17 +48,28 @@ export default {
   methods: {
     async logIn () {
       const accessToken = localStorage.getItem('access');
-      if (!accessToken) return;
+      if (!accessToken) {
+        this.user = null;
+        this.expiresAt = null;
+        return;
+      }
 
-      const { exp } = jwtDecode(accessToken);
-      this.expiresAt = exp;
+      try {
+        const { exp } = jwtDecode(accessToken);
+        this.expiresAt = exp;
+      } catch (err) {
+        this.user = null;
+        this.expiresAt = null;
+        localStorage.removeItem('access');
+        return;
+      }
 
       if (this.expiresAt * 1e3 > Date.now()) {
         await this.fetchUser();
         return;
       }
 
-      this.refreshToken();
+      await this.refreshToken();
     },
 
     async handleLogIn () {
@@ -86,18 +97,29 @@ export default {
     },
 
     async refreshToken () {
+      const refreshToken = localStorage.getItem('refresh');
+      if (!refreshToken) {
+        this.user = null;
+        this.expiresAt = null;
+        return;
+      }
+
       try {
         const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
+          refresh: refreshToken
         });
 
         const { access, refresh } = data;
 
         localStorage.setItem('access', access);
         localStorage.setItem('refresh', refresh);
-        this.logIn();
+        await this.logIn();
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
+        localStorage.removeItem('access');
+        localStorage.removeItem('refresh');
+        this.user = null;
+        this.expiresAt = null;
       }
     }
   },
@@ -105,6 +127,7 @@ export default {
     this.logIn();
 
     setInterval(() => {
+      if (!localStorage.getItem('refresh')) return;
       if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
       this.refreshToken();
     }, 60 * 1e3);

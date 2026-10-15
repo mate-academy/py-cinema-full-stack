@@ -6,8 +6,8 @@
     here if you are not registered yet.</h2>
     <input-item
       label="Login"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
       placeholder="Email"
+      type="email"
       v-model="email"></input-item>
     <password-input v-model="password"></password-input>
     <action-button label="Sign in" @click="signIn"></action-button>
