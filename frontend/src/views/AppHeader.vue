@@ -10,7 +10,7 @@
     </div>
     <div class="action-section">
       <div class="profile-section">
-        <a class="username" @click="showPopup = !showPopup">{{user.email}}</a>
+        <a class="username" @click.stop="showPopup = !showPopup">{{user.email}}</a>
         <header-popup
           @openProfile="openProfile"
           @openOrders="openOrders"
@@ -43,16 +43,22 @@ export default {
   },
   methods: {
     hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
+      const [, active = 'movies'] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/) || [];
       this.activeTab = active;
     },
 
     openProfile () {
+      this.showPopup = false;
       location.hash = '#/my-profile';
     },
 
     openOrders () {
+      this.showPopup = false;
       location.hash = '#/my-orders';
+    },
+
+    closePopup (evt) {
+      if (this.showPopup && !this.$el.querySelector('.profile-section').contains(evt.target)) this.showPopup = false;
     }
 
   },
@@ -60,13 +66,11 @@ export default {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
 
-    const profileSectionEl = document.querySelector('.profile-section');
-    document.addEventListener('click', evt => {
-      if (this.showPopup && !profileSectionEl.contains(evt.target)) this.showPopup = false;
-    });
+    document.addEventListener('click', this.closePopup);
   },
   beforeDestroy () {
     window.removeEventListener('hashchange', this.hashHandler);
+    document.removeEventListener('click', this.closePopup);
   },
   components: {
     ActionButton,
@@ -133,6 +137,10 @@ a.username {
 }
 a.username:hover {
   border-color: var(--main-font);
+}
+
+.profile-section {
+  position: relative;
 }
 
 .hidden {
