@@ -47,13 +47,12 @@ export default {
       return this.movieSessions.reduce((modifiedArr, item) => {
         const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
         if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
+          modifiedArr[movieIndex].times.push({ id: item.id, show_time: item.show_time });
         } else {
           const showTime = item.show_time;
-          delete item.show_time;
           const modifiedItem = {
             ...item,
-            times: [showTime]
+            times: [{ id: item.id, show_time: showTime }]
           };
           modifiedArr.push(modifiedItem);
         }
@@ -85,7 +84,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date
