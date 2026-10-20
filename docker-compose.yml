@@ -25,3 +25,21 @@ services:
       - "5432:5432"
     env_file:
       - .env
+    volumes:
+      - my_vol_db:/var/lib/postgresql/data
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - app
+
+volumes:
+  my_vol_db:
