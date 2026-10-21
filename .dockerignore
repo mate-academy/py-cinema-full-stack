@@ -1,3 +1,9 @@
-venv/
-python-version
+.git
+**/node_modules
+**/dist
+**/__pycache__
+**/*.sqlite3
+**/.env
 .env
+backend/media
+screenshots

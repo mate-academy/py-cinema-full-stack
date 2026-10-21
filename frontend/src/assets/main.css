@@ -87,3 +87,16 @@ input, textarea {
   background-color: var(--secondary-bg) !important;
   border-color: transparent !important;
 }
+.api-error {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  max-width: 90vw;
+  padding: 16px !important;
+  background: #600;
+  border: 1px solid #d55;
+  border-radius: 8px;
+}
+.api-error button { margin-left: 12px; cursor: pointer; }

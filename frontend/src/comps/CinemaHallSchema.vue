@@ -54,6 +54,7 @@ export default {
   },
   methods: {
     chooseSeat (colIndex, rowIndex) {
+      if (this.takenSeats.some(seat => seat.row === rowIndex + 1 && seat.seat === colIndex + 1)) return;
       const seatIsChosen = this.chosenSeats.find(seat => seat.row === rowIndex + 1 && seat.seat === colIndex + 1);
       if (seatIsChosen) {
         this.chosenSeats = this.chosenSeats.filter(seat => seat.row !== rowIndex + 1 || seat.seat !== colIndex + 1);

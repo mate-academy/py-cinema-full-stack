@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '../api';
 
 import ActionButton from '../comps/ActionButton.vue';
 import InputItem from '../comps/InputItem.vue';
@@ -52,7 +52,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`,
+          `/api/cinema/cinema_halls/`,
           {
             name: this.name,
             rows: Number(this.countRows),

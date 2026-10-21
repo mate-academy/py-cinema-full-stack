@@ -44,20 +44,14 @@ export default {
   }),
   computed: {
     movieSessionsGroupedByTime () {
-      return this.movieSessions.reduce((modifiedArr, item) => {
-        const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
-        if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
-        } else {
-          const showTime = item.show_time;
-          delete item.show_time;
-          const modifiedItem = {
-            ...item,
-            times: [showTime]
-          };
-          modifiedArr.push(modifiedItem);
+      return this.movieSessions.reduce((groups, session) => {
+        let group = groups.find(item => item.movie_title === session.movie_title);
+        if (!group) {
+          group = { ...session, times: [] };
+          groups.push(group);
         }
-        return modifiedArr;
+        group.times.push({ id: session.id, show_time: session.show_time });
+        return groups;
       }, []);
     },
 
@@ -85,7 +79,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date
@@ -94,7 +88,7 @@ export default {
 
         this.movieSessions = movieSessions;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     }
 

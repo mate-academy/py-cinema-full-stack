@@ -43,7 +43,7 @@ import moment from 'moment';
 export default {
   data: () => ({
     active: false,
-    response: []
+    response: { results: [], next: null, previous: null }
   }),
   computed: {
     token () {
@@ -57,34 +57,36 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
     async fetchPrevious () {
+      if (!this.response.previous) return;
       try {
         const { data: response } = await this.axios.get(this.response.previous, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
     async fetchNext () {
+      if (!this.response.next) return;
       try {
         const { data: response } = await this.axios.get(this.response.next, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 

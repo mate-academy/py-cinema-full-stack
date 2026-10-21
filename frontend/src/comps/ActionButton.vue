@@ -6,7 +6,12 @@
     width === 'normal' && 'normal',
     disabled && 'disabled'
   ]"
-  @click="$emit('click')"
+  role="button"
+  :tabindex="disabled ? -1 : 0"
+  :aria-disabled="disabled"
+  @keydown.enter="!disabled && $emit('click')"
+  @keydown.space.prevent="!disabled && $emit('click')"
+  @click="!disabled && $emit('click')"
   >{{label}}</div>
 </template>
 
