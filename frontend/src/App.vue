@@ -52,11 +52,13 @@ export default {
     },
 
     async handleLogIn () {
+      this.error = '';
       await this.logIn();
       location.hash = '#/';
     },
 
     logOut () {
+      this.error = '';
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
 

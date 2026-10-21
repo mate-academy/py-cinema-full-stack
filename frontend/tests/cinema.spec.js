@@ -96,10 +96,12 @@ test('staff catalogue screens create genre, actor, hall, movie with image and se
   await page.getByText('Adventure', { exact: true }).click();
   await page.locator('input[type=file]').setInputFiles({
     name: 'poster.png', mimeType: 'image/png',
-    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==', 'base64')
+    buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFElEQVR4nGNkYPjPgA0wYRUdtBIAy0MBD1YkjLoAAAAASUVORK5CYII=', 'base64')
   });
   await capture(page, 'add-movie', testInfo);
+  const uploaded = page.waitForResponse(response => response.url().includes('/upload-image/'));
   await page.getByRole('button', { name: 'Submit' }).click();
+  expect((await uploaded).status()).toBe(200);
   await expect(page).toHaveURL(/#\/movies$/);
   await page.getByText('Integration premiere', { exact: true }).click();
   await expect(page.locator('.modal-wrapper')).toContainText('Integration premiere');

@@ -12,8 +12,8 @@ export default defineConfig(({ mode }) => {
   server: {
     host: '0.0.0.0',
     proxy: {
-      '/api': { target, changeOrigin: true },
-      '/media': { target, changeOrigin: true }
+      '/api': { target, changeOrigin: false },
+      '/media': { target, changeOrigin: false }
     }
   },
   plugins: [

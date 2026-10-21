@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - '127.0.0.1:8080:8080'
+      - '127.0.0.1:${BACKEND_PORT:-8080}:8080'
     environment:
       SECRET_KEY: ${SECRET_KEY:?Copy .env.sample to .env}
       DEBUG: ${DEBUG:-1}
@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
     ports:
-      - '127.0.0.1:5173:5173'
+      - '127.0.0.1:${FRONTEND_PORT:-5173}:5173'
     environment:
       API_PROXY_TARGET: http://app:8080
     depends_on:

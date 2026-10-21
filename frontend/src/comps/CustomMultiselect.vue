@@ -58,6 +58,7 @@ export default {
         this.selectedOptions.push(option);
       }
 
+      this.shownOptions = false;
       this.$emit('option-selected', option.id);
     }
   },

@@ -45,6 +45,15 @@ jobs:
       - run: docker compose build
         env:
           SECRET_KEY: ci-only-long-secret-key-for-full-stack-validation
+      - name: Check Docker frontend, API and media together
+        env:
+          BACKEND_PORT: '8081'
+          FRONTEND_PORT: '5174'
+        run: |
+          docker compose up -d
+          python scripts/smoke_test.py http://127.0.0.1:5174 --wait
+          docker compose exec -T app python manage.py seed_demo --with-users
+          python scripts/smoke_test.py http://127.0.0.1:5174
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -54,3 +63,5 @@ jobs:
             frontend/playwright-report
       - run: cat /tmp/backend.log
         if: failure()
+      - run: docker compose logs && docker compose down --volumes
+        if: always()
