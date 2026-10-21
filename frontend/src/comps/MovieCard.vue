@@ -74,6 +74,8 @@ export default {
   justify-content: flex-end;
   padding: 0 24px 25px;
   cursor: pointer;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .main-info {
@@ -89,6 +91,7 @@ export default {
   align-items: center;
   gap: 8px;
   max-width: 100%;
+  flex-wrap: wrap;
 }
 
 .label {
