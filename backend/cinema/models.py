@@ -141,3 +141,26 @@ class Ticket(models.Model):
     class Meta:
         unique_together = ("movie_session", "row", "seat")
         ordering = ["row", "seat"]
+
+
+# Room id: int
+# User id: int
+# Check-in date: date
+# Check-out date: date
+# Actual check-out date: date | null
+# Status: Enum: BOOKED | ACTIVE | COMPLETED | CANCELLED | NO_SHOW (NO_SHOW — guest booked but didn’t arrive or cancel before check-in)
+# Price per night: decimal (in USD)
+
+# class Booking(models.Model):
+#     class StatusChoice(models.TextChoices):
+#         BOOKED = "BO", "booked"
+#         ACTIVE = "AC", "active"
+#         COMPLETED = "CM", "completed"
+#         CANCELLED = "CN", "cancelled"
+#         NO_SHOW = "NS", "no show"
+#     room = models.ForeignKey(Room, on_delete=models.CASCADE)
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+#     check_in = models.DateField()
+#     check_out = models.DateField()
+#     actual_check_out = models.ForeignKey()
+#     status = models.CharField(max_length=2, choices=StatusChoice.choices)
