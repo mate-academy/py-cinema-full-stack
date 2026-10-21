@@ -1,10 +1,38 @@
+# IDE
 .idea/
 .vscode/
 *.iml
+
+# Environment variables
 .env
-.DS_Store
+.env.local
+
+# Python environments
+.venv/
 venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
 .pytest_cache/
-**__pycache__/
-**db.sqlite3
-media
+
+# Database
+*.sqlite3
+
+# Uploaded media
+media/
+
+# Frontend
+node_modules/
+dist/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
