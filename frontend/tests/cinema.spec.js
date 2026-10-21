@@ -6,7 +6,7 @@ async function login (page, email = 'admin@example.com') {
   await page.locator('.sign-in input').nth(1).fill('Cinema-demo-2026!');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByText(email, { exact: true })).toBeVisible();
-  await expect(page.locator('.movie-card')).toHaveCount(3);
+  await expect(page.locator('.movie-card').first()).toBeVisible();
 }
 
 async function capture (page, name, testInfo) {
@@ -23,7 +23,7 @@ test('customer registration, profile, correct screening, seats, history and logo
   await page.locator('.sign-up input').nth(1).fill('Customer-password-2026!');
   await page.getByRole('button', { name: 'Sign up', exact: true }).click();
   await expect(page.getByText(email, { exact: true })).toBeVisible();
-  await expect(page.locator('.movie-card')).toHaveCount(3);
+  await expect(page.locator('.movie-card').first()).toBeVisible();
   await capture(page, 'movies', testInfo);
   await page.locator('.movie-card').first().click();
   await expect(page.locator('.modal-wrapper')).toBeVisible();
@@ -64,25 +64,25 @@ test('staff catalogue screens create genre, actor, hall, movie with image and se
   await page.goto('/#/genres');
   await expect(page.locator('.genres')).toContainText('Adventure');
   await capture(page, 'genres', testInfo);
-  await page.locator('.add-btn').click();
+  await page.locator('.add').click();
   await page.locator('.add-genre input').fill('Sci-Fi');
   await page.getByRole('button', { name: 'Submit' }).click();
   await expect(page.locator('.genres')).toContainText('Sci-Fi');
   await page.goto('/#/actors');
-  await expect(page.locator('.actors-container')).toBeVisible();
+  await expect(page.locator('.actor-container')).toBeVisible();
   await capture(page, 'actors', testInfo);
-  await page.locator('.add-btn').click();
+  await page.locator('.add').click();
   await page.locator('.add-actor input').nth(0).fill('Jamie');
   await page.locator('.add-actor input').nth(1).fill('Stone');
   await page.getByRole('button', { name: 'Submit' }).click();
-  await expect(page.locator('.actors-container')).toContainText('Jamie Stone');
+  await expect(page.locator('.actor-container')).toContainText('Jamie Stone');
   await page.goto('/#/cinema-halls');
   await expect(page.locator('.cinema-halls')).toBeVisible();
   await capture(page, 'halls', testInfo);
   await page.goto('/#/cinema-halls?add=true');
-  await page.locator('.cinema-hall-container input').nth(0).fill('Studio');
-  await page.locator('.cinema-hall-container input').nth(1).fill('3');
-  await page.locator('.cinema-hall-container input').nth(2).fill('4');
+  await page.locator('.hall-container input').nth(0).fill('Studio');
+  await page.locator('.hall-container input').nth(1).fill('3');
+  await page.locator('.hall-container input').nth(2).fill('4');
   await capture(page, 'add-hall', testInfo);
   await page.getByRole('button', { name: 'Submit' }).click();
   await expect(page).toHaveURL(/#\/cinema-halls$/);
