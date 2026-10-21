@@ -1,27 +1,47 @@
-version: "3"
-
 services:
   app:
     build:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "8080:8080"
+      - '127.0.0.1:${BACKEND_PORT:-8080}:8080'
+    environment:
+      SECRET_KEY: ${SECRET_KEY:?Copy .env.sample to .env}
+      DEBUG: ${DEBUG:-1}
+      ALLOWED_HOSTS: localhost,127.0.0.1,app
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB:-cinema}
+      POSTGRES_USER: ${POSTGRES_USER:-cinema}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      MEDIA_ROOT: /vol/web/media
     volumes:
-      - ./backend:/app
-      - ./backend/media:/vol/web/media
-    command: >
-      sh -c "python manage.py wait_for_db &&
-             python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8080"
-    env_file:
-      - .env
+      - media_data:/vol/web/media
     depends_on:
-      - db
-
-  db:
-    image: postgres:14-alpine
+      db:
+        condition: service_healthy
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     ports:
-      - "5432:5432"
-    env_file:
-      - .env
+      - '127.0.0.1:${FRONTEND_PORT:-5173}:5173'
+    environment:
+      API_PROXY_TARGET: http://app:8080
+    depends_on:
+      - app
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cinema}
+      POSTGRES_USER: ${POSTGRES_USER:-cinema}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+volumes:
+  postgres_data:
+  media_data:

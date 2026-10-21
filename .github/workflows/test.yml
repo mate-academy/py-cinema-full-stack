@@ -1,0 +1,67 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  full-stack:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: cinema
+          POSTGRES_USER: cinema
+          POSTGRES_PASSWORD: ci-test-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U cinema -d cinema"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      SECRET_KEY: ci-only-long-secret-key-for-full-stack-validation
+      POSTGRES_HOST: localhost
+      POSTGRES_DB: cinema
+      POSTGRES_USER: cinema
+      POSTGRES_PASSWORD: ci-test-only
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: pip install -r requirements.txt
+      - run: |
+          python backend/manage.py test backend/cinema/tests
+          python backend/manage.py makemigrations --check --dry-run
+          flake8 backend
+          pip check
+      - run: |
+          python backend/manage.py migrate
+          python backend/manage.py seed_demo --with-users
+          python backend/manage.py runserver 127.0.0.1:8080 --noreload > /tmp/backend.log 2>&1 &
+      - run: npm ci && npm run build && npx playwright install --with-deps chromium && npm run test:e2e
+        working-directory: frontend
+      - run: docker compose build
+        env:
+          SECRET_KEY: ci-only-long-secret-key-for-full-stack-validation
+      - name: Check Docker frontend, API and media together
+        env:
+          BACKEND_PORT: '8081'
+          FRONTEND_PORT: '5174'
+        run: |
+          docker compose up -d
+          python scripts/smoke_test.py http://127.0.0.1:5174 --wait
+          docker compose exec -T app python manage.py seed_demo --with-users
+          python scripts/smoke_test.py http://127.0.0.1:5174
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-test-evidence
+          path: |
+            frontend/test-results
+            frontend/playwright-report
+      - run: cat /tmp/backend.log
+        if: failure()
+      - run: docker compose logs && docker compose down --volumes
+        if: always()

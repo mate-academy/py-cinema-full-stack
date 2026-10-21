@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import App from './App.vue';
-import axios from 'axios';
+import axios from './api';
 import VueAxios from 'vue-axios';
 import VCalendar from 'v-calendar';
 

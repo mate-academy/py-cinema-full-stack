@@ -1,4 +1,5 @@
-from django.db import transaction
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import transaction, IntegrityError
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -26,12 +27,17 @@ class ActorSerializer(serializers.ModelSerializer):
 
 
 class CinemaHallSerializer(serializers.ModelSerializer):
+    rows = serializers.IntegerField(min_value=1, max_value=100)
+    seats_in_row = serializers.IntegerField(min_value=1, max_value=100)
+
     class Meta:
         model = CinemaHall
         fields = ("id", "name", "rows", "seats_in_row", "capacity")
 
 
 class MovieSerializer(serializers.ModelSerializer):
+    duration = serializers.IntegerField(min_value=1)
+
     class Meta:
         model = Movie
         fields = (
@@ -114,7 +120,8 @@ class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs=attrs)
         Ticket.validate_ticket(
-            attrs["row"], attrs["seat"], data["movie_session"].cinema_hall, ValidationError
+            attrs["row"], attrs["seat"],
+            data["movie_session"].cinema_hall, ValidationError
         )
         return data
 
@@ -152,13 +159,34 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ("id", "tickets", "created_at")
 
+    def validate_tickets(self, tickets):
+        seats = [
+            (ticket["movie_session"].pk, ticket["row"], ticket["seat"])
+            for ticket in tickets
+        ]
+        if len(seats) != len(set(seats)):
+            raise ValidationError("A seat cannot appear twice in an order.")
+        return tickets
+
     def create(self, validated_data):
-        with transaction.atomic():
-            tickets_data = validated_data.pop("tickets")
-            order = Order.objects.create(**validated_data)
-            for ticket_data in tickets_data:
-                Ticket.objects.create(order=order, **ticket_data)
-            return order
+        try:
+            with transaction.atomic():
+                tickets_data = validated_data.pop("tickets")
+                session_ids = sorted({
+                    ticket["movie_session"].pk for ticket in tickets_data
+                })
+                list(MovieSession.objects.select_for_update().filter(
+                    pk__in=session_ids
+                ).order_by("pk"))
+                order = Order.objects.create(**validated_data)
+                for ticket_data in tickets_data:
+                    Ticket.objects.create(order=order, **ticket_data)
+                return order
+        except (IntegrityError, DjangoValidationError) as error:
+            raise ValidationError({
+                "tickets": "One or more seats are no longer available. "
+                           "Refresh the session and choose again."
+            }) from error
 
 
 class OrderListSerializer(OrderSerializer):

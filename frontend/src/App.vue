@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <div v-if="error" class="api-error" role="alert">{{ error }} <button @click="error = ''">Dismiss</button></div>
     <app-header v-if="user" :user="user" @log-out="logOut"></app-header>
     <sign-in v-if="!user" @log-in="handleLogIn"></sign-in>
     <sign-up v-if="!user" @log-in="handleLogIn"></sign-up>
@@ -14,13 +15,12 @@
     <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
     <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
     <order-list-screen v-if="user"></order-list-screen>
-    <profile-screen v-if="user" :user="user"></profile-screen>
+    <profile-screen v-if="user" :user="user" @profile-updated="user = $event"></profile-screen>
     <app-footer v-if="user"></app-footer>
   </div>
 </template>
 
 <script>
-import jwtDecode from 'jwt-decode';
 
 import SignIn from './views/SignIn.vue';
 import MovieListScreen from './views/MovieListScreen.vue';
@@ -41,73 +41,59 @@ import SignUp from './views/SignUp.vue';
 
 export default {
   data: () => ({
-    expiresAt: null,
+    error: '',
     user: null,
     type: 'password'
   }),
   methods: {
     async logIn () {
-      const accessToken = localStorage.getItem('access');
-      if (!accessToken) return;
-
-      const { exp } = jwtDecode(accessToken);
-      this.expiresAt = exp;
-
-      if (this.expiresAt * 1e3 > Date.now()) {
-        await this.fetchUser();
-        return;
-      }
-
-      this.refreshToken();
+      if (!localStorage.getItem('access') && !localStorage.getItem('refresh')) return;
+      await this.fetchUser();
     },
 
     async handleLogIn () {
+      this.error = '';
       await this.logIn();
       location.hash = '#/';
     },
 
     logOut () {
+      this.error = '';
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
 
       this.user = null;
+      location.hash = '#/sign-in';
     },
 
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
+        const { data: user } = await this.axios.get(`/api/user/me/`,
           { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
-    async refreshToken () {
-      try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
-          refresh: localStorage.getItem('refresh')
-        });
-
-        const { access, refresh } = data;
-
-        localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
-        this.logIn();
-      } catch (err) {
-        console.error(err.response.data);
-      }
+    handleApiError (event) {
+      this.error = event.detail;
+    },
+    handleSessionExpired () {
+      this.logOut();
+      location.hash = '#/sign-in';
     }
   },
   created () {
+    window.addEventListener('api-error', this.handleApiError);
+    window.addEventListener('session-expired', this.handleSessionExpired);
     this.logIn();
-
-    setInterval(() => {
-      if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
-      this.refreshToken();
-    }, 60 * 1e3);
+  },
+  beforeDestroy () {
+    window.removeEventListener('api-error', this.handleApiError);
+    window.removeEventListener('session-expired', this.handleSessionExpired);
   },
   components: {
     SignIn,

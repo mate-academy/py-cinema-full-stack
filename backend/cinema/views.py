@@ -5,6 +5,7 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -72,7 +73,10 @@ class MovieViewSet(
     @staticmethod
     def _params_to_ints(qs):
         """Converts a list of string IDs to a list of integers"""
-        return [int(str_id) for str_id in qs.split(",")]
+        try:
+            return [int(str_id) for str_id in qs.split(",")]
+        except ValueError as error:
+            raise ValidationError("Filter IDs must be integers.") from error
 
     def get_queryset(self):
         """Retrieve the movies with filters"""
@@ -168,11 +172,20 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
 
         if date:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
+            try:
+                date = datetime.strptime(date, "%Y-%m-%d").date()
+            except ValueError as error:
+                raise ValidationError("Use date format YYYY-MM-DD.") from error
             queryset = queryset.filter(show_time__date=date)
 
         if movie_id_str:
-            queryset = queryset.filter(movie_id=int(movie_id_str))
+            try:
+                movie_id = int(movie_id_str)
+            except ValueError as error:
+                raise ValidationError(
+                    "Movie must be an integer ID."
+                ) from error
+            queryset = queryset.filter(movie_id=movie_id)
 
         return queryset
 
@@ -224,7 +237,7 @@ class OrderViewSet(
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        return self.queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "list":

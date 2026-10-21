@@ -8,16 +8,17 @@
       <div class="selected-container">
         <span v-for="(option, index) in selectedOptions" :key="index">{{option.name}}</span>
       </div>
-      <div :class="['arrow', shownOptions && 'toggled']" @click="showOptions" @mousedown.prevent>
+      <div :class="['arrow', shownOptions && 'toggled']" @click.stop="showOptions" @mousedown.prevent>
         <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <use href="/assets/icons/arrow.svg#arrow"></use>
         </svg>
       </div>
     </div>
     <div v-if="shownOptions" class="options-container">
-      <div v-for="(option, index) in options" :key="index" class="option">
+      <div v-for="(option, index) in options" :key="index" class="option" @click.stop="handleOptionSelect(option)">
         <span>{{option.name}}</span>
         <checkbox-item
+          @click.native.stop
           @input="handleOptionSelect(option)"
           :checked="!!selectedOptions.find(selected => selected.id === option.id)"
         ></checkbox-item>
@@ -57,6 +58,7 @@ export default {
         this.selectedOptions.push(option);
       }
 
+      this.shownOptions = false;
       this.$emit('option-selected', option.id);
     }
   },

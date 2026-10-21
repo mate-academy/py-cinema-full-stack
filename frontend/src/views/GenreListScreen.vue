@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from '../api';
 
 import AddBtn from '../comps/AddBtn.vue';
 import InputItem from '../comps/InputItem.vue';
@@ -45,12 +45,12 @@ export default {
   methods: {
     async fetchGenres () {
       try {
-        const { data: genres } = await axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await axios.get(`/api/cinema/genres/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
@@ -64,7 +64,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/genres`,
+          `/api/cinema/genres/`,
           {
             name: this.name
           },

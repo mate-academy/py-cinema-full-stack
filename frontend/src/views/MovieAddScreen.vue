@@ -29,7 +29,7 @@ import CustomMultiselect from '../comps/CustomMultiselect.vue';
 import InputItem from '../comps/InputItem.vue';
 import ImageUploader from '../comps/ImageUploader.vue';
 
-import axios from 'axios';
+import axios from '../api';
 
 export default {
   props: {
@@ -61,7 +61,7 @@ export default {
 
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await this.axios.get(`/api/cinema/actors/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
@@ -72,18 +72,18 @@ export default {
         }
         ); ;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
     async fetchGenres () {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await this.axios.get(`/api/cinema/genres/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
@@ -107,7 +107,7 @@ export default {
         };
 
         const { data: movie } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movies`,
+          `/api/cinema/movies/`,
           {
             title: this.title,
             duration: Number(this.duration),
@@ -121,7 +121,7 @@ export default {
         if (this.image) {
           const data = new FormData();
           data.append('image', this.image);
-          await axios.post(`/api/cinema/movies-${movie.id}-upload-image`, data, imageConfig);
+          await axios.post(`/api/cinema/movies/${movie.id}/upload-image/`, data, imageConfig);
         }
 
         location.hash = '#/movies';

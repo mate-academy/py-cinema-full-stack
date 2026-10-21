@@ -1,20 +1,25 @@
 import time
+
+from django.core.management.base import BaseCommand, CommandError
 from django.db import connections
-from django.db.utils import OperationalError
-from django.core.management import BaseCommand
+from django.db.utils import OperationalError, InterfaceError
 
 
 class Command(BaseCommand):
-    """Django command to pause execution until db is available"""
+    help = "Wait for database readiness."  # noqa: VNE003
 
     def handle(self, *args, **options):
-        self.stdout.write("Waiting for database...")
-        db_conn = None
-        while not db_conn:
+        deadline = time.monotonic() + 60
+        while True:
             try:
-                db_conn = connections["default"]
-            except OperationalError:
-                self.stdout.write("Database unavailable, waiting 1 second...")
+                with connections["default"].cursor() as cursor:
+                    cursor.execute("SELECT 1")
+                self.stdout.write(self.style.SUCCESS("Database available!"))
+                return
+            except (OperationalError, InterfaceError) as error:
+                if time.monotonic() >= deadline:
+                    raise CommandError(
+                        "Database unavailable after 60s"
+                    ) from error
+                connections["default"].close()
                 time.sleep(1)
-
-        self.stdout.write(self.style.SUCCESS("Database available!"))

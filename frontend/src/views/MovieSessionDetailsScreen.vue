@@ -12,7 +12,7 @@
       :takenSeats="movieSession.taken_places"
       :cinemaHall="movieSession.cinema_hall"
       @choose-seat="chooseSeat"></cinema-hall-schema>
-      <action-button label="Make order" @click="makeOrder" :disabled="!chosenSeats.length || !user"></action-button>
+      <action-button label="Make order" @click="makeOrder" :disabled="!chosenSeats.length || !user || submitting"></action-button>
     </div>
   </div>
 </template>
@@ -33,6 +33,7 @@ export default {
     active: false,
     movieSession: {},
     loading: false,
+    submitting: false,
     chosenSeats: []
   }),
   computed: {
@@ -61,6 +62,7 @@ export default {
         return;
       }
 
+      this.chosenSeats = [];
       this.active = true;
       await this.fetchMovieSession(id);
     },
@@ -68,14 +70,17 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+        const { data: session } = await this.axios.get(`/api/cinema/movie_sessions/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
         this.movieSession = session;
-        this.loading = false;
+
       } catch (err) {
-        console.error(err.response.data);
+        this.active = false;
+        console.error(err.response?.data || err.message);
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -95,11 +100,19 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
+      if (!tickets.length || this.submitting) return;
+      this.submitting = true;
+      try {
+      await this.axios.post(`/api/cinema/orders/`, { tickets },
         config
       );
       this.fetchMovieSession(this.movieSession.id);
       this.chosenSeats = [];
+      } catch (err) {
+        await this.fetchMovieSession(this.movieSession.id);
+      } finally {
+        this.submitting = false;
+      }
     }
   },
   mounted () {

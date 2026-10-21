@@ -8,3 +8,11 @@ venv/
 **__pycache__/
 **db.sqlite3
 media
+
+node_modules/
+frontend/dist/
+*.sqlite3
+backend/media/
+.env
+frontend/.env
+.DS_Store

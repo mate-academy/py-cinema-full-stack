@@ -1,28 +1,11 @@
-FROM --platform=linux/amd64 python:3.13-slim
-LABEL maintainer="danylo.t@mate.academy"
-
+FROM python:3.11-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
-
-
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-
-RUN pip install --upgrade pip
-COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
-
-
-COPY . .
-
-RUN mkdir -p /vol/web/media
-
-RUN adduser \
-    --disabled-password \
-    --no-create-home \
-    django-user
-
-RUN chown -R django-user:django-user /vol/
-RUN chmod -R 755 /vol/web/
-
-USER django-user
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
+    adduser --disabled-password --gecos '' --uid 10001 cinema && \
+    mkdir -p /vol/web/media && chown -R cinema:cinema /vol/web
+COPY backend/ /app/
+USER cinema
+EXPOSE 8080
+CMD ["sh", "-c", "python manage.py wait_for_db && python manage.py migrate && python manage.py runserver 0.0.0.0:8080 --noreload"]
