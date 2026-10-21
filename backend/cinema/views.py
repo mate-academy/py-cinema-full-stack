@@ -182,7 +182,9 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
             try:
                 movie_id = int(movie_id_str)
             except ValueError as error:
-                raise ValidationError("Movie must be an integer ID.") from error
+                raise ValidationError(
+                    "Movie must be an integer ID."
+                ) from error
             queryset = queryset.filter(movie_id=movie_id)
 
         return queryset

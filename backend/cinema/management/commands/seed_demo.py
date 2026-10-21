@@ -11,7 +11,7 @@ from cinema.models import Actor, CinemaHall, Genre, Movie, MovieSession
 
 
 class Command(BaseCommand):
-    help = "Create local demo catalogue; optionally add public demo accounts."
+    help = "Seed local demo catalogue and optional accounts."  # noqa: VNE003
 
     def add_arguments(self, parser):
         parser.add_argument("--with-users", action="store_true")

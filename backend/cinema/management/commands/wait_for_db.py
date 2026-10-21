@@ -6,7 +6,7 @@ from django.db.utils import OperationalError, InterfaceError
 
 
 class Command(BaseCommand):
-    help = "Wait up to 60 seconds for a usable database connection."
+    help = "Wait for database readiness."  # noqa: VNE003
 
     def handle(self, *args, **options):
         deadline = time.monotonic() + 60
@@ -18,6 +18,8 @@ class Command(BaseCommand):
                 return
             except (OperationalError, InterfaceError) as error:
                 if time.monotonic() >= deadline:
-                    raise CommandError("Database unavailable after 60s") from error
+                    raise CommandError(
+                        "Database unavailable after 60s"
+                    ) from error
                 connections["default"].close()
                 time.sleep(1)
