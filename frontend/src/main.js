@@ -1,12 +1,12 @@
 import Vue from 'vue';
 import App from './App.vue';
-import axios from 'axios';
+import { api } from './api';
 import VueAxios from 'vue-axios';
 import VCalendar from 'v-calendar';
 
 import './assets/main.css';
 
-Vue.use(VueAxios, axios);
+Vue.use(VueAxios, api);
 Vue.use(VCalendar);
 
 new Vue({

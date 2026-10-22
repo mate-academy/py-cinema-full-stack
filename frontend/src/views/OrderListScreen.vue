@@ -57,12 +57,12 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
@@ -73,7 +73,7 @@ export default {
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 
@@ -84,7 +84,7 @@ export default {
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err.message);
       }
     },
 

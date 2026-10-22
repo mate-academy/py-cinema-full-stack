@@ -68,15 +68,16 @@ export default {
       if (this.password) body.password = this.password;
 
       try {
-        const { data } = await this.axios.patch(`${import.meta.env.VITE_API_URL}/api/user/me`, body, config);
+        const { data } = await this.axios.patch(`/api/user/me/`, body, config);
+        this.$emit('user-updated', data);
         this.success = !!data;
 
         this.email = '';
         this.password = '';
       } catch (err) {
         console.error(err);
-        const { password = null, email = null } = err.response.data;
-        this.error = password || email;
+        const { password = null, email = null } = err.response?.data || {};
+        this.error = password || email || ['Unable to update profile. Please try again.'];
       }
     }
   },
