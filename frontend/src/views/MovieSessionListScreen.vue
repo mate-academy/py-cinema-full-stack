@@ -44,18 +44,15 @@ export default {
   }),
   computed: {
     movieSessionsGroupedByTime () {
+      // one card per movie; every show time keeps the id of its own session
       return this.movieSessions.reduce((modifiedArr, item) => {
+        const { show_time: showTime, ...rest } = item;
+        const time = { id: item.id, time: showTime };
         const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
         if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
+          modifiedArr[movieIndex].times.push(time);
         } else {
-          const showTime = item.show_time;
-          delete item.show_time;
-          const modifiedItem = {
-            ...item,
-            times: [showTime]
-          };
-          modifiedArr.push(modifiedItem);
+          modifiedArr.push({ ...rest, times: [time] });
         }
         return modifiedArr;
       }, []);
@@ -85,7 +82,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date

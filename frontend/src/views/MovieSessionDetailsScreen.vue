@@ -68,14 +68,15 @@ export default {
     async fetchMovieSession (id) {
       try {
         this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
         this.movieSession = session;
-        this.loading = false;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response ? err.response.data : err);
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -95,11 +96,15 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
-        config
-      );
-      this.fetchMovieSession(this.movieSession.id);
-      this.chosenSeats = [];
+      try {
+        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets },
+          config
+        );
+        this.chosenSeats = [];
+        await this.fetchMovieSession(this.movieSession.id);
+      } catch (err) {
+        console.error(err.response ? err.response.data : err);
+      }
     }
   },
   mounted () {
