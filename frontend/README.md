@@ -1,6 +1,6 @@
 # cinema-shop-vue-ui
 
-This template should help get you started developing with Vue 3 in Vite.
+Cinema Shop uses Vue 2.7 and Vite. See the root README for Docker/API setup.
 
 ## Recommended IDE Setup
 

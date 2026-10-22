@@ -1,4 +1,5 @@
-from django.db import transaction
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -156,12 +157,17 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ("id", "tickets", "created_at")
 
     def create(self, validated_data):
-        with transaction.atomic():
-            tickets_data = validated_data.pop("tickets")
-            order = Order.objects.create(**validated_data)
-            for ticket_data in tickets_data:
-                Ticket.objects.create(order=order, **ticket_data)
-            return order
+        try:
+            with transaction.atomic():
+                tickets_data = validated_data.pop("tickets")
+                order = Order.objects.create(**validated_data)
+                for ticket_data in tickets_data:
+                    Ticket.objects.create(order=order, **ticket_data)
+                return order
+        except (DjangoValidationError, IntegrityError) as error:
+            raise ValidationError(
+                {"tickets": "One or more of these seats are already booked."}
+            ) from error
 
 
 class OrderListSerializer(OrderSerializer):

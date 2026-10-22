@@ -8,7 +8,7 @@
       <div class="selected-container">
         <span v-for="(option, index) in selectedOptions" :key="index">{{option.name}}</span>
       </div>
-      <div :class="['arrow', shownOptions && 'toggled']" @click="showOptions" @mousedown.prevent>
+      <div :class="['arrow', shownOptions && 'toggled']" @click.stop="showOptions" @mousedown.prevent>
         <svg width="20" height="20" viewbox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <use href="/assets/icons/arrow.svg#arrow"></use>
         </svg>

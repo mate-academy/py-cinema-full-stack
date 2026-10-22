@@ -1,11 +1,11 @@
-FROM --platform=linux/amd64 python:3.13-slim
+FROM python:3.13-slim
 LABEL maintainer="danylo.t@mate.academy"
 
 WORKDIR /app
 
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 
 RUN pip install --upgrade pip
@@ -13,13 +13,15 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 
-COPY . .
+COPY backend/ .
+COPY .flake8 /etc/flake8
 
 RUN mkdir -p /vol/web/media
 
 RUN adduser \
     --disabled-password \
     --no-create-home \
+    --gecos "" \
     django-user
 
 RUN chown -R django-user:django-user /vol/
