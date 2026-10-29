@@ -1,0 +1,146 @@
+[
+  {
+    "model": "cinema.cinemahall",
+    "pk": 1,
+    "fields": {
+      "name": "Red",
+      "rows": 6,
+      "seats_in_row": 8
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 2,
+    "fields": {
+      "name": "Green",
+      "rows": 8,
+      "seats_in_row": 9
+    }
+  },
+  {
+    "model": "cinema.cinemahall",
+    "pk": 3,
+    "fields": {
+      "name": "VIP",
+      "rows": 5,
+      "seats_in_row": 6
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 1,
+    "fields": {
+      "name": "drama"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 2,
+    "fields": {
+      "name": "comedy"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 3,
+    "fields": {
+      "name": "fantasy"
+    }
+  },
+  {
+    "model": "cinema.genre",
+    "pk": 4,
+    "fields": {
+      "name": "romance"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 1,
+    "fields": {
+      "first_name": "Jim",
+      "last_name": "Carrey"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 2,
+    "fields": {
+      "first_name": "Tom",
+      "last_name": "Holland"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 3,
+    "fields": {
+      "first_name": "Leonardo",
+      "last_name": "DiCaprio"
+    }
+  },
+  {
+    "model": "cinema.actor",
+    "pk": 4,
+    "fields": {
+      "first_name": "Kate",
+      "last_name": "Winslet"
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 1,
+    "fields": {
+      "title": "Spider Man: No Way Home",
+      "description": "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear, forcing Peter to discover what it truly means to be Spider-Man.",
+      "duration": 148,
+      "image": "uploads/movies/spider-man-no-way-home-a3bc44fc-5f63-44c4-ba89-36b60f4922dc.jpeg",
+      "genres": [3],
+      "actors": [2]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 2,
+    "fields": {
+      "title": "Titanic",
+      "description": "A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the luxurious, ill-fated R.M.S. Titanic.",
+      "duration": 194,
+      "image": "uploads/movies/titanic-3b1abe14-b77a-4a44-837c-1b3ae7a2d695.jpeg",
+      "genres": [1, 4],
+      "actors": [3, 4]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 3,
+    "fields": {
+      "title": "Ace Ventura",
+      "description": "A goofy detective specializing in animals goes in search of the missing mascot of the Miami Dolphins.",
+      "duration": 86,
+      "image": "uploads/movies/ace-ventura-37b4168c-9ad0-4a45-b06a-cb0a985f6b5d.jpg",
+      "genres": [2],
+      "actors": [1]
+    }
+  },
+  {
+    "model": "cinema.movie",
+    "pk": 4,
+    "fields": {
+      "title": "Liar Liar",
+      "description": "A pathological liar-lawyer finds his career turned upside down when he inexplicably cannot physically lie for 24 whole hours.",
+      "duration": 86,
+      "image": "uploads/movies/liar-liar-e71fb71d-eca9-4ec2-a3e2-cc8a1e797a4b.jpeg",
+      "genres": [2],
+      "actors": [1]
+    }
+  },
+  {
+    "model": "cinema.moviesession",
+    "pk": 1,
+    "fields": {
+      "show_time": "2023-01-24T18:00:00",
+      "movie": 3,
+      "cinema_hall": 1
+    }
+  }
+]
