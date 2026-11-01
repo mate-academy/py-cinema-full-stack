@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="label">Select date</div>
-    <v-date-picker class="picker" v-model="date" is-dark :min-date='new Date()' :max-date="maxDate">
+    <v-date-picker class="picker" v-model="date" is-dark is-required :min-date='new Date()' :max-date="maxDate">
       <template v-slot="{ inputValue, togglePopover }">
           <input
             :value="inputValue"
