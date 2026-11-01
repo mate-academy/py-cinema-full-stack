@@ -46,16 +46,11 @@ export default {
     movieSessionsGroupedByTime () {
       return this.movieSessions.reduce((modifiedArr, item) => {
         const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
+        const time = { id: item.id, showTime: item.show_time };
         if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
+          modifiedArr[movieIndex].times.push(time);
         } else {
-          const showTime = item.show_time;
-          delete item.show_time;
-          const modifiedItem = {
-            ...item,
-            times: [showTime]
-          };
-          modifiedArr.push(modifiedItem);
+          modifiedArr.push({ ...item, times: [time] });
         }
         return modifiedArr;
       }, []);
@@ -85,7 +80,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date
@@ -106,6 +101,7 @@ export default {
   watch: {
     active () {
       if (this.active) {
+        this.date = moment(new Date()).format('YYYY-MM-DD');
         this.fetchMovieSessionsByDate();
       }
     }
