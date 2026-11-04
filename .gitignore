@@ -2,9 +2,16 @@
 .vscode/
 *.iml
 .env
+frontend/.env
+env/
 .DS_Store
 venv/
 .pytest_cache/
+*.pyc
+__pycache__/
 **__pycache__/
 **db.sqlite3
 media
+.DS_Store
+Thumbs.db
+node_modules/
