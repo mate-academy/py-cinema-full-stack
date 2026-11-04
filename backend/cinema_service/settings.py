@@ -182,5 +182,3 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "https://127.0.0.1:5173",
 ]
-
-APPEND_SLASH = False
