@@ -95,7 +95,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`,
+          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`,
           {
             movie: this.selectedMovieId,
             cinema_hall: this.selectedHallId,

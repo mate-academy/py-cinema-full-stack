@@ -68,7 +68,7 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/actors`,
+          `${import.meta.env.VITE_API_URL}/api/cinema/actors/`,
           {
             first_name: this.firstName,
             last_name: this.lastName
