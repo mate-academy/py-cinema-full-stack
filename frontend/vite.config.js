@@ -17,5 +17,15 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: process.env.CINEMA_API_TARGET || 'http://127.0.0.1:8080'
+      },
+      '/media': {
+        target: process.env.CINEMA_API_TARGET || 'http://127.0.0.1:8080'
+      }
+    }
   }
 });
