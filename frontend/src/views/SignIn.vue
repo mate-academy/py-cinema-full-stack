@@ -6,7 +6,7 @@
     here if you are not registered yet.</h2>
     <input-item
       label="Login"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+      pattern="^[^@\s]+@[^@\s]+[.][^@\s]+$"
       placeholder="Email"
       v-model="email"></input-item>
     <password-input v-model="password"></password-input>
@@ -32,7 +32,7 @@ export default {
 
     async signIn () {
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
@@ -66,8 +66,8 @@ export default {
 <style scoped>
 .sign-in {
   position: fixed;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  transform: translateX(-50%);
   left: 50%;
   margin: auto;
   display: flex;
@@ -75,6 +75,9 @@ export default {
   justify-content: center;
   align-items: center;
   gap: 24px;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 24px;
 }
 
 h1 {
@@ -96,5 +99,22 @@ a {
   font-weight: 600;
   cursor: pointer;
   color: var(--main-font);
+}
+
+@media (max-height: 600px) {
+  .sign-in {
+    gap: 12px;
+  }
+
+  h1 {
+    font-size: 32px;
+    line-height: 38px;
+  }
+
+  h2 {
+    font-size: 16px;
+    line-height: 20px;
+    margin-bottom: 0;
+  }
 }
 </style>

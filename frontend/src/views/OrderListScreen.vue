@@ -57,7 +57,7 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
@@ -68,7 +68,8 @@ export default {
 
     async fetchPrevious () {
       try {
-        const { data: response } = await this.axios.get(this.response.previous, {
+        const page = new URL(this.response.previous, window.location.origin);
+        const { data: response } = await this.axios.get(`${page.pathname}${page.search}`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
@@ -79,7 +80,8 @@ export default {
 
     async fetchNext () {
       try {
-        const { data: response } = await this.axios.get(this.response.next, {
+        const page = new URL(this.response.next, window.location.origin);
+        const { data: response } = await this.axios.get(`${page.pathname}${page.search}`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
