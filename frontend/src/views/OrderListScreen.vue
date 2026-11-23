@@ -57,7 +57,7 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
@@ -89,11 +89,11 @@ export default {
     },
 
     createdAt (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
+      return moment(time).format('YYYY/MM/DD HH:mm');
     },
 
     showTime (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
+      return moment(time).format('YYYY/MM/DD HH:mm');
     }
   },
   watch: {
