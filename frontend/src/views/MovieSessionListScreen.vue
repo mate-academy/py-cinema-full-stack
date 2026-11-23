@@ -9,6 +9,7 @@
       :title="session.movie_title"
       :image="session.movie_image"
       :times="session.times"
+      :session-ids="session.sessionIds"
       @open-details="handleMovieSessionDetails"></movie-card>
     </div>
     <div v-else class="no-sessions">No movie sessions for selected date.</div>
@@ -45,18 +46,20 @@ export default {
   computed: {
     movieSessionsGroupedByTime () {
       return this.movieSessions.reduce((modifiedArr, item) => {
-        const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
-        if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
+        const movie = modifiedArr.find(session => session.movie_title === item.movie_title);
+
+        if (movie) {
+          movie.times.push(item.show_time);
+          movie.sessionIds.push(item.id);
         } else {
-          const showTime = item.show_time;
-          delete item.show_time;
-          const modifiedItem = {
-            ...item,
-            times: [showTime]
-          };
-          modifiedArr.push(modifiedItem);
+          const { show_time: showTime, ...rest } = item;
+          modifiedArr.push({
+            ...rest,
+            times: [showTime],
+            sessionIds: [item.id]
+          });
         }
+
         return modifiedArr;
       }, []);
     },
@@ -85,7 +88,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date

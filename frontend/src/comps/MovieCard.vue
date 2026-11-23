@@ -19,7 +19,7 @@
       </div>
       <div class="container" v-if="times.length">
         <span class="label">Time: </span>
-        <span v-for="(time, index) in formattedTime" :key="index" class="item time" @click="$emit('open-details', id)">{{time}}</span>
+        <span v-for="(time, index) in formattedTime" :key="index" class="item time" @click.stop="$emit('open-details', sessionIds[index] || id)">{{time}}</span>
       </div>
     </div>
   </div>
@@ -50,6 +50,10 @@ export default {
       default: () => []
     },
     times: {
+      type: Array,
+      default: () => []
+    },
+    sessionIds: {
       type: Array,
       default: () => []
     }

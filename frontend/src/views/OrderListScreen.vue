@@ -89,11 +89,11 @@ export default {
     },
 
     createdAt (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
+      return moment(time).format('YYYY/MM/DD HH:mm');
     },
 
     showTime (time) {
-      return moment(time).format('YYYY/MM/DD h:mm');
+      return moment(time).format('YYYY/MM/DD HH:mm');
     }
   },
   watch: {
