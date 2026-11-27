@@ -1,4 +1,5 @@
-from django.db import transaction
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -114,7 +115,10 @@ class TicketSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         data = super(TicketSerializer, self).validate(attrs=attrs)
         Ticket.validate_ticket(
-            attrs["row"], attrs["seat"], data["movie_session"].cinema_hall, ValidationError
+            attrs["row"],
+            attrs["seat"],
+            data["movie_session"].cinema_hall,
+            ValidationError,
         )
         return data
 
@@ -151,14 +155,47 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ("id", "tickets", "created_at")
+        read_only_fields = ("id", "created_at")
+
+    def validate_tickets(self, tickets):
+        """Check every seat before writing an order to the database."""
+        seen = set()
+        for ticket in tickets:
+            movie_session = ticket["movie_session"]
+            row, seat = ticket["row"], ticket["seat"]
+            Ticket.validate_ticket(
+                row, seat, movie_session.cinema_hall, serializers.ValidationError
+            )
+            key = (movie_session.pk, row, seat)
+            if key in seen or Ticket.objects.filter(
+                movie_session=movie_session, row=row, seat=seat
+            ).exists():
+                raise serializers.ValidationError(
+                    "One or more selected seats are already booked."
+                )
+            seen.add(key)
+        return tickets
 
     def create(self, validated_data):
-        with transaction.atomic():
-            tickets_data = validated_data.pop("tickets")
-            order = Order.objects.create(**validated_data)
-            for ticket_data in tickets_data:
-                Ticket.objects.create(order=order, **ticket_data)
-            return order
+        # The DB uniqueness constraint protects concurrent reservations.
+        try:
+            with transaction.atomic():
+                tickets_data = validated_data.pop("tickets")
+                order = Order.objects.create(**validated_data)
+                for ticket_data in tickets_data:
+                    Ticket.objects.create(order=order, **ticket_data)
+                return order
+        except DjangoValidationError as exc:
+            details = (
+                exc.message_dict
+                if hasattr(exc, "message_dict")
+                else exc.messages
+            )
+            raise serializers.ValidationError(details) from exc
+        except IntegrityError as exc:
+            raise serializers.ValidationError(
+                {"tickets": "One or more selected seats are already booked."}
+            ) from exc
 
 
 class OrderListSerializer(OrderSerializer):

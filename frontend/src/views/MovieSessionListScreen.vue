@@ -3,8 +3,8 @@
     <date-picker @input="handleDateSelection"></date-picker>
     <div class="movie-container" v-if="movieSessions.length">
       <movie-card
-      v-for="(session, index) in movieSessionsGroupedByTime"
-      :key="index"
+      v-for="session in movieSessionsGroupedByTime"
+      :key="session.id"
       :id="session.id"
       :title="session.movie_title"
       :image="session.movie_image"
@@ -44,21 +44,22 @@ export default {
   }),
   computed: {
     movieSessionsGroupedByTime () {
-      return this.movieSessions.reduce((modifiedArr, item) => {
-        const movieIndex = modifiedArr.findIndex(session => session.movie_title === item.movie_title);
-        if (movieIndex > -1) {
-          modifiedArr[movieIndex].times.push(item.show_time);
-        } else {
-          const showTime = item.show_time;
-          delete item.show_time;
-          const modifiedItem = {
-            ...item,
-            times: [showTime]
-          };
-          modifiedArr.push(modifiedItem);
+      const grouped = new Map();
+      for (const session of this.movieSessions) {
+        // A movie can have several showings on the same day.
+        const key = session.movie_title;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            ...session,
+            times: []
+          });
         }
-        return modifiedArr;
-      }, []);
+        grouped.get(key).times.push({
+          id: session.id,
+          show_time: session.show_time
+        });
+      }
+      return [...grouped.values()];
     },
 
     token () {
@@ -85,7 +86,7 @@ export default {
 
     async fetchMovieSessionsByDate () {
       try {
-        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`, {
+        const { data: movieSessions } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {
             date: this.date
@@ -94,7 +95,7 @@ export default {
 
         this.movieSessions = movieSessions;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     }
 

@@ -43,8 +43,8 @@ export default {
   },
   methods: {
     hashHandler () {
-      const [, active] = location.hash.match(/#\/([a-z]*-[a-z]*|[a-z]*)/);
-      this.activeTab = active;
+      const match = location.hash.match(/^#\/([a-z-]+)(?:\/|\?|$)/);
+      this.activeTab = match ? match[1] : 'movies';
     },
 
     openProfile () {
@@ -53,6 +53,13 @@ export default {
 
     openOrders () {
       location.hash = '#/my-orders';
+    },
+
+    closePopupOutside (evt) {
+      const section = this.$el.querySelector('.profile-section');
+      if (this.showPopup && section && !section.contains(evt.target)) {
+        this.showPopup = false;
+      }
     }
 
   },
@@ -60,13 +67,11 @@ export default {
     window.addEventListener('hashchange', this.hashHandler);
     this.hashHandler();
 
-    const profileSectionEl = document.querySelector('.profile-section');
-    document.addEventListener('click', evt => {
-      if (this.showPopup && !profileSectionEl.contains(evt.target)) this.showPopup = false;
-    });
+    document.addEventListener('click', this.closePopupOutside);
   },
   beforeDestroy () {
     window.removeEventListener('hashchange', this.hashHandler);
+    document.removeEventListener('click', this.closePopupOutside);
   },
   components: {
     ActionButton,

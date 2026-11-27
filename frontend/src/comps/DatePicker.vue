@@ -22,9 +22,12 @@
 import moment from 'moment';
 
 export default {
-  data: () => ({
-    date: new Date()
-  }),
+  props: {
+    value: { default: null }
+  },
+  data () {
+    return { date: this.value ? new Date(this.value) : new Date() };
+  },
   computed: {
     maxDate () {
       const date = new Date();
@@ -32,6 +35,9 @@ export default {
     }
   },
   watch: {
+    value (value) {
+      if (value) this.date = new Date(value);
+    },
     date (value) {
       this.$emit('input', moment(value).format('YYYY-MM-DD'));
     }

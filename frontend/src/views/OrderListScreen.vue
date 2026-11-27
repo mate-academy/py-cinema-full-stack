@@ -2,13 +2,14 @@
   <div v-if="active" class="orders-container">
     <div class="header">My orders</div>
     <div class="container">
-      <div v-for="order in response.results" class="order">
+      <p v-if="!response.results.length">You have no orders yet.</p>
+      <div v-for="order in response.results" :key="order.id" class="order">
         <div class="created-info">
           <div>Id: {{order.id}}.</div>
           <div>Created at {{createdAt(order.created_at)}}</div>
         </div>
-        <div  v-for="ticket in order.tickets" class="ticket">
-          <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + ticket.movie_session.movie_image + ')' }"></div>
+        <div v-for="ticket in order.tickets" :key="ticket.id" class="ticket">
+          <div class="movie-card"><img v-if="ticket.movie_session.movie_image" :src="ticket.movie_session.movie_image" alt="" @error="$event.target.remove()"/></div>
           <div class="ticket-info">
             <div><span class="label">Movie:</span> {{ticket.movie_session.movie_title}}</div>
             <div><span class="label">Show time:</span> {{showTime(ticket.movie_session.show_time)}}</div>
@@ -43,7 +44,7 @@ import moment from 'moment';
 export default {
   data: () => ({
     active: false,
-    response: []
+    response: { results: [], next: null, previous: null }
   }),
   computed: {
     token () {
@@ -57,34 +58,36 @@ export default {
 
     async fetchOrders () {
       try {
-        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, {
+        const { data: response } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
     async fetchPrevious () {
+      if (!this.response.previous) return;
       try {
         const { data: response } = await this.axios.get(this.response.previous, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
     async fetchNext () {
+      if (!this.response.next) return;
       try {
         const { data: response } = await this.axios.get(this.response.next, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.response = response;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
@@ -148,7 +151,15 @@ export default {
   font-weight: 600;
 }
 
+.movie-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .movie-card {
+  background: #252525;
   width: 76px;
   height: 100%;
   background-repeat: no-repeat;

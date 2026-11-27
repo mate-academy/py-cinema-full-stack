@@ -20,15 +20,21 @@
 
 <script>
 export default {
-  data: () => ({
-    time: new Date()
-  }),
+  props: {
+    value: { default: null }
+  },
+  data () {
+    return { time: this.value ? new Date(this.value) : new Date() };
+  },
   computed: {
     validHours () {
       return { min: 10, max: 22 };
     }
   },
   watch: {
+    value (value) {
+      if (value) this.time = new Date(value);
+    },
     time (value) {
       this.$emit('input', value);
     }

@@ -1,5 +1,7 @@
 <template>
-  <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + image + ')' }" @click="$emit('click', id)">
+  <div class="movie-card" @click="$emit('click', id)">
+    <img v-if="image && !imageFailed" :src="image" class="poster-image" alt="" @error="imageFailed = true"/>
+    <div v-if="!image || imageFailed" class="poster-placeholder">Cinema Shop</div>
     <div class="main-info">
       <span class="title">{{title}}</span>
       <div class="detail" @click="$emit('click', id)" v-if="!times.length">
@@ -19,7 +21,7 @@
       </div>
       <div class="container" v-if="times.length">
         <span class="label">Time: </span>
-        <span v-for="(time, index) in formattedTime" :key="index" class="item time" @click="$emit('open-details', id)">{{time}}</span>
+        <span v-for="time in formattedTime" :key="time.id" class="item time" @click.stop="$emit('open-details', time.id)">{{time.label}}</span>
       </div>
     </div>
   </div>
@@ -29,6 +31,7 @@
 import moment from 'moment';
 
 export default {
+  data: () => ({ imageFailed: false }),
   props: {
     id: {
       type: Number
@@ -56,10 +59,17 @@ export default {
   },
   computed: {
     formattedTime () {
-      return this.times.map(time => moment(time).format('HH:mm'));
+      return this.times.map(time => ({
+        id: time.id,
+        label: moment(time.show_time).format('HH:mm')
+      }));
+    }
+  },
+  watch: {
+    image () {
+      this.imageFailed = false;
     }
   }
-
 };
 </script>
 
@@ -69,11 +79,47 @@ export default {
   height: 446px;
   background-repeat: no-repeat;
   background-size: cover;
+  background-position: center;
+  background-color: #252525;
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding: 0 24px 25px;
   cursor: pointer;
+}
+
+.poster-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.movie-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .85));
+  pointer-events: none;
+}
+
+.main-info, .additional-info {
+  position: relative;
+  z-index: 1;
+}
+
+.poster-placeholder {
+  position: absolute;
+  top: 34%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #aaa;
+  font-size: 20px;
+  letter-spacing: 2px;
+  pointer-events: none;
 }
 
 .main-info {

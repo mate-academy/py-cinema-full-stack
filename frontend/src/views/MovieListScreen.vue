@@ -16,8 +16,8 @@
     </div>
     <div class="movie-container">
       <movie-card
-        v-for="(movie, index) in movies"
-        :key="index"
+        v-for="movie in movies"
+        :key="movie.id"
         v-bind="movie"
         @click="handleMovieDetailsClick"
       ></movie-card>
@@ -59,7 +59,7 @@ export default {
   methods: {
     async fetchActors () {
       try {
-        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors`, {
+        const { data: actors } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/actors/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.actors = actors.map(({ id, first_name: firstName, last_name: lastName }) => {
@@ -70,18 +70,18 @@ export default {
         }
         ); ;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
     async fetchGenres () {
       try {
-        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres`, {
+        const { data: genres } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/genres/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         this.genres = genres;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
@@ -91,14 +91,14 @@ export default {
       if (this.selectedGenreIds.length) params.genres = this.selectedGenreIds.join();
 
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params
         });
 
         this.movies = movies;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
