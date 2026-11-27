@@ -1,9 +1,10 @@
-from datetime import datetime
+from django.utils.dateparse import parse_date
 
 from django.db.models import F, Count
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, mixins, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -72,7 +73,10 @@ class MovieViewSet(
     @staticmethod
     def _params_to_ints(qs):
         """Converts a list of string IDs to a list of integers"""
-        return [int(str_id) for str_id in qs.split(",")]
+        parts = qs.split(",")
+        if any(not part.isdecimal() or int(part) <= 0 for part in parts):
+            raise ValidationError("IDs must be positive integers.")
+        return [int(part) for part in parts]
 
     def get_queryset(self):
         """Retrieve the movies with filters"""
@@ -80,7 +84,7 @@ class MovieViewSet(
         genres = self.request.query_params.get("genres")
         actors = self.request.query_params.get("actors")
 
-        queryset = self.queryset
+        queryset = super().get_queryset()
 
         if title:
             queryset = queryset.filter(title__icontains=title)
@@ -165,13 +169,20 @@ class MovieSessionViewSet(viewsets.ModelViewSet):
         date = self.request.query_params.get("date")
         movie_id_str = self.request.query_params.get("movie")
 
-        queryset = self.queryset
+        queryset = super().get_queryset()
 
         if date:
-            date = datetime.strptime(date, "%Y-%m-%d").date()
-            queryset = queryset.filter(show_time__date=date)
+            try:
+                parsed_date = parse_date(date)
+            except ValueError:
+                parsed_date = None
+            if parsed_date is None:
+                raise ValidationError({"date": "Use YYYY-MM-DD format."})
+            queryset = queryset.filter(show_time__date=parsed_date)
 
         if movie_id_str:
+            if not movie_id_str.isdecimal() or int(movie_id_str) <= 0:
+                raise ValidationError({"movie": "Enter a positive integer ID."})
             queryset = queryset.filter(movie_id=int(movie_id_str))
 
         return queryset
@@ -224,7 +235,7 @@ class OrderViewSet(
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        return super().get_queryset().filter(user=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "list":

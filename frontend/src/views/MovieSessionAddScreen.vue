@@ -16,6 +16,7 @@
 
 <script>
 import axios from 'axios';
+import moment from 'moment';
 
 import DatePicker from '../comps/DatePicker.vue';
 import ActionButton from '../comps/ActionButton.vue';
@@ -57,34 +58,36 @@ export default {
 
     async fetchMovies () {
       try {
-        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies`, {
+        const { data: movies } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movies/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
 
         this.movies = movies;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
     async fetchCinemaHalls () {
       try {
-        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls`, {
+        const { data: cinemaHalls } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/cinema_halls/`, {
           headers: { Authorization: `Bearer ${this.token}` },
           params: {}
         });
 
         this.cinemaHalls = cinemaHalls;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
       }
     },
 
     async addMovieSession () {
-      const showTime = new Date(this.date);
-      showTime.setHours(this.time.getHours());
-      showTime.setMinutes(this.time.getMinutes());
+      const showTime = moment(this.date)
+        .hour(this.time.getHours())
+        .minute(this.time.getMinutes())
+        .second(0)
+        .format('YYYY-MM-DDTHH:mm:ss');
 
       try {
         const config = {
@@ -95,11 +98,11 @@ export default {
         };
 
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions`,
+          `${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/`,
           {
             movie: this.selectedMovieId,
             cinema_hall: this.selectedHallId,
-            show_time: showTime.toISOString()
+            show_time: showTime
           },
           config
         );

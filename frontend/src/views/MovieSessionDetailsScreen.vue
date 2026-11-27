@@ -1,6 +1,12 @@
 <template>
-  <div v-if="active && !loading" class="session-details">
-    <div class="movie-card" v-bind:style="{ 'background-image': 'linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%), url(' + movieSession.movie.image + ')' }"></div>
+  <div v-if="active" class="session-details">
+    <div v-if="loading">Loading session...</div>
+    <div v-else-if="error" class="error">{{error}}</div>
+    <template v-else-if="movieSession.movie">
+    <div class="movie-card">
+      <img v-if="movieSession.movie.image && !imageFailed" :src="movieSession.movie.image" alt="" @error="imageFailed = true"/>
+      <div v-if="!movieSession.movie.image || imageFailed" class="poster-placeholder">Cinema Shop</div>
+    </div>
     <div class="container">
       <div class="info">
         <span>{{movieSession.movie.title}}</span>
@@ -12,8 +18,10 @@
       :takenSeats="movieSession.taken_places"
       :cinemaHall="movieSession.cinema_hall"
       @choose-seat="chooseSeat"></cinema-hall-schema>
-      <action-button label="Make order" @click="makeOrder" :disabled="!chosenSeats.length || !user"></action-button>
+      <action-button label="Make order" @click="makeOrder" :disabled="submitting || !chosenSeats.length || !user"></action-button>
+      <p v-if="orderError" class="error">{{orderError}}</p>
     </div>
+    </template>
   </div>
 </template>
 
@@ -33,6 +41,10 @@ export default {
     active: false,
     movieSession: {},
     loading: false,
+    submitting: false,
+    error: '',
+    orderError: '',
+    imageFailed: false,
     chosenSeats: []
   }),
   computed: {
@@ -52,6 +64,7 @@ export default {
       if (!match) {
         this.active = false;
         this.movieSession = {};
+        this.chosenSeats = [];
         return;
       };
 
@@ -66,16 +79,20 @@ export default {
     },
 
     async fetchMovieSession (id) {
+      this.loading = true;
+      this.error = '';
       try {
-        this.loading = true;
-        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions-${id}`, {
+        const { data: session } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/cinema/movie_sessions/${id}/`, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
 
+        this.imageFailed = false;
         this.movieSession = session;
-        this.loading = false;
       } catch (err) {
-        console.error(err.response.data);
+        this.error = 'Cannot load this movie session. Please try again.';
+        console.error(err.response?.data || err);
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -95,11 +112,20 @@ export default {
         }
       };
 
-      await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders`, { tickets },
-        config
-      );
-      this.fetchMovieSession(this.movieSession.id);
-      this.chosenSeats = [];
+      if (this.submitting || !tickets.length) return;
+      this.submitting = true;
+      this.orderError = '';
+      try {
+        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/cinema/orders/`, { tickets }, config);
+        this.chosenSeats = [];
+        location.hash = '#/my-orders';
+      } catch (err) {
+        this.orderError = 'Could not book the selected seats. They may already be taken.';
+        console.error(err.response?.data || err);
+        await this.fetchMovieSession(this.movieSession.id);
+      } finally {
+        this.submitting = false;
+      }
     }
   },
   mounted () {
@@ -123,11 +149,29 @@ export default {
   column-gap: 60px;
 }
 
+.poster-placeholder {
+  margin-top: 200px;
+  color: #aaa;
+  text-align: center;
+  font-size: 20px;
+}
+
+.error {
+  color: #ff7373;
+}
+
+.movie-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .movie-card {
   width: 100%;
   height: 470px;
   background-repeat: no-repeat;
   background-size: cover;
+  background-color: #252525;
 }
 
 .info {

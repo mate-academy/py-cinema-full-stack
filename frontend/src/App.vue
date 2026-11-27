@@ -14,7 +14,7 @@
     <movie-session-add-screen v-if="user" :isStaff="user.is_staff"></movie-session-add-screen>
     <cinema-hall-add-screen v-if="user" :isStaff="user.is_staff"></cinema-hall-add-screen>
     <order-list-screen v-if="user"></order-list-screen>
-    <profile-screen v-if="user" :user="user"></profile-screen>
+    <profile-screen v-if="user" :user="user" @user-updated="user = $event"></profile-screen>
     <app-footer v-if="user"></app-footer>
   </div>
 </template>
@@ -49,16 +49,18 @@ export default {
     async logIn () {
       const accessToken = localStorage.getItem('access');
       if (!accessToken) return;
-
-      const { exp } = jwtDecode(accessToken);
-      this.expiresAt = exp;
-
-      if (this.expiresAt * 1e3 > Date.now()) {
-        await this.fetchUser();
-        return;
+      try {
+        const { exp } = jwtDecode(accessToken);
+        this.expiresAt = exp;
+        if (this.expiresAt * 1000 > Date.now()) {
+          await this.fetchUser();
+        } else {
+          await this.refreshToken();
+        }
+      } catch (err) {
+        console.error(err);
+        this.logOut();
       }
-
-      this.refreshToken();
     },
 
     async handleLogIn () {
@@ -69,35 +71,39 @@ export default {
     logOut () {
       localStorage.removeItem('access');
       localStorage.removeItem('refresh');
-
+      this.expiresAt = null;
       this.user = null;
+      location.hash = '#/sign-in';
     },
 
     async fetchUser () {
       const accessToken = localStorage.getItem('access');
       try {
-        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me`,
+        const { data: user } = await this.axios.get(`${import.meta.env.VITE_API_URL}/api/user/me/`,
           { headers: { Authorization: `Bearer ${accessToken}` } });
 
         this.user = user;
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
+        if (err.response?.status === 401) this.logOut();
       }
     },
 
     async refreshToken () {
+      if (!localStorage.getItem('refresh')) return;
       try {
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/refresh/`, {
           refresh: localStorage.getItem('refresh')
         });
 
         const { access, refresh } = data;
 
         localStorage.setItem('access', access);
-        localStorage.setItem('refresh', refresh);
-        this.logIn();
+        if (refresh) localStorage.setItem('refresh', refresh);
+        await this.logIn();
       } catch (err) {
-        console.error(err.response.data);
+        console.error(err.response?.data || err);
+        if (err.response?.status === 401) this.logOut();
       }
     }
   },
@@ -105,7 +111,8 @@ export default {
     this.logIn();
 
     setInterval(() => {
-      if (this.expiresAt && this.expiresAt * 1e3 > Date.now()) return;
+      if (!localStorage.getItem('refresh')) return;
+      if (this.expiresAt && this.expiresAt * 1000 > Date.now()) return;
       this.refreshToken();
     }, 60 * 1e3);
   },

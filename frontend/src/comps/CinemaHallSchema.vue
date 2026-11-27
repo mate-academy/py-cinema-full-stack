@@ -7,7 +7,7 @@
         <div v-for="index in numOfRows" :key="`row-${index}`" class="rows">{{index + 1}}</div>
       </div>
       <div class="container">
-        <div v-for="colIndex in numOfCols" class="col">
+        <div v-for="colIndex in numOfCols" :key="`col-${colIndex}`" class="col">
           <div
           v-for="rowIndex in numOfRows"
           :key="`seat-${colIndex}-${rowIndex}`"

@@ -6,11 +6,12 @@
     here if you are registered yet.</h2>
     <input-item
       label="Email"
-      pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+      pattern="[^@ ]+@[^@ ]+[.][^@ ]+"
       placeholder="Email"
       v-model="email"></input-item>
     <password-input v-model="password"></password-input>
     <action-button label="Sign up" @click="signUp"></action-button>
+    <p v-if="error" class="form-error">{{error}}</p>
   </div>
 </template>
 
@@ -23,7 +24,8 @@ export default {
   data: () => ({
     active: false,
     email: '',
-    password: ''
+    password: '',
+    error: ''
   }),
   methods: {
     hashHandler () {
@@ -31,13 +33,14 @@ export default {
     },
 
     async signUp () {
+      this.error = '';
       try {
-        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register`, {
+        await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/register/`, {
           email: this.email,
           password: this.password
         });
 
-        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token`, {
+        const { data } = await this.axios.post(`${import.meta.env.VITE_API_URL}/api/user/token/`, {
           email: this.email,
           password: this.password
         });
@@ -49,7 +52,9 @@ export default {
 
         this.$emit('log-in');
       } catch (err) {
-        console.error(err.response.data);
+        const data = err.response?.data;
+        this.error = data?.email?.[0] || data?.password?.[0] || data?.detail || 'Request failed. Please check your details.';
+        console.error(data || err);
       }
     }
   },
@@ -101,5 +106,9 @@ a {
   font-weight: 600;
   cursor: pointer;
   color: var(--main-font);
+}
+.form-error {
+  color: #ff7373;
+  text-align: center;
 }
 </style>

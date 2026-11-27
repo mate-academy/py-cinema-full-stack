@@ -7,7 +7,8 @@
       </svg>
     </div>
     <div class="info-container">
-      <img :src="movie.image" :class="[!movie.image && 'absent']"/>
+      <img v-if="movie.image && !imageFailed" :src="movie.image" alt="Movie poster" @error="imageFailed = true"/>
+      <div v-if="!movie.image || imageFailed" class="poster-placeholder">Poster unavailable</div>
       <div class="info">
         <div class="movie-title">{{movie.title}}</div>
         <div class="container">
@@ -26,11 +27,15 @@
 
 <script>
 export default {
+  data: () => ({ imageFailed: false }),
   props: {
     movie: {
       type: Object,
       default: () => {}
     }
+  },
+  watch: {
+    movie () { this.imageFailed = false; }
   }
 };
 </script>
@@ -95,8 +100,15 @@ img {
   max-width: 440px;
   margin-right: 40px;
 }
-img.absent {
-  margin-right: 0;
+.poster-placeholder {
+  min-width: 240px;
+  height: 360px;
+  margin-right: 40px;
+  background: #252525;
+  color: #aaa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .movie-title {
